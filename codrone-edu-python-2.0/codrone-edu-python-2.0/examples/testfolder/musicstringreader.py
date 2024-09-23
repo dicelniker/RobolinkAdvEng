@@ -12,14 +12,17 @@ def separate_letters_numbers(s):
 drone = Drone()
 drone.pair()
 
-
-noteString = "c4.d4.e4.f4.g4.a4.b4.c5"
+tempo = 50
+noteString = "b3.c4.c4.r.c4.c4.c4.r"
 parsedList = noteString.split('.')
+quarternotelength = int(60000/tempo)
+eighthnotelength = int(30000/tempo)
 
 for tempNote in parsedList:
     tempNote = tempNote.upper()
 
     if(tempNote == 'R'):
+        sleep(quarternotelength/1000)
         continue
 
     let, num = separate_letters_numbers(tempNote)
@@ -56,8 +59,8 @@ for tempNote in parsedList:
 
     print(tempNum)
 
-    newnote = Note(tempNum)
-    drone.drone_buzzer(newnote, 1000)
+    newnote = Note(int(tempNum))
+    drone.drone_buzzer(newnote, eighthnotelength)
 
 
 

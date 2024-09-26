@@ -5,7 +5,9 @@
   </component>
   <component name="ChangeListManager">
     <list default="true" id="ebad72da-6f7b-40da-8e22-d2037cf2f9d4" name="Changes" comment="">
-      <change afterPath="$PROJECT_DIR$/codrone-edu-python-2.0/examples/hovertest.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/codrone-edu-python-2.0/examples/hovertest.py" beforeDir="false" afterPath="$PROJECT_DIR$/codrone-edu-python-2.0/examples/hovertest.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/codrone-edu-python-2.0/examples/testfolder/musicstringreader.py" beforeDir="false" afterPath="$PROJECT_DIR$/codrone-edu-python-2.0/examples/testfolder/musicstringreader.py" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
@@ -45,7 +47,7 @@
     &quot;Python.musicstringreader.executor&quot;: &quot;Run&quot;,
     &quot;RunOnceActivity.OpenProjectViewOnStart&quot;: &quot;true&quot;,
     &quot;RunOnceActivity.ShowReadmeOnStart&quot;: &quot;true&quot;,
-    &quot;git-widget-placeholder&quot;: &quot;hovertestbranch&quot;,
+    &quot;git-widget-placeholder&quot;: &quot;main&quot;,
     &quot;last_opened_file_path&quot;: &quot;C:/Users/maoa3893/Documents/GitHub/RobolinkAdvEng/codrone-edu-python-2.0&quot;,
     &quot;settings.editor.selected.configurable&quot;: &quot;com.jetbrains.python.configuration.PyActiveSdkModuleConfigurable&quot;
   }
@@ -102,16 +104,5 @@
         </entry>
       </map>
     </option>
-  </component>
-  <component name="XDebuggerManager">
-    <breakpoint-manager>
-      <breakpoints>
-        <line-breakpoint enabled="true" suspend="THREAD" type="python-line">
-          <url>file://$PROJECT_DIR$/codrone-edu-python-2.0/examples/hovertest.py</url>
-          <line>6</line>
-          <option name="timeStamp" value="1" />
-        </line-breakpoint>
-      </breakpoints>
-    </breakpoint-manager>
   </component>
 </project>

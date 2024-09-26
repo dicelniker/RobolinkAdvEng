@@ -1,4 +1,5 @@
 from codrone_edu.drone import *
+import pandas as pd
 
 drone = Drone()
 drone.pair()
@@ -6,16 +7,22 @@ drone.pair()
 
 drone.takeoff()
 
-xflow = []
-yflow = []
-
-for i in range(90):
+x = []
+y = []
+z = []
+for i in range(900):
     drone.hover(0.1)
-    xflow.append(drone.get_flow_x())
-    yflow.append(drone.get_flow_y())
+    x.append(drone.get_pos_x())
+    y.append(drone.get_pos_y())
+    z.append(drone.get_pos_z())
 drone.land()
-print(xflow)
-print(yflow)
+print(x)
+print(y)
+print(z)
+df = pd.DataFrame({'x': x, 'y': y, 'z': z})
+
+# Saving the DataFrame to a CSV file
+df.to_csv('arrays_xyz.csv', index=False)
 
 
 

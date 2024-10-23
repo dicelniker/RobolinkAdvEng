@@ -60,11 +60,6 @@ for tempNote in parsedList:
     print(tempNum)
 
     newnote = Note(int(tempNum))
-    drone.drone_buzzer(newnote, sixteenthnotelength)
-
-
-
-
-
+    drone.controller_buzzer(newnote, sixteenthnotelength)
 
 drone.close()

@@ -4,6 +4,9 @@ from time import sleep
 from threading import Thread, Lock
 
 class Swarm2():
+
+    count = 0
+
     def __init__(self):
         self.drone_objects = []
         self.num_drones = 0
@@ -30,6 +33,8 @@ class Swarm2():
             thread.join()
 
         self.num_drones = len(portnames)
+
+        count = self.num_drones
 
         def create_drone(index):
             self.drone_objects.append(Drone())
@@ -76,7 +81,7 @@ class Swarm2():
         for thread in threads:
             thread.join()
 
-    def drone_positions(self, positions):
+    def drone_positions(self, positions, velocity):
 
         def runposition(drone,*args):
 
@@ -84,10 +89,9 @@ class Swarm2():
             if callable(method):
                 method(*args)
 
-
         threads = []
         for drone, i in zip(self.drone_objects, positions):
-            thread = Thread(target=runposition, args=(drone, i[0], i[1], i[2], 0.2, 0, 0))
+            thread = Thread(target=runposition, args=(drone, i[0], i[1], i[2], velocity, 0, 0))
             thread.start()
             threads.append(thread)
             print("Command Sent!")
@@ -99,6 +103,11 @@ class Swarm2():
             thread.join()
             print("Execution Time: ", time.time()-timer)
 
+    def drone_color(self):
+        return
+
+    def swarm_size(self):
+        return Swarm2.count
 
     def close(self):
         for drone in self.drone_objects:

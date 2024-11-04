@@ -29,7 +29,7 @@ timer = time.time()
 
 print("Go To Position 1")
 
-swarm.drone_positions(positions1)
+swarm.drone_positions(positions1, 0.2)
 
 print(time.time()-timer)
 
@@ -39,12 +39,14 @@ sleep(10)
 
 print("Go To Position 2")
 
-swarm.drone_positions(positions2)
+swarm.drone_positions(positions2, 0.2)
 
 print(time.time()-timer)
 timer = time.time()
 
 sleep(5)
+
+swarm.all_drones("flip", "left")
 
 swarm.all_drones("land")
 

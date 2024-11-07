@@ -57,6 +57,8 @@ class Swarm2():
         for thread in threads:
             thread.join()
 
+        return count
+
     def _connect_drone(self, index, portname):
         self.drone_objects[index].pair(portname)
         # with self.print_lock:
@@ -103,11 +105,12 @@ class Swarm2():
             thread.join()
             print("Execution Time: ", time.time()-timer)
 
-    def drone_color(self):
+    def drone_color(self,index,r,g,b):
+        self.drone_objects[index].set_drone_LED(r, g, b, 100)
         return
 
     def swarm_size(self):
-        return Swarm2.count
+        return self.count
 
     def close(self):
         for drone in self.drone_objects:

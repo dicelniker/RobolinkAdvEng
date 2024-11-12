@@ -3,7 +3,35 @@ from codrone_edu.drone import *
 from time import sleep
 from threading import Thread, Lock
 
-class Swarm2():
+# The CustomThread class inherits from Thread class to include the ability to return a value from thread
+class CustomThread(Thread):
+    def __init__(self, group=None, target=None, name=None,
+                 args=(), kwargs=None):
+
+        if kwargs is None:
+            self._kwargs = None
+        else:
+            self._kwargs = kwargs
+
+        # execute the base constructor
+        Thread.__init__(self, group, target, name, args, kwargs)
+        # set default values
+        self._return = None
+        self._target = target
+        self._args = args
+
+    # This function will override run() method from Thread class, which is called by start()
+    def run(self):
+        if self._target is not None:
+            self._return = self._target(*self._args,
+                                        **self._kwargs)
+
+    # This function will override join() method from Thread class
+    def join(self, timeout = None):
+        Thread.join(self, timeout = None)
+        return self._return
+
+class Swarm2:
 
     count = 0
 
@@ -57,31 +85,62 @@ class Swarm2():
         for thread in threads:
             thread.join()
 
-        return count
-
     def _connect_drone(self, index, portname):
         self.drone_objects[index].pair(portname)
         # with self.print_lock:
         #     print("Connected to CoDrone EDU at port ", portname)
 
     def all_drones(self, method_name, *args, **kwargs):
+        results = []
+
         def call_method(drone):
             method = getattr(drone, method_name, None)
             if callable(method):
-                method(*args, **kwargs)
+                value = method(*args, **kwargs)
+                # if method is a return function
+                if value is not None:
+                    return value
             else:
                 with self.print_lock:
                     print("Method ", method_name, " not found")
 
         threads = []
         for drone in self.drone_objects:
-            thread = Thread(target=call_method, args=(drone,))
+            # This CustomThread object will be able to return a value from 'call_method' once .join() is called
+            thread = CustomThread(target=call_method, args=(drone,))
             thread.start()
             threads.append(thread)
 
 
         for thread in threads:
-            thread.join()
+            result = thread.join() # ignore PyCharm warning about 'join' not returning anything
+
+            # This will apply to functions like '.get_position_data()', '.get_battery()' and appends result from each Drone object
+            if result is not None:
+                results.append(result)
+
+
+        # Essentially, return None if the method_name is a void function
+        if len(results) == 0:
+            return None
+
+        # Return list of drone data if the method_name is a return function
+        return results
+
+    # This function will call Drone method for only one Drone object
+    def one_drone(self, drone, method_name, *args, **kwargs):
+        def call_method(drone):
+            method = getattr(drone, method_name, None)
+            if callable(method):
+                value = method(*args, **kwargs)
+                if value is not None:
+                    return value
+                return None
+            else:
+                with self.print_lock:
+                    print("Method ", method_name, " not found")
+
+        return call_method(drone)
 
     def drone_positions(self, positions, velocity):
 
@@ -105,12 +164,14 @@ class Swarm2():
             thread.join()
             print("Execution Time: ", time.time()-timer)
 
-    def drone_color(self,index,r,g,b):
-        self.drone_objects[index].set_drone_LED(r, g, b, 100)
+    def get_drone_objects(self):
+        return self.drone_objects
+
+    def drone_color(self):
         return
 
     def swarm_size(self):
-        return self.count
+        return Swarm2.count
 
     def close(self):
         for drone in self.drone_objects:

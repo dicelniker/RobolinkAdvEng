@@ -75,6 +75,24 @@ class Swarm():
         for thread in threads:
             thread.join()
 
+    def drone_positions(self, positions):
+
+        def runPosition(drone,*args,**kwargs):
+
+            method = getattr(drone, "send_absolute_position", None)
+            if callable(method):
+                method(*args,**kwargs)
+
+        threads = []
+        for drone, i in zip(self.drone_objects, positions):
+            thread = Thread(target=runPosition, args=(drone,i[0],i[1],i[2],i[3]))
+            thread.start()
+            threads.append(thread)
+
+        for thread in threads:
+            thread.join()
+
+
     def close(self):
         for drone in self.drone_objects:
             drone.close()

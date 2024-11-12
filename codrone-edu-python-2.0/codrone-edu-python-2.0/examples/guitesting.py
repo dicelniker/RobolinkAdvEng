@@ -1,120 +1,131 @@
 import tkinter as tk
 from swarm2 import *
 from tkinter import colorchooser
-import colorsys
+import random
+import matplotlib.colors as mcolors
 
-droneIcons = []
+# GUI is now under a class
+class SwarmGUI:
+    def __init__(self):
+        self.root = tk.Tk()
+        self.root.title("Swarm GUI")
+        self.canvas = None
+        self.droneIcons = []
+        self.swarm = Swarm2()
+        self.rows_input = None
+        self.cols_input = None
+        self.create_inputs()
 
-swarm = Swarm2()
-num_drones = swarm.connect()
+    # This function converts a string of a color into a list of the color's RGBA values
+    def process_color(self, color_str):
+        rgba_color = list(mcolors.to_rgba(color_str))
+        for i in range(4):
+            rgba_color[i] = int(255 * rgba_color[i])
 
-def hsv_to_rgb(h, s, v):
-    rgb_float = colorsys.hsv_to_rgb(h, s, v)
-    return tuple(int(255 * c) for c in rgb_float)
+        return rgba_color
 
-def open_color_picker(drone, index):
-    color_code = colorchooser.askcolor(title="Choose Drone Color")
+    # This function opens a color chooser menu, where the user chooses what color the drone should be
+    def open_color_picker(self, drone):
+        color_code = colorchooser.askcolor(title="Choose Drone Color")
 
-    if color_code[1]:
-        new_color = color_code[1]
-        rgb_value = color_code[0]
-        print(f"Selected RGB color: {rgb_value}")
+        if color_code[1]:
+            new_color = color_code[1]
+            rgb_value = color_code[0]
+            print(f"Selected RGB color: {rgb_value}")
 
-        drone["color"] = new_color
-        canvas.itemconfig(drone["oval"], fill=new_color)
+            # Update the drone's color in the dictionary
+            drone["color"] = new_color
 
-        r, g, b = map(int, rgb_value)
-        swarm.drone_color(index, r, g, b)
+            # Convert string into RGBA list
+            rgba_color = self.process_color(drone["color"])
 
-root = tk.Tk()
-root.title("Swarm GUI")
+            # Change the drone's LED color on the drone
+            self.swarm.one_drone(drone["drone_obj"], "set_drone_LED", *rgba_color)
 
-def swarm_takeoff():
-    print("Swarm is taking off...")
-    swarm.all_drones("takeoff")
+            # Use canvas.itemconfig to change the fill color of the oval
+            self.canvas.itemconfig(drone["oval"], fill=new_color)
 
-def swarm_land():
-    print("Swarm is landing...")
-    swarm.all_drones("land")
+    # This function creates the labels and text inputs for the number of rows and columns for the swarm
+    def create_inputs(self):
+        # Inputs for grid dimensions
+        tk.Label(self.root, text="Rows:").pack()
+        self.rows_input = tk.Entry(self.root)
+        self.rows_input.pack()
 
-def swarm_close():
-    print("Swarm is disconnecting...")
-    swarm.close()
+        tk.Label(self.root, text="Columns:").pack()
+        self.cols_input = tk.Entry(self.root)
+        self.cols_input.pack()
 
-def swarm_choreo():
-    sleep(3)
-    print("Starting Choreography")
-    swarm.all_drones("flip", "front")
+        # Button to generate grid
+        generate_button = tk.Button(self.root, text="Generate Grid", command=self.create_grid)
+        generate_button.pack(pady=10)
 
+    # Function to create the grid and place drones
+    def create_grid(self):
+        global swarm_drones, num_drones, canvas, rows, cols
 
-button2 = tk.Button(root, text="SWARM TAKEOFF", font=('verdana 15'), command=swarm_takeoff)
-button2.pack(pady=5)
+        # Connect all drones
+        self.swarm.connect()
+        swarm_drones = self.swarm.get_drone_objects() # storing Drone objects
+        num_drones = len(swarm_drones)
 
-button3 = tk.Button(root, text="SWARM LAND", font=('verdana 15'), command=swarm_land)
-button3.pack(pady=5)
+        # Get user-defined rows and columns
+        rows = int(self.rows_input.get())
+        cols = int(self.cols_input.get())
 
-button4 = tk.Button(root, text="SWARM DISCONNECT", font=('verdana 15'), command=swarm_close)
-button4.pack(pady=5)
+        # Clear any existing canvas and drones
+        if 'canvas' in globals() or self.canvas is not None:
+            self.canvas.destroy()
+        self.droneIcons.clear()
 
-button5 = tk.Button(root, text="SWARM CHOREOGRAPHY", font=('verdana 15'), command=swarm_choreo)
-button5.pack(pady=5)
+        # Grid and padding setup
+        cell_width = 50
+        cell_height = 50
+        padding = 20  # Padding on all sides
 
-tk.Label(root, text="Rows:", font=('verdana 15')).pack()
-rows_input = tk.Entry(root)
-rows_input.pack()
+        # Canvas dimensions adjusted to include padding on all sides
+        canvas_width = cols * cell_width + 2 * padding
+        canvas_height = rows * cell_height + 2 * padding
 
-tk.Label(root, text="Columns:", font=('verdana 15')).pack()
-cols_input = tk.Entry(root)
-cols_input.pack()
+        self.canvas = tk.Canvas(self.root, width=canvas_width, height=canvas_height, bg="white")
+        self.canvas.pack()
 
-def create_grid():
-    global canvas, rows, cols
+        # Draw the grid with padding
+        for i in range(rows + 1):
+            self.canvas.create_line(padding, i * cell_height + padding, cols * cell_width + padding,
+                               i * cell_height + padding)
+        for j in range(cols + 1):
+            self.canvas.create_line(j * cell_width + padding, padding, j * cell_width + padding,
+                               rows * cell_height + padding)
 
-    rows = int(rows_input.get())
-    cols = int(cols_input.get())
+        # Place drones in an orderly manner (50 centimeters away from each other), wrapping across rows
+        for i in range(num_drones):
+            row = i // (cols)
+            col = (i) % (cols)
+            x = col * cell_width + cell_width // 2 + padding
+            y = row * cell_height + cell_height // 2 + padding
+            color = random.choice(["red", "blue", "green", "yellow", "purple", "orange", "black", "turquoise", "pink"])
+            drone_oval = self.canvas.create_oval(x - 5, y - 5, x + 5, y + 5, fill=color)
 
-    if 'canvas' in globals():
-        canvas.destroy()
-    droneIcons.clear()
+            rgba_color = self.process_color(color)  # Convert string into RGBA list
 
-    cell_width = 100
-    cell_height = 100
-    padding = 20
+            # Save drone data, including color, associated canvas object ID, and Drone object
+            drone = {"color": rgba_color, "position": (x, y), "oval": drone_oval, "drone_obj": swarm_drones[i]}
 
-    canvas_width = cols * cell_width + 2 * padding
-    canvas_height = rows * cell_height + 2 * padding
+            # Change the drone's LED color on the drone
+            self.swarm.one_drone(drone["drone_obj"], "set_drone_LED", *rgba_color)
 
-    canvas = tk.Canvas(root, width=canvas_width, height=canvas_height, bg="white")
-    canvas.pack()
+            # Store drone dictionary to droneIcons
+            self.droneIcons.append(drone)
 
-    for i in range(rows + 1):
-        canvas.create_line(padding, i * cell_height + padding, cols * cell_width + padding, i * cell_height + padding)
-    for j in range(cols + 1):
-        canvas.create_line(j * cell_width + padding, padding, j * cell_width + padding, rows * cell_height + padding)
+            # Bind click event to open color picker for each drone
+            def on_drone_click(event, drone=drone):
+                self.open_color_picker(drone)
 
-    hue_increment = 360 / num_drones
-    for i in range(num_drones):
-        row = i // cols
-        col = i % cols
-        x = col * cell_width + padding
-        y = row * cell_height + padding
+            self.canvas.tag_bind(drone_oval, "<Button-1>", on_drone_click)
 
-        hue = (i * hue_increment) / 360
-        rgb = hsv_to_rgb(hue, 1, 1)
-        color_hex = f'#{rgb[0]:02x}{rgb[1]:02x}{rgb[2]:02x}'
+    def run(self):
+        self.root.mainloop()
 
-        drone_oval = canvas.create_oval(x - 15, y - 15, x + 15, y + 15, fill=color_hex)
-        swarm.drone_color(i, *rgb)
-
-        drone = {"color": color_hex, "position": (row, col), "oval": drone_oval}
-        droneIcons.append(drone)
-
-        def on_drone_click(event, drone=drone, index=i):
-            open_color_picker(drone, index)
-
-        canvas.tag_bind(drone_oval, "<Button-1>", on_drone_click)
-
-generate_button = tk.Button(root, text="Generate Grid",  font=('verdana 15'), command=create_grid)
-generate_button.pack(pady=10)
-
-root.mainloop()
+app = SwarmGUI()
+app.run()

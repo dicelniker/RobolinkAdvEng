@@ -2182,6 +2182,7 @@ class Drone:
         else:
             # wait time is equal to the largest duration of movement: linear or rotational movement
             wait = max((temp / velocity) + 1, (data.heading / data.rotationalVelocity) + 1)
+            print("Wait", wait)
 
         self.transfer(header, data)
         sleep(wait)

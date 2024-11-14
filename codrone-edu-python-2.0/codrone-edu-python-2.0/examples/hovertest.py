@@ -10,7 +10,7 @@ drone.takeoff()
 x = []
 y = []
 z = []
-for i in range(900):
+for i in range(50):
     drone.hover(0.1)
     x.append(drone.get_pos_x())
     y.append(drone.get_pos_y())

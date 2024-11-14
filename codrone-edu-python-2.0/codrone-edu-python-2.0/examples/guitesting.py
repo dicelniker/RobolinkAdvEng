@@ -13,11 +13,12 @@ class SwarmGUI:
         self.swarm = Swarm2()
         self.rows_input = None
         self.cols_input = None
+        self.generate_button = None  # Added to store reference to generate button
         self.create_inputs()
         self.create_control_buttons()
         self.choreo = Choreography()
         # Define default colors in order
-        self.default_colors = ["red", "yellow", "green", "blue", "purple", "black"]
+        self.default_colors = ["red", "white", "green", "blue", "purple", "black"]
 
     def process_color(self, color_str):
         rgba_color = list(mcolors.to_rgba(color_str))
@@ -67,11 +68,18 @@ class SwarmGUI:
         self.cols_input = tk.Entry(self.root)
         self.cols_input.pack()
 
-        generate_button = tk.Button(self.root, text="Generate Grid", command=self.create_grid)
-        generate_button.pack(pady=10)
+        self.generate_button = tk.Button(self.root, text="Generate Grid", command=self.create_grid)
+        self.generate_button.pack(pady=10)
 
     def create_grid(self):
         global swarm_drones, num_drones, canvas, rows, cols
+
+        # Disable the generate button
+        self.generate_button.config(state="disabled")
+
+        # Also disable the input fields to prevent confusion
+        self.rows_input.config(state="disabled")
+        self.cols_input.config(state="disabled")
 
         # Connect all drones
         self.swarm.connect()

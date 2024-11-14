@@ -6,8 +6,8 @@
   <component name="ChangeListManager">
     <list default="true" id="ebad72da-6f7b-40da-8e22-d2037cf2f9d4" name="Changes" comment="">
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/codrone-edu-python-2.0/examples/drone3hoverdata.csv" beforeDir="false" afterPath="$PROJECT_DIR$/codrone-edu-python-2.0/examples/drone3hoverdata.csv" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/codrone-edu-python-2.0/examples/guitesting.py" beforeDir="false" afterPath="$PROJECT_DIR$/codrone-edu-python-2.0/examples/guitesting.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/codrone-edu-python-2.0/examples/hovertest.py" beforeDir="false" afterPath="$PROJECT_DIR$/codrone-edu-python-2.0/examples/hovertest.py" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
@@ -40,20 +40,20 @@
     <option name="hideEmptyMiddlePackages" value="true" />
     <option name="showLibraryContents" value="true" />
   </component>
-  <component name="PropertiesComponent"><![CDATA[{
-  "keyToString": {
-    "Python.awesometest.executor": "Run",
-    "Python.graph.executor": "Run",
-    "Python.guitesting.executor": "Run",
-    "Python.hovertest.executor": "Run",
-    "Python.musicstringreader.executor": "Run",
-    "RunOnceActivity.OpenProjectViewOnStart": "true",
-    "RunOnceActivity.ShowReadmeOnStart": "true",
-    "git-widget-placeholder": "main",
-    "last_opened_file_path": "C:/Users/maoa3893/Documents/GitHub/RobolinkAdvEng/codrone-edu-python-2.0",
-    "settings.editor.selected.configurable": "com.jetbrains.python.configuration.PyActiveSdkModuleConfigurable"
+  <component name="PropertiesComponent">{
+  &quot;keyToString&quot;: {
+    &quot;Python.awesometest.executor&quot;: &quot;Run&quot;,
+    &quot;Python.graph.executor&quot;: &quot;Run&quot;,
+    &quot;Python.guitesting.executor&quot;: &quot;Run&quot;,
+    &quot;Python.hovertest.executor&quot;: &quot;Run&quot;,
+    &quot;Python.musicstringreader.executor&quot;: &quot;Run&quot;,
+    &quot;RunOnceActivity.OpenProjectViewOnStart&quot;: &quot;true&quot;,
+    &quot;RunOnceActivity.ShowReadmeOnStart&quot;: &quot;true&quot;,
+    &quot;git-widget-placeholder&quot;: &quot;main&quot;,
+    &quot;last_opened_file_path&quot;: &quot;C:/Users/maoa3893/Documents/GitHub/RobolinkAdvEng/codrone-edu-python-2.0&quot;,
+    &quot;settings.editor.selected.configurable&quot;: &quot;com.jetbrains.python.configuration.PyActiveSdkModuleConfigurable&quot;
   }
-}]]></component>
+}</component>
   <component name="RunManager">
     <configuration name="hovertest" type="PythonConfigurationType" factoryName="Python" nameIsGenerated="true">
       <module name="codrone-edu-python-2.0" />

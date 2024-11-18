@@ -57,7 +57,7 @@ class SwarmGUI:
 
     def run_choreography(self):
         print("Running choreography...")
-        self.choreo.runSequence(swarm)
+        self.choreo.runSequence(self.swarm)
 
     def create_inputs(self):
         tk.Label(self.root, text="Rows:").pack()

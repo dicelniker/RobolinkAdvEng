@@ -1,4 +1,5 @@
 from swarm2 import *
+from codrone_edu import *
 
 class Choreography():
 
@@ -13,32 +14,12 @@ class Choreography():
         drone3 = drones[2]
         drone4 = drones[3]
 
-        dist = 150
+        drone1.send_absolute_position(-0.5, 0, 0, 0.5, 0, 0)
+        drone2.send_absolute_position(0, 0.5, 0, 0.5, 0, 0)
+        drone3.send_absolute_position(0.5, 0, 0, 0.5, 0, 0)
+        drone4.send_absolute_position(0, -0.5, 0, 0.5, 0, 0)
 
-        swarm.one_drone(drone1, "move_backward", distance=dist, units="cm", speed=0.3)
-        swarm.one_drone(drone2, "move_left", distance=dist, units="cm", speed=0.3)
-        swarm.one_drone(drone3, "move_forward", distance=dist, units="cm", speed=0.3)
-        swarm.one_drone(drone4, "move_right", distance=dist, units="cm", speed=0.3)
+        sleep(2.5)
 
-        sleep(2)
+        swarm.all_drones("land")
 
-        swarm.one_drone(drone1, "move_right", distance=dist, units="cm", speed=0.3)
-        swarm.one_drone(drone2, "move_backward", distance=dist, units="cm", speed=0.3)
-        swarm.one_drone(drone3, "move_left", distance=dist, units="cm", speed=0.3)
-        swarm.one_drone(drone4, "move_forward", distance=dist, units="cm", speed=0.3)
-
-        sleep(2)
-
-        swarm.one_drone(drone1, "move_forward", distance=dist, units="cm", speed=0.3)
-        swarm.one_drone(drone2, "move_right", distance=dist, units="cm", speed=0.3)
-        swarm.one_drone(drone3, "move_backward", distance=dist, units="cm", speed=0.3)
-        swarm.one_drone(drone4, "move_left", distance=dist, units="cm", speed=0.3)
-
-        sleep(2)
-
-        swarm.one_drone(drone1, "move_left", distance=dist, units="cm", speed=0.3)
-        swarm.one_drone(drone2, "move_forward", distance=dist, units="cm", speed=0.3)
-        swarm.one_drone(drone3, "move_right", distance=dist, units="cm", speed=0.3)
-        swarm.one_drone(drone4, "move_backward", distance=dist, units="cm", speed=0.3)
-
-        sleep(2)

@@ -15,17 +15,35 @@ class Choreography():
         drone3 = drones[2]
         drone4 = drones[3]
 
-        drone1.sendControlPosition(-0.5, 0, 0, 0.5, 0, 0)
-        drone2.sendControlPosition(0, 0.5, 0, 0.5, 0, 0)
-        drone3.sendControlPosition(0.5, 0, 0, 0.5, 0, 0)
-        drone4.sendControlPosition(0, -0.5, 0, 0.5, 0, 0)
+        distance = 0.5
+        speed = 0.75
 
-        sleep(2.5)
+        sleep(3)
 
-        drone1.sendControlPosition(0, -0.5, 0, 0.5, 0, 0)
-        drone2.sendControlPosition(-0.5, 0, 0, 0.5, 0, 0)
-        drone3.sendControlPosition(0, 0.5, 0, 0.5, 0, 0)
-        drone4.sendControlPosition(0.5, 0, 0, 0.5, 0, 0)
+        drone1.sendControlPosition(-1.5,0,0,speed,0,0)
+        drone2.sendControlPosition(0,1.5,0,speed,0,0)
+        drone3.sendControlPosition(1.5,0,0,speed,0,0)
+        drone4.sendControlPosition(0,-1.5,0,speed,0,0)
 
-        sleep(2.5)
+        sleep(3)
 
+        drone1.sendControlPosition(0,-1.5,0,speed,0,0)
+        drone2.sendControlPosition(-1.5,0,0,speed,0,0)
+        drone3.sendControlPosition(0,1.5,0,speed,0,0)
+        drone4.sendControlPosition(1.5,0,0,speed,0,0)
+
+        sleep(3)
+
+        drone1.sendControlPosition(1.5,0,0,speed,0,0)
+        drone2.sendControlPosition(0,-1.5,0,speed,0,0)
+        drone3.sendControlPosition(-1.5,0,0,speed,0,0)
+        drone4.sendControlPosition(0,1.5,0,speed,0,0)
+
+        sleep(3)
+
+        drone1.sendControlPosition(0,1.5,0,speed,0,0)
+        drone2.sendControlPosition(1.5,0,0,speed,0,0)
+        drone3.sendControlPosition(0,-1.5,0,speed,0,0)
+        drone4.sendControlPosition(-1.5,0,0,speed,0,0)
+
+        sleep(3)

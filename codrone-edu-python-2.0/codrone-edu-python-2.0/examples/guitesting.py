@@ -81,7 +81,6 @@ class SwarmGUI:
         self.rows_input.config(state="disabled")
         self.cols_input.config(state="disabled")
 
-        # Connect all drones
         self.swarm.connect()
         swarm_drones = self.swarm.get_drone_objects()
         num_drones = len(swarm_drones)

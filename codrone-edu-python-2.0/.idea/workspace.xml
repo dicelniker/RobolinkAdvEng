@@ -5,8 +5,9 @@
   </component>
   <component name="ChangeListManager">
     <list default="true" id="ebad72da-6f7b-40da-8e22-d2037cf2f9d4" name="Changes" comment="">
+      <change afterPath="$PROJECT_DIR$/codrone-edu-python-2.0/examples/forwardmovement.py" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/codrone-edu-python-2.0/examples/guitesting.py" beforeDir="false" afterPath="$PROJECT_DIR$/codrone-edu-python-2.0/examples/guitesting.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/codrone-edu-python-2.0/examples/choreography.py" beforeDir="false" afterPath="$PROJECT_DIR$/codrone-edu-python-2.0/examples/choreography.py" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
@@ -42,6 +43,7 @@
   <component name="PropertiesComponent">{
   &quot;keyToString&quot;: {
     &quot;Python.awesometest.executor&quot;: &quot;Run&quot;,
+    &quot;Python.choreography.executor&quot;: &quot;Run&quot;,
     &quot;Python.graph.executor&quot;: &quot;Run&quot;,
     &quot;Python.guitesting.executor&quot;: &quot;Run&quot;,
     &quot;Python.hovertest.executor&quot;: &quot;Run&quot;,

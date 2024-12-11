@@ -8,95 +8,28 @@ class Choreography():
     def __init__(self):
         return
 
-    def runSequence(self,swarm):
-
+    def runSequence(self, swarm):
         drones = swarm.get_drone_objects()
+        drone1, drone2, drone3 = drones[0], drones[1], drones[2]
 
-        drone1 = drones[0]
-        drone2 = drones[1]
-        drone3 = drones[2]
-        drone4 = drones[3]
-        drone5 = drones[4]
-        drone6 = drones[5]
+        # Define movement parameters
+        forward_distance = 3.0  # total forward distance in meters
+        amplitude = 0.3  # how far to wiggle side to side in meters
+        steps = 30  # number of points in the path
+        duration = 6  # total time for movement in seconds
 
-        a = 1.5*math.sqrt(3)/2
-        b = 1.5*0.5
+        for i in range(steps):
+            # Calculate position for this step
+            t = i / (steps - 1)  # normalized time from 0 to 1
 
-        sleep(2)
+            # Calculate positions
+            x = forward_distance * t  # Move forward gradually
+            y = amplitude * math.sin(4 * math.pi * t)  # Side to side wiggle (2 complete waves)
+            z = 0  # Maintain constant height
 
-        drone1.sendControlPosition(0,-1.5,0,0.75,0,0)
-        drone2.sendControlPosition(-1*a,-1*b,0,0.75,0,0)
-        drone3.sendControlPosition(-1*a,b,0,0.75,0,0)
-        drone4.sendControlPosition(0,1.5,0,0.75,0,0)
-        drone5.sendControlPosition(a,b,0,0.75,0,0)
-        drone6.sendControlPosition(a,-1*b,0,0.75,0,0)
+            # Send position commands to all drones
+            for drone in [drone1, drone2, drone3]:
+                drone.sendControlPosition(x, y, z, 0.5, 0, 0)
 
-        sleep(3)
-
-        drone1.sendControlPosition(-1*a,-1*b,0,0.75,0,0)
-        drone2.sendControlPosition(-1*a,b,0,0.75,0,0)
-        drone3.sendControlPosition(0,1.5,0,0.75,0,0)
-        drone4.sendControlPosition(a,b,0,0.75,0,0)
-        drone5.sendControlPosition(a,-1*b,0.75,0,0,0)
-        drone6.sendControlPosition(0,-1.5,0,0.75,0,0)
-
-        sleep(3)
-
-        drone1.sendControlPosition(-1*a,b,0,0.75,0,0)
-        drone2.sendControlPosition(0,1.5,0,0.75,0,0)
-        drone3.sendControlPosition(a,b,0,0.75,0,0)
-        drone4.sendControlPosition(a,-1*b,0,0.75,0,0)
-        drone5.sendControlPosition(0,-1.5,0,0.75,0,0)
-        drone6.sendControlPosition(-1*a,-1*b,0,0.75,0,0)
-
-        sleep(3)
-
-        drone1.sendControlPosition(0,1.5,0,0.75,0,0)
-        drone2.sendControlPosition(a,b,0,0.75,0,0)
-        drone3.sendControlPosition(a,-1*b,0,0.75,0,0)
-        drone4.sendControlPosition(0,-1.5,0,0.75,0,0)
-        drone5.sendControlPosition(-1*a,-1*b,0,0.75,0,0)
-        drone6.sendControlPosition(-1*a,b,0,0.75,0,0)
-
-        sleep(3)
-        drone1.sendControlPosition(a,b,0,0.75,0,0)
-        drone2.sendControlPosition(a,-1*b,0,0.75,0,0)
-        drone3.sendControlPosition(0,-1.5,0,0.75,0,0)
-        drone4.sendControlPosition(-1*a,-1*b,0,0.75,0,0)
-        drone5.sendControlPosition(-1*a,b,0,0.75,0,0)
-        drone6.sendControlPosition(0,1.5,0,0.75,0,0)
-
-        sleep(3)
-
-        drone1.sendControlPosition(a,-1*b,0,0.75,0,0)
-        drone2.sendControlPosition(0,-1.5,0,0.75,0,0)
-        drone3.sendControlPosition(-1*a,-1*b,0,0.75,0,0)
-        drone4.sendControlPosition(-1*a,b,0,0.75,0,0)
-        drone5.sendControlPosition(0,1.5,0,0.75,0,0)
-        drone6.sendControlPosition(a,b,0,0.75,0,0)
-
-        sleep(3)
-
-        drone1.sendControlPosition(0,0,1,0.75,0,0)
-
-        sleep(0.5)
-
-        drone2.sendControlPosition(0,0,1,0.75,0,0)
-
-        sleep(0.5)
-
-        drone3.sendControlPosition(0,0,1,0.75,0,0)
-
-        sleep(0.5)
-
-        drone4.sendControlPosition(0,0,1,0.75,0,0)
-
-        sleep(0.5)
-
-        drone5.sendControlPosition(0,0,1,0.75,0,0)
-
-        sleep(0.5)
-
-        drone6.sendControlPosition(0,0,1,0.75,0,0)
-
-        sleep(2)
+            # Wait a short time between movements for smooth motion
+            sleep(duration / steps)

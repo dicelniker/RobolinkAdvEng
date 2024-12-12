@@ -2,7 +2,6 @@ import tkinter as tk
 from swarm2 import *
 from tkinter import colorchooser
 import matplotlib.colors as mcolors
-from choreography import *
 
 class SwarmGUI:
     def __init__(self):

@@ -1,22 +1,27 @@
-from codrone_edu.drone import *
-from codrone_edu.swarm import *
+from swarm2 import *
 
 init_time = time.time()
 
-swarm = Swarm()
-swarm.connect()
+swarm = Swarm2()
 
-end_time = time.time()
-print("Time to connect: ", end_time - init_time)
+print(swarm.swarm_size())
 
-swarm.all_drones("takeoff")
-swarm.all_drones("hover",1)
+list = []
 
-for i in range(3):
+for i in range (1,100):
 
-    swarm.all_drones("sendControlWhile", 0,0,0,30,2000)
-    swarm.all_drones("sendControlWhile", 0,0,0,-20,2000)
+    print(i)
 
-swarm.all_drones("land")
+    swarm.connect()
 
-swarm.close()
+    init_time = time.time()
+
+    swarm.all_drones("get_battery")
+
+    end_time = time.time()
+
+    list.append(end_time - init_time)
+
+    swarm.close()
+
+print(list)

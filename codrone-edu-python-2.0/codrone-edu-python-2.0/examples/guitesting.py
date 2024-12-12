@@ -3,6 +3,7 @@ from swarm2 import *
 from tkinter import colorchooser
 import matplotlib.colors as mcolors
 from choreography import *
+from mainchoreo import *
 
 class SwarmGUI:
     def __init__(self):
@@ -17,8 +18,8 @@ class SwarmGUI:
         self.generate_button = None
         self.create_inputs()
         self.create_control_buttons()
-        self.choreo = Choreography()
-        self.default_colors = ["red", "white", "green", "blue", "purple", "black"]
+        self.choreo = Choreography2()
+        self.default_colors = ["blue", "black", "orange", "red", "white", "green"]
 
     def process_color(self, color_str):
         rgba_color = list(mcolors.to_rgba(color_str))
@@ -181,4 +182,3 @@ class SwarmGUI:
 
 app = SwarmGUI()
 app.run()
-#meow

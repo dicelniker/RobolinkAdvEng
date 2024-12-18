@@ -16,7 +16,6 @@ class SwarmGUI:
         self.generate_button = None
         self.create_inputs()
         self.create_control_buttons()
-        self.choreo = Choreography()
         self.default_colors = ["red", "white", "green", "blue", "purple", "black"]
 
     def process_color(self, color_str):
@@ -47,14 +46,29 @@ class SwarmGUI:
             'height': 1
         }
 
+        # Flight control buttons
         take_off_button = tk.Button(self.root, text="Take Off", command=self.take_off, **button_style)
         take_off_button.pack(pady=5)
 
         land_button = tk.Button(self.root, text="Land", command=self.land, **button_style)
         land_button.pack(pady=5)
 
-        choreography_button = tk.Button(self.root, text="Run Choreography", command=self.run_choreography, **button_style)
-        choreography_button.pack(pady=5)
+        # Create frame for choreography buttons
+        choreo_frame = tk.Frame(self.root, bg='#e6f3ff')
+        choreo_frame.pack(pady=10)
+
+        # Choreography buttons
+        choreo_buttons = [
+            ("Main Choreo", self.run_main_choreo),
+            ("Hexagon", self.run_hexagon),
+            ("Spiral and Flip", self.run_spiral_and_flip),
+            ("Upward Spiral", self.run_upward_spiral),
+            ("Wiggle", self.run_wiggle)
+        ]
+
+        for text, command in choreo_buttons:
+            btn = tk.Button(choreo_frame, text=text, command=command, **button_style)
+            btn.pack(pady=3)
 
     def take_off(self):
         print("Taking off...")
@@ -65,9 +79,30 @@ class SwarmGUI:
         self.swarm.all_drones("land")
         self.swarm.all_drones("emergency_stop")
 
-    def run_choreography(self):
-        print("Running choreography...")
-        self.choreo.runSequence(self.swarm)
+    def run_main_choreo(self):
+        print("Running main choreography...")
+        import mainchoreo
+        mainchoreo.run_sequence(self.swarm)
+
+    def run_hexagon(self):
+        print("Running hexagon choreography...")
+        import hexagon
+        hexagon.run_sequence(self.swarm)
+
+    def run_spiral_and_flip(self):
+        print("Running spiral and flip choreography...")
+        import spiralandflip
+        spiralandflip.run_sequence(self.swarm)
+
+    def run_upward_spiral(self):
+        print("Running upward spiral choreography...")
+        import upwardspiral
+        upwardspiral.run_sequence(self.swarm)
+
+    def run_wiggle(self):
+        print("Running wiggle choreography...")
+        import wiggle
+        wiggle.run_sequence(self.swarm)
 
     def create_inputs(self):
         label_style = {
@@ -180,4 +215,3 @@ class SwarmGUI:
 
 app = SwarmGUI()
 app.run()
-#meow

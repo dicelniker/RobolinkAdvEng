@@ -1,5 +1,5 @@
 import tkinter as tk
-from swarm2 import *
+from codrone_edu.swarm import *
 from tkinter import colorchooser
 import matplotlib.colors as mcolors
 
@@ -10,13 +10,16 @@ class SwarmGUI:
         self.root.configure(bg='#e6f3ff')  # Slightly darker light blue background
         self.canvas = None
         self.droneIcons = []
-        self.swarm = Swarm2()
+        self.swarm = Swarm()
         self.rows_input = None
         self.cols_input = None
         self.generate_button = None
         self.create_inputs()
         self.create_control_buttons()
         self.default_colors = ["red", "white", "green", "blue", "purple", "black"]
+        self.bind_keys()
+
+
 
     def process_color(self, color_str):
         rgba_color = list(mcolors.to_rgba(color_str))
@@ -47,11 +50,28 @@ class SwarmGUI:
         }
 
         # Flight control buttons
-        take_off_button = tk.Button(self.root, text="Take Off", command=self.take_off, **button_style)
+        take_off_button = tk.Button(self.root, text="Take Off", command=self.take_off, **self.button_style)
         take_off_button.pack(pady=5)
 
-        land_button = tk.Button(self.root, text="Land", command=self.land, **button_style)
+        land_button = tk.Button(self.root, text="Land", command=self.land, **self.button_style)
         land_button.pack(pady=5)
+
+        movement_frame = tk.Frame(self.root, bg='#e6f3ff')
+        movement_frame.pack(pady=10)
+
+        # Movement buttons
+        forward_button = tk.Button(movement_frame, text="↑", command=self.forward,
+                                   **self.movement_button_style)
+        backward_button = tk.Button(movement_frame, text="↓", command=self.backward,
+                                    **self.movement_button_style)
+        left_button = tk.Button(movement_frame, text="←", command=self.left, **self.movement_button_style)
+        right_button = tk.Button(movement_frame, text="→", command=self.right, **self.movement_button_style)
+
+        # Grid layout for the movement buttons
+        forward_button.grid(row=0, column=1, padx=5, pady=5)
+        left_button.grid(row=1, column=0, padx=5, pady=5)
+        backward_button.grid(row=1, column=1, padx=5, pady=5)
+        right_button.grid(row=1, column=2, padx=5, pady=5)
 
         # Create frame for choreography buttons
         choreo_frame = tk.Frame(self.root, bg='#e6f3ff')
@@ -79,6 +99,18 @@ class SwarmGUI:
         self.swarm.all_drones("land")
         self.swarm.all_drones("emergency_stop")
 
+    def forward(self):
+        print("Moving forward...")
+
+    def backward(self):
+        print("Moving backward...")
+
+    def left(self):
+        print("Moving left...")
+
+    def right(self):
+        print("Moving right...")
+
     def run_main_choreo(self):
         print("Running main choreography...")
         import mainchoreo
@@ -105,13 +137,13 @@ class SwarmGUI:
         wiggle.run_sequence(self.swarm)
 
     def create_inputs(self):
-        label_style = {
+        self.label_style = {
             'font': ('Helvetica', 10, 'bold'),
             'bg': '#e6f3ff',  # Match root background
             'fg': '#2c3e50'
         }
 
-        entry_style = {
+        self.entry_style = {
             'font': ('Helvetica', 10, 'bold'),
             'relief': 'solid',
             'bd': 1,
@@ -121,7 +153,7 @@ class SwarmGUI:
             'bg': 'white'
         }
 
-        button_style = {
+        self.button_style = {
             'font': ('Helvetica', 10, 'bold'),
             'bg': '#dff0e0',  # Slightly darker light green
             'fg': '#2c3e50',
@@ -131,15 +163,27 @@ class SwarmGUI:
             'height': 1
         }
 
-        tk.Label(self.root, text="Rows:", **label_style).pack()
-        self.rows_input = tk.Entry(self.root, **entry_style)
+        self.movement_button_style = {
+            'font': ('Helvetica', 12, 'bold'),  # Slightly larger and bolder
+            'bg': '#3498db',  # Blue
+            'fg': 'white',
+            'relief': 'raised',
+            'bd': 3,
+            'padx': 3,  # Padding to make the buttons bigger
+            'pady': 3,
+            'width': 2,  # Explicit width to control button size
+            'height': 1  # Explicit height
+        }
+
+        tk.Label(self.root, text="Rows:", **self.label_style).pack()
+        self.rows_input = tk.Entry(self.root, **self.entry_style)
         self.rows_input.pack(pady=5)
 
-        tk.Label(self.root, text="Columns:", **label_style).pack()
-        self.cols_input = tk.Entry(self.root, **entry_style)
+        tk.Label(self.root, text="Columns:", **self.label_style).pack()
+        self.cols_input = tk.Entry(self.root, **self.entry_style)
         self.cols_input.pack(pady=5)
 
-        self.generate_button = tk.Button(self.root, text="Generate Grid", command=self.create_grid, **button_style)
+        self.generate_button = tk.Button(self.root, text="Generate Grid", command=self.create_grid, **self.button_style)
         self.generate_button.pack(pady=10)
 
     def create_grid(self):
@@ -209,6 +253,19 @@ class SwarmGUI:
                 drones_placed += 1
 
             current_row += 1
+
+    def bind_keys(self):
+        self.root.bind("<Up>", lambda event: self.forward())
+        self.root.bind("<Down>", lambda event: self.backward())
+        self.root.bind("<Left>", lambda event: self.left())
+        self.root.bind("<Right>", lambda event: self.right())
+        self.root.bind("w", lambda event: self.forward())
+        self.root.bind("s", lambda event: self.backward())
+        self.root.bind("a", lambda event: self.left())
+        self.root.bind("d", lambda event: self.right())
+        # To ensure the key presses are registered, the window must have focus.
+        # Calling focus_set() here and/or on specific widgets can help.
+        self.root.focus_set()
 
     def run(self):
         self.root.mainloop()

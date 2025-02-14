@@ -209,6 +209,7 @@ class SwarmGUI:
 
         }
 
+        tk.Label(self.root, text="Codrone EDU - Swarm",height = 2, width = 52, font=("Terminal", 20), bg='#05001c', fg='#3fd4ff').pack()
 
         tk.Label(self.root, text="Rows:", **self.label_style).pack()
         self.rows_input = tk.Entry(self.root, **self.entry_style)

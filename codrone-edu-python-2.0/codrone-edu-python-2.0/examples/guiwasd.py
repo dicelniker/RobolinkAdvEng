@@ -57,10 +57,10 @@ class SwarmGUI:
         }
 
         # Flight control buttons
-        take_off_button = tk.Button(self.root, text="Take Off", command=self.take_off, **self.button_style)
+        take_off_button = tk.Button(self.root, text="Take Off", command=self.take_off, **button_style)
         take_off_button.pack(pady=5)
 
-        land_button = tk.Button(self.root, text="Land", command=self.land, **self.button_style)
+        land_button = tk.Button(self.root, text="Land", command=self.land, **button_style)
         land_button.pack(pady=15)
 
 
@@ -68,23 +68,54 @@ class SwarmGUI:
         movement_frame.pack(pady=10)
 
         # Movement buttons
+        movement_button_style = {
+            'font': ('Helvetica', 12, 'bold'),  # Slightly larger and bolder
+            'bg': '#05001c',  # Dark Blue
+            'fg': 'white',
+            'relief': 'solid',
+            'padx': 3,  # Padding to make the buttons bigger
+            'pady': 3,
+            'width': 2,  # Explicit width to control button size
+            'height': 1,  # Explicit height
+            'foreground': '#e61848',
+            'activeforeground': '#3fd4ff'
+        }
 
+        pink_border_style = {
+            'highlightbackground': '#e61848',
+            'highlightcolor': '#e61848',
+            'highlightthickness': 2,
+            'bd': 0
+        }
 
-        forward_button = tk.Button(movement_frame, text="↑", command=self.forward,
-                                   **self.movement_button_style)
-        backward_button = tk.Button(movement_frame, text="↓", command=self.backward,
-                                    **self.movement_button_style)
-        left_button = tk.Button(movement_frame, text="←", command=self.left, **self.movement_button_style)
-        right_button = tk.Button(movement_frame, text="→", command=self.right, **self.movement_button_style)
+        # Forward Button with Border
+        forward_border = tk.Frame(movement_frame, **pink_border_style)
+        forward_button = tk.Button(forward_border, text="↑", command=self.forward, **movement_button_style)
+        forward_button.pack(in_=forward_border) # Pack button inside the border frame
+
+        # Backward Button with Border
+        backward_border = tk.Frame(movement_frame, **pink_border_style)
+        backward_button = tk.Button(backward_border, text="↓", command=self.backward, **movement_button_style)
+        backward_button.pack(in_=backward_border) # Pack button inside the border frame
+
+        # Left Button with Border
+        left_border = tk.Frame(movement_frame, **pink_border_style)
+        left_button = tk.Button(left_border, text="←", command=self.left, **movement_button_style)
+        left_button.pack(in_=left_border) # Pack button inside the border frame
+
+        # Right Button with Border
+        right_border = tk.Frame(movement_frame, **pink_border_style)
+        right_button = tk.Button(right_border, text="→", command=self.right, **movement_button_style)
+        right_button.pack(in_=right_border) # Pack button inside the border frame
 
 
         tk.Label(self.root, text="Sequences:", font=("Helvetica", 10, "bold"), bg='#05001c', fg='#3fd4ff').pack()
 
-        # Grid layout for the movement buttons
-        forward_button.grid(row=0, column=1, padx=5, pady=5)
-        left_button.grid(row=1, column=0, padx=5, pady=5)
-        backward_button.grid(row=1, column=1, padx=5, pady=5)
-        right_button.grid(row=1, column=2, padx=5, pady=5)
+        # Grid layout for the movement buttons - Place the border frames instead of buttons
+        forward_border.grid(row=0, column=1, padx=5, pady=5)
+        left_border.grid(row=1, column=0, padx=5, pady=5)
+        backward_border.grid(row=1, column=1, padx=5, pady=5)
+        right_border.grid(row=1, column=2, padx=5, pady=5)
 
         # Create frame for choreography buttons
         choreo_frame = tk.Frame(self.root, bg='#05001c')
@@ -178,19 +209,6 @@ class SwarmGUI:
 
         }
 
-        self.movement_button_style = {
-            'font': ('Helvetica', 12, 'bold'),  # Slightly larger and bolder
-            'bg': '#242d78',  # Blue
-            'fg': 'white',
-            'relief': 'raised',
-            'bd': 3,
-            'padx': 3,  # Padding to make the buttons bigger
-            'pady': 3,
-            'width': 2,  # Explicit width to control button size
-            'height': 1,  # Explicit height
-            'borderwidth': '6',
-            'cursor': "heart"
-        }
 
         tk.Label(self.root, text="Rows:", **self.label_style).pack()
         self.rows_input = tk.Entry(self.root, **self.entry_style)

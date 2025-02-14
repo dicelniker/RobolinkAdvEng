@@ -3,11 +3,16 @@ from codrone_edu.swarm import *
 from tkinter import colorchooser
 import matplotlib.colors as mcolors
 
+#pink e61848
+#dark blue 05001c
+#blue 242d78
+#light blue 3fd4ff
+
 class SwarmGUI:
     def __init__(self):
         self.root = tk.Tk()
         self.root.title("Swarm GUI")
-        self.root.configure(bg='#e6f3ff')  # Slightly darker light blue background
+        self.root.configure(bg='#05001c')  # dark blue
         self.canvas = None
         self.droneIcons = []
         self.swarm = Swarm()
@@ -18,6 +23,7 @@ class SwarmGUI:
         self.create_control_buttons()
         self.default_colors = ["red", "white", "green", "blue", "purple", "black"]
         self.bind_keys()
+        self.root.geometry("500x650")
 
 
 
@@ -41,12 +47,13 @@ class SwarmGUI:
     def create_control_buttons(self):
         button_style = {
             'font': ('Helvetica', 10, 'bold'),
-            'bg': '#dff0e0',  # Slightly darker light green
-            'fg': '#2c3e50',
+            'bg': '#e61848',  # pink
+            'fg': '#fff',
             'relief': 'solid',
             'bd': 1,
             'width': 15,
-            'height': 1
+            'height': 1,
+            'cursor': "heart"
         }
 
         # Flight control buttons
@@ -54,18 +61,24 @@ class SwarmGUI:
         take_off_button.pack(pady=5)
 
         land_button = tk.Button(self.root, text="Land", command=self.land, **self.button_style)
-        land_button.pack(pady=5)
+        land_button.pack(pady=15)
 
-        movement_frame = tk.Frame(self.root, bg='#e6f3ff')
+
+        movement_frame = tk.Frame(self.root, bg='#05001c')
         movement_frame.pack(pady=10)
 
         # Movement buttons
+
+
         forward_button = tk.Button(movement_frame, text="↑", command=self.forward,
                                    **self.movement_button_style)
         backward_button = tk.Button(movement_frame, text="↓", command=self.backward,
                                     **self.movement_button_style)
         left_button = tk.Button(movement_frame, text="←", command=self.left, **self.movement_button_style)
         right_button = tk.Button(movement_frame, text="→", command=self.right, **self.movement_button_style)
+
+
+        tk.Label(self.root, text="Sequences:", font=("Helvetica", 10, "bold"), bg='#05001c', fg='#3fd4ff').pack()
 
         # Grid layout for the movement buttons
         forward_button.grid(row=0, column=1, padx=5, pady=5)
@@ -74,7 +87,7 @@ class SwarmGUI:
         right_button.grid(row=1, column=2, padx=5, pady=5)
 
         # Create frame for choreography buttons
-        choreo_frame = tk.Frame(self.root, bg='#e6f3ff')
+        choreo_frame = tk.Frame(self.root, bg='#05001c')
         choreo_frame.pack(pady=10)
 
         # Choreography buttons
@@ -139,8 +152,8 @@ class SwarmGUI:
     def create_inputs(self):
         self.label_style = {
             'font': ('Helvetica', 10, 'bold'),
-            'bg': '#e6f3ff',  # Match root background
-            'fg': '#2c3e50'
+            'bg': '#05001c',  # Match root background
+            'fg': '#3fd4ff'
         }
 
         self.entry_style = {
@@ -155,24 +168,27 @@ class SwarmGUI:
 
         self.button_style = {
             'font': ('Helvetica', 10, 'bold'),
-            'bg': '#dff0e0',  # Slightly darker light green
-            'fg': '#2c3e50',
+            'bg': '#e61848',  # pink
+            'fg': '#fff',
             'relief': 'solid',
             'bd': 1,
             'width': 15,
-            'height': 1
+            'height': 1,
+            'cursor': "heart"
+
         }
 
         self.movement_button_style = {
             'font': ('Helvetica', 12, 'bold'),  # Slightly larger and bolder
-            'bg': '#3498db',  # Blue
+            'bg': '#242d78',  # Blue
             'fg': 'white',
             'relief': 'raised',
             'bd': 3,
             'padx': 3,  # Padding to make the buttons bigger
             'pady': 3,
             'width': 2,  # Explicit width to control button size
-            'height': 1  # Explicit height
+            'height': 1,  # Explicit height
+            'borderwidth': '6'
         }
 
         tk.Label(self.root, text="Rows:", **self.label_style).pack()

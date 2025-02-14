@@ -188,7 +188,8 @@ class SwarmGUI:
             'pady': 3,
             'width': 2,  # Explicit width to control button size
             'height': 1,  # Explicit height
-            'borderwidth': '6'
+            'borderwidth': '6',
+            'cursor': "heart"
         }
 
         tk.Label(self.root, text="Rows:", **self.label_style).pack()

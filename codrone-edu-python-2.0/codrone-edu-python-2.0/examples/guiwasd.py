@@ -53,7 +53,7 @@ class SwarmGUI:
             'bd': 1,
             'width': 15,
             'height': 1,
-            'cursor': "heart"
+            'cursor': "hand2"
         }
 
         # Flight control buttons
@@ -205,7 +205,7 @@ class SwarmGUI:
             'bd': 1,
             'width': 15,
             'height': 1,
-            'cursor': "heart"
+            'cursor': "hand2"
 
         }
 

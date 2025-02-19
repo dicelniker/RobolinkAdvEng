@@ -78,7 +78,8 @@ class SwarmGUI:
             'width': 2,  # Explicit width to control button size
             'height': 1,  # Explicit height
             'foreground': '#e61848',
-            'activeforeground': '#3fd4ff'
+            'activeforeground': '#3fd4ff',
+            'cursor': 'hand2'
         }
 
         pink_border_style = {

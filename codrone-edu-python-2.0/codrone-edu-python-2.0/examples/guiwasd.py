@@ -78,7 +78,8 @@ class SwarmGUI:
             'width': 2,  # Explicit width to control button size
             'height': 1,  # Explicit height
             'foreground': '#e61848',
-            'activeforeground': '#3fd4ff',
+            'activeforeground': '#e61848',
+            'activebackground': '#e61848',
             'cursor': 'hand2'
         }
 
@@ -93,22 +94,29 @@ class SwarmGUI:
         forward_border = tk.Frame(movement_frame, **pink_border_style)
         forward_button = tk.Button(forward_border, text="↑", command=self.forward, **movement_button_style)
         forward_button.pack(in_=forward_border) # Pack button inside the border frame
+        forward_button.bind("<Enter>", lambda e: forward_button.config(bg="#242d78"))
+        forward_button.bind("<Leave>", lambda e: forward_button.config(bg="#05001c"))
 
         # Backward Button with Border
         backward_border = tk.Frame(movement_frame, **pink_border_style)
         backward_button = tk.Button(backward_border, text="↓", command=self.backward, **movement_button_style)
         backward_button.pack(in_=backward_border) # Pack button inside the border frame
+        backward_button.bind("<Enter>", lambda e: backward_button.config(bg="#242d78"))
+        backward_button.bind("<Leave>", lambda e: backward_button.config(bg="#05001c"))
 
         # Left Button with Border
         left_border = tk.Frame(movement_frame, **pink_border_style)
         left_button = tk.Button(left_border, text="←", command=self.left, **movement_button_style)
         left_button.pack(in_=left_border) # Pack button inside the border frame
+        left_button.bind("<Enter>", lambda e: left_button.config(bg="#242d78"))
+        left_button.bind("<Leave>", lambda e: left_button.config(bg="#05001c"))
 
         # Right Button with Border
         right_border = tk.Frame(movement_frame, **pink_border_style)
         right_button = tk.Button(right_border, text="→", command=self.right, **movement_button_style)
         right_button.pack(in_=right_border) # Pack button inside the border frame
-
+        right_button.bind("<Enter>", lambda e: right_button.config(bg="#242d78"))
+        right_button.bind("<Leave>", lambda e: right_button.config(bg="#05001c"))
 
         tk.Label(self.root, text="Sequences:", font=("Helvetica", 10, "bold"), bg='#05001c', fg='#3fd4ff').pack()
 

@@ -7,6 +7,8 @@ import matplotlib.colors as mcolors
 #dark blue 05001c
 #blue 242d78
 #light blue 3fd4ff
+#button hover purple #d098fa
+#arrow button hover #7214ff
 
 class SwarmGUI:
     def __init__(self):
@@ -31,11 +33,14 @@ class SwarmGUI:
         self.light_blue = '#3fd4ff'  # Define light blue color
         self.grid_line_color = '#4169E1' # Define grid line color
         self.dark_blue = '#05001c' # Define dark blue color
+        self.pink = '#e61848' # Define pink color
+        self.hover_purple = '#d098fa' # Define hover purple for red buttons
+        self.arrow_hover_blue = '#7214ff' # Define hover blue for arrow buttons
         self.create_input_section()
         self.create_control_buttons()
         self.default_colors = ["red", "white", "green", "blue", "purple", "black"]
         self.bind_keys()
-        self.root.geometry(f"400x500")
+        self.root.geometry("390x490")
 
     def process_color(self, color_str):
         rgba_color = list(mcolors.to_rgba(color_str))
@@ -57,7 +62,7 @@ class SwarmGUI:
     def create_control_buttons(self):
         button_style = {
             'font': ('Helvetica', 10, 'bold'),
-            'bg': '#e61848',  # pink
+            'bg': self.pink,
             'fg': '#fff',
             'relief': 'solid',
             'bd': 1,
@@ -67,14 +72,14 @@ class SwarmGUI:
         }
         movement_button_style = {
             'font': ('Helvetica', 12, 'bold'),
-            'bg': '#05001c',
-            'fg': '#e61848',
+            'bg': '#05001c', # default background is dark blue
+            'fg': 'white', # default foreground is white (for arrow symbol)
             'relief': 'solid',
             'padx': 3,
             'pady': 3,
             'width': 2,
             'height': 1,
-            'foreground': '#e61848',
+            'foreground': '#e61848', # initial foreground color - will be overridden by fg: 'white'
             'activeforeground': '#3fd4ff',
             'borderwidth': 0
         }
@@ -93,11 +98,23 @@ class SwarmGUI:
 
         def highlight_button(border_frame, button):
             border_frame.config(highlightbackground='#3fd4ff', highlightcolor='#3fd4ff')
-            button.config(bg='#e61848', fg='#3fd4ff')
+            button.config(bg='white', fg='#3fd4ff')
 
         def reset_button(border_frame, button):
             border_frame.config(highlightbackground='#e61848', highlightcolor='#e61848')
-            button.config(bg='#05001c', fg='#e61848')
+            button.config(bg='#05001c', fg='white')
+
+        def on_button_enter(event):
+            event.widget.config(bg=self.hover_purple)
+
+        def on_button_leave(event):
+            event.widget.config(bg=self.pink)
+
+        def on_arrow_button_enter(event):
+            event.widget.config(bg=self.arrow_hover_blue) # Change background color for arrow buttons on hover
+
+        def on_arrow_button_leave(event):
+            event.widget.config(bg='#05001c') # Reset background color for arrow buttons on leave to default dark blue
 
         # --- Left Section (Takeoff/Landing) with Border ---
         left_control_frame = tk.Frame(self.root, borderwidth=2, relief='solid', padx=5, pady=5, highlightbackground=self.light_blue, highlightcolor=self.light_blue) # Border only, removed bg=self.light_blue, added highlight bg and color
@@ -105,9 +122,13 @@ class SwarmGUI:
 
         take_off_button = tk.Button(left_control_frame, text="Take Off", command=self.take_off, **button_style)
         take_off_button.pack(pady=5)
+        take_off_button.bind("<Enter>", on_button_enter) # Hover effect for red buttons
+        take_off_button.bind("<Leave>", on_button_leave) # Hover effect for red buttons
 
         land_button = tk.Button(left_control_frame, text="Land", command=self.land, **button_style)
         land_button.pack(pady=15)
+        land_button.bind("<Enter>", on_button_enter) # Hover effect for red buttons
+        land_button.bind("<Leave>", on_button_leave) # Hover effect for red buttons
 
         # --- Right Section (Sequences) with Border ---
         right_control_frame = tk.Frame(self.root, bg=self.dark_blue, borderwidth=2, relief='solid', padx=5, pady=5, highlightbackground=self.light_blue, highlightcolor=self.light_blue) # Set bg to dark blue, with border
@@ -129,6 +150,8 @@ class SwarmGUI:
         for text, command in choreo_buttons:
             btn = tk.Button(choreo_frame, text=text, command=command, **button_style)
             btn.pack(pady=3)
+            btn.bind("<Enter>", on_button_enter) # Hover effect for red buttons
+            btn.bind("<Leave>", on_button_leave) # Hover effect for red buttons
 
         # --- Movement Buttons ---
         movement_frame = tk.Frame(self.root, bg='#05001c')
@@ -137,18 +160,30 @@ class SwarmGUI:
         self.forward_border = tk.Frame(movement_frame, **pink_border_style)
         self.forward_button = tk.Button(self.forward_border, text="↑", command=lambda: [self.forward(), highlight_button(self.forward_border, self.forward_button), self.root.after(100, lambda: reset_button(self.forward_border, self.forward_button))], **movement_button_style)
         self.forward_button.pack(in_=self.forward_border)
+        self.forward_button.config(fg='white') # set arrow color to white
+        self.forward_button.bind("<Enter>", on_arrow_button_enter) # Hover effect for arrow buttons
+        self.forward_button.bind("<Leave>", on_arrow_button_leave) # Hover effect for arrow buttons
 
         self.backward_border = tk.Frame(movement_frame, **pink_border_style)
         self.backward_button = tk.Button(self.backward_border, text="↓", command=lambda: [self.backward(), highlight_button(self.backward_border, self.backward_button), self.root.after(100, lambda: reset_button(self.backward_border, self.backward_button))], **movement_button_style)
         self.backward_button.pack(in_=self.backward_border)
+        self.backward_button.config(fg='white') # set arrow color to white
+        self.backward_button.bind("<Enter>", on_arrow_button_enter) # Hover effect for arrow buttons
+        self.backward_button.bind("<Leave>", on_arrow_button_leave) # Hover effect for arrow buttons
 
         self.left_border = tk.Frame(movement_frame, **pink_border_style)
         self.left_button = tk.Button(self.left_border, text="←", command=lambda: [self.left(), highlight_button(self.left_border, self.left_button), self.root.after(100, lambda: reset_button(self.left_border, self.left_button))], **movement_button_style)
         self.left_button.pack(in_=self.left_border)
+        self.left_button.config(fg='white') # set arrow color to white
+        self.left_button.bind("<Enter>", on_arrow_button_enter) # Hover effect for arrow buttons
+        self.left_button.bind("<Leave>", on_arrow_button_leave) # Hover effect for arrow buttons
 
         self.right_border = tk.Frame(movement_frame, **pink_border_style)
         self.right_button = tk.Button(self.right_border, text="→", command=lambda: [self.right(), highlight_button(self.right_border, self.right_button), self.root.after(100, lambda: reset_button(self.right_border, self.right_button))], **movement_button_style)
         self.right_button.pack(in_=self.right_border)
+        self.right_button.config(fg='white') # set arrow color to white
+        self.right_button.bind("<Enter>", on_arrow_button_enter) # Hover effect for arrow buttons
+        self.right_button.bind("<Leave>", on_arrow_button_leave) # Hover effect for arrow buttons
 
         self.forward_border.grid(row=0, column=1, padx=5, pady=5)
         self.left_border.grid(row=1, column=0, padx=5, pady=5)
@@ -218,7 +253,7 @@ class SwarmGUI:
         }
         self.button_style = {
             'font': ('Helvetica', 10, 'bold'),
-            'bg': '#e61848',
+            'bg': self.pink,
             'fg': '#fff',
             'relief': 'solid',
             'bd': 1,
@@ -226,6 +261,12 @@ class SwarmGUI:
             'height': 1,
             'cursor': "heart"
         }
+
+        def on_button_enter(event):
+            event.widget.config(bg=self.hover_purple)
+
+        def on_button_leave(event):
+            event.widget.config(bg=self.pink)
 
         # --- Input Section Frame with Border ---
         input_frame = tk.Frame(self.root, bg=self.light_blue, borderwidth=2, relief='solid', padx=10, pady=5) # Frame with border
@@ -241,10 +282,14 @@ class SwarmGUI:
 
         self.generate_button = tk.Button(input_frame, text="Generate Grid", command=self.create_grid, **self.button_style)
         self.generate_button.grid(row=0, column=4, padx=(10, 0), pady=5)
+        self.generate_button.bind("<Enter>", on_button_enter) # Hover effect for red buttons
+        self.generate_button.bind("<Leave>", on_button_leave) # Hover effect for red buttons
+
 
 
     def create_grid(self):
         global swarm_drones, num_drones, canvas, rows, cols
+        self.root.geometry("390x690")
 
         # --- Disable Input and Button during grid generation ---
         self.generate_button.config(state="disabled")

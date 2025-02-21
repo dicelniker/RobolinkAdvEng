@@ -192,28 +192,112 @@ class SwarmGUI:
         self.right_border.grid(row=1, column=2, padx=5, pady=5)
 
     def take_off(self):
-        print("Taking off...")
-        self.swarm.takeoff()
+        selected_drone_indices = []
+        for index, drone in enumerate(self.droneIcons):
+            if drone["selected"].get():
+                selected_drone_indices.append(index)
+
+        num_selected_drones = len(selected_drone_indices)
+
+        if num_selected_drones == num_drones:
+            print("Taking off ALL drones (all selected)...")
+            self.swarm.all_drones("takeoff")  # Take off all drones
+        elif num_selected_drones == 0:
+            print("No drones selected. Not taking off.")  # Do nothing
+        else:
+            print(f"Taking off selected drones: {selected_drone_indices}")
+            for index in selected_drone_indices:
+                self.swarm.one_drone(index, "takeoff")  # Take off only selected drones
 
     def land(self):
-        print("Landing...")
-        self.swarm.land()
+        selected_drone_indices = []
+        for index, drone in enumerate(self.droneIcons):
+            if drone["selected"].get():
+                selected_drone_indices.append(index)
+
+        num_selected_drones = len(selected_drone_indices)
+
+        if num_selected_drones == num_drones:
+            print("Landing ALL drones (all selected)...")
+            self.swarm.all_drones("land")  # Land all drones
+        elif num_selected_drones == 0:
+            print("No drones selected. Not landing.")  # Do nothing
+        else:
+            print(f"Landing selected drones: {selected_drone_indices}")
+            for index in selected_drone_indices:
+                self.swarm.one_drone(index, "land")  # Land only selected drones
 
     def forward(self):
-        print("Moving forward...")
-        self.swarm.move_forward(5.0, units="cm", speed=1.0)
+        selected_drone_indices = []
+        for index, drone in enumerate(self.droneIcons):
+            if drone["selected"].get():
+                selected_drone_indices.append(index)
+
+        num_selected_drones = len(selected_drone_indices)
+
+        if num_selected_drones == num_drones: # Check if ALL drones are selected
+            print("Moving forward for ALL drones (all selected)...")
+            self.swarm.move_forward(5.0, units="cm", speed=1.0) # Move all drones
+        elif num_selected_drones == 0: # Check if NO drones are selected
+            print("No drones selected. Not moving forward.") # Do nothing - no movement
+        else: # Some drones are selected (but not all)
+            print(f"Moving forward for selected drones: {selected_drone_indices}")
+            for index in selected_drone_indices:
+                self.swarm.one_drone(index, "move_forward", 5.0, units="cm", speed=1.0) # Move only selected
 
     def backward(self):
-        print("Moving backward...")
-        self.swarm.move_backward(5.0, units="cm", speed=1.0)
+        selected_drone_indices = []
+        for index, drone in enumerate(self.droneIcons):
+            if drone["selected"].get():
+                selected_drone_indices.append(index)
+
+        num_selected_drones = len(selected_drone_indices)
+
+        if num_selected_drones == num_drones: # Check if ALL drones are selected
+            print("Moving backward for ALL drones (all selected)...")
+            self.swarm.move_backward(5.0, units="cm", speed=1.0) # Move all drones
+        elif num_selected_drones == 0: # Check if NO drones are selected
+            print("No drones selected. Not moving backward.") # Do nothing - no movement
+        else: # Some drones are selected (but not all)
+            print(f"Moving backward for selected drones: {selected_drone_indices}")
+            for index in selected_drone_indices:
+                self.swarm.one_drone(index, "move_backward", 5.0, units="cm", speed=1.0) # Move only selected
 
     def left(self):
-        print("Moving left...")
-        self.swarm.move_left(5.0, units="cm", speed=1.0)
+        selected_drone_indices = []
+        for index, drone in enumerate(self.droneIcons):
+            if drone["selected"].get():
+                selected_drone_indices.append(index)
+
+        num_selected_drones = len(selected_drone_indices)
+
+        if num_selected_drones == num_drones: # Check if ALL drones are selected
+            print("Moving left for ALL drones (all selected)...")
+            self.swarm.move_left(5.0, units="cm", speed=1.0) # Move all drones
+        elif num_selected_drones == 0: # Check if NO drones are selected
+            print("No drones selected. Not moving left.") # Do nothing - no movement
+        else: # Some drones are selected (but not all)
+            print(f"Moving left for selected drones: {selected_drone_indices}")
+            for index in selected_drone_indices:
+                self.swarm.one_drone(index, "move_left", 5.0, units="cm", speed=1.0) # Move only selected
 
     def right(self):
-        print("Moving right...")
-        self.swarm.move_right(5.0, units="cm", speed=1.0)
+        selected_drone_indices = []
+        for index, drone in enumerate(self.droneIcons):
+            if drone["selected"].get():
+                selected_drone_indices.append(index)
+
+        num_selected_drones = len(selected_drone_indices)
+
+        if num_selected_drones == num_drones: # Check if ALL drones are selected
+            print("Moving right for ALL drones (all selected)...")
+            self.swarm.move_right(5.0, units="cm", speed=1.0) # Move all drones
+        elif num_selected_drones == 0: # Check if NO drones are selected
+            print("No drones selected. Not moving right.") # Do nothing - no movement
+        else: # Some drones are selected (but not all)
+            print(f"Moving right for selected drones: {selected_drone_indices}")
+            for index in selected_drone_indices:
+                self.swarm.one_drone(index, "move_right", 5.0, units="cm", speed=1.0) # Move only selected
 
     def run_main_choreo(self):
         print("Running main choreography...")
@@ -335,6 +419,7 @@ class SwarmGUI:
         # --- Place Drone Icons on the Grid ---
         drones_placed = 0
         current_row = 0
+        self.drone_checkboxes = []
 
         while drones_placed < num_drones and current_row < rows:
             for col in range(cols + 1):
@@ -344,6 +429,8 @@ class SwarmGUI:
                 # Calculate position for the drone icon
                 x = col * cell_width + padding
                 y = current_row * cell_height + padding
+                checkbox_x_offset = 2
+                checkbox_y_offset = -14
 
                 # Determine drone color from default color list
                 color_index = drones_placed % len(self.default_colors)
@@ -355,10 +442,27 @@ class SwarmGUI:
 
                 # Store drone information
                 drone = {"color": rgba_color, "position": (x, y),
-                         "oval": drone_oval, "drone_index": drones_placed}
-                self.swarm.one_drone(drone["drone_index"], "set_drone_LED",
-                                     *rgba_color)  # Using swarm.one_drone as per doc
+                         "oval": drone_oval, "drone_index": drones_placed,
+                         "selected": tk.BooleanVar(value=True)}
+                self.swarm.one_drone(drone["drone_index"], "set_drone_LED",*rgba_color)
                 self.droneIcons.append(drone)
+
+                # Create Checkbutton for drone selection
+                drone_checkbox = tk.Checkbutton(
+                    self.canvas,
+                    text=drone["drone_index"],  # No text for checkbox itself
+                    variable=drone["selected"],  # Link to drone's 'selected' state
+                    bg="white",  # Match canvas background
+                    highlightbackground="white",  # Remove highlight border
+                    highlightcolor="white",
+                    bd=0,  # Remove default border
+                    onvalue=True,
+                    offvalue=False
+                )
+                self.drone_checkboxes.append(drone_checkbox)  # Store checkbox reference
+
+                # Place Checkbutton on canvas, to the right of the icon
+                self.canvas.create_window(x + checkbox_x_offset, y + checkbox_y_offset, window=drone_checkbox)
 
                 # Bind click event to drone icon for color picking
                 def on_drone_click(event, drone=drone):

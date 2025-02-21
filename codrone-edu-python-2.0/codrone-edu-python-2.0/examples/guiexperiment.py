@@ -18,6 +18,7 @@ class SwarmGUI:
         self.canvas = None
         self.droneIcons = []
         self.swarm = Swarm()
+        self.swarm.connect()
         self.rows_input = None
         self.cols_input = None
         self.generate_button = None
@@ -56,7 +57,7 @@ class SwarmGUI:
             print(f"Selected RGB color: {rgb_value}")
             drone["color"] = new_color
             rgba_color = self.process_color(drone["color"])
-            self.swarm.one_drone(drone["drone_obj"], "set_drone_LED", *rgba_color)
+            self.swarm.one_drone(drone["drone_index"], "set_drone_LED", *rgba_color)
             self.canvas.itemconfig(drone["oval"], fill=new_color)
 
     def create_control_buttons(self):
@@ -192,49 +193,52 @@ class SwarmGUI:
 
     def take_off(self):
         print("Taking off...")
-        self.swarm.all_drones("takeoff")
+        self.swarm.takeoff()
 
     def land(self):
         print("Landing...")
-        self.swarm.all_drones("land")
-        self.swarm.all_drones("emergency_stop")
+        self.swarm.land()
 
     def forward(self):
         print("Moving forward...")
+        self.swarm.move_forward(5.0, units="cm", speed=1.0)
 
     def backward(self):
         print("Moving backward...")
+        self.swarm.move_backward(5.0, units="cm", speed=1.0)
 
     def left(self):
         print("Moving left...")
+        self.swarm.move_left(5.0, units="cm", speed=1.0)
 
     def right(self):
         print("Moving right...")
+        self.swarm.move_right(5.0, units="cm", speed=1.0)
 
     def run_main_choreo(self):
         print("Running main choreography...")
-        import mainchoreo
-        mainchoreo.run_sequence(self.swarm)
+        # import mainchoreo
+        # mainchoreo.run_sequence(self.swarm)
 
     def run_hexagon(self):
         print("Running hexagon choreography...")
-        import hexagon
-        hexagon.run_sequence(self.swarm)
+        # import hexagon
+        # hexagon.run_sequence(self.swarm)
 
     def run_spiral_and_flip(self):
         print("Running spiral and flip choreography...")
-        import spiralandflip
-        spiralandflip.run_sequence(self.swarm)
+        # import spiralandflip
+        # spiralandflip.run_sequence(self.swarm)
 
     def run_upward_spiral(self):
         print("Running upward spiral choreography...")
-        import upwardspiral
-        upwardspiral.run_sequence(self.swarm)
+        # import upwardspiral
+        # upwardspiral.run_sequence(self.swarm)
 
     def run_wiggle(self):
         print("Running wiggle choreography...")
-        import wiggle
-        wiggle.run_sequence(self.swarm)
+        # import wiggle
+        # wiggle.run_sequence(self.swarm)
 
     def create_input_section(self):
         self.label_style = {
@@ -285,8 +289,6 @@ class SwarmGUI:
         self.generate_button.bind("<Enter>", on_button_enter) # Hover effect for red buttons
         self.generate_button.bind("<Leave>", on_button_leave) # Hover effect for red buttons
 
-
-
     def create_grid(self):
         global swarm_drones, num_drones, canvas, rows, cols
         self.root.geometry("390x690")
@@ -297,8 +299,7 @@ class SwarmGUI:
         self.cols_input.config(state="disabled")
 
         # --- Connect to Swarm and Get Drone Objects ---
-        self.swarm.connect()
-        swarm_drones = self.swarm.get_drone_objects()
+        swarm_drones = self.swarm.get_drones()
         num_drones = len(swarm_drones)
 
         # --- Get Rows and Columns from Input ---
@@ -354,19 +355,20 @@ class SwarmGUI:
 
                 # Store drone information
                 drone = {"color": rgba_color, "position": (x, y),
-                        "oval": drone_oval, "drone_obj": swarm_drones[drones_placed]}
-                self.swarm.one_drone(drone["drone_obj"], "set_drone_LED", *rgba_color)
+                         "oval": drone_oval, "drone_index": drones_placed}
+                self.swarm.one_drone(drone["drone_index"], "set_drone_LED",
+                                     *rgba_color)  # Using swarm.one_drone as per doc
                 self.droneIcons.append(drone)
 
                 # Bind click event to drone icon for color picking
                 def on_drone_click(event, drone=drone):
                     self.open_color_picker(drone)
+
                 self.canvas.tag_bind(drone_oval, "<Button-1>", on_drone_click)
 
                 drones_placed += 1
 
             current_row += 1
-
 
     def bind_keys(self):
         def key_highlight(border_frame, button):

@@ -39,7 +39,7 @@ class SwarmGUI:
         self.arrow_hover_blue = '#7214ff' # Define hover blue for arrow buttons
         self.create_input_section()
         self.create_control_buttons()
-        self.default_colors = ["red", "white", "green", "blue", "purple", "black"]
+        self.default_colors = ['red', 'blue', 'orange', 'yellow', 'green', 'light blue', 'purple', 'pink', 'white', 'black']
         self.bind_keys()
         self.root.geometry("390x490")
 
@@ -58,6 +58,7 @@ class SwarmGUI:
             drone["color"] = new_color
             rgba_color = self.process_color(drone["color"])
             self.swarm.one_drone(drone["drone_index"], "set_drone_LED", *rgba_color)
+            self.swarm.one_drone(drone["drone_index"], "set_controller_LED", *rgba_color)
             self.canvas.itemconfig(drone["oval"], fill=new_color)
 
     def create_control_buttons(self):
@@ -237,13 +238,13 @@ class SwarmGUI:
 
         if num_selected_drones == num_drones: # Check if ALL drones are selected
             print("Moving forward for ALL drones (all selected)...")
-            self.swarm.move_forward(5.0, units="cm", speed=1.0) # Move all drones
+            self.swarm.move_forward(10.0, units="cm", speed=1.0) # Move all drones
         elif num_selected_drones == 0: # Check if NO drones are selected
             print("No drones selected. Not moving forward.") # Do nothing - no movement
         else: # Some drones are selected (but not all)
             print(f"Moving forward for selected drones: {selected_drone_indices}")
             for index in selected_drone_indices:
-                self.swarm.one_drone(index, "move_forward", 5.0, units="cm", speed=1.0) # Move only selected
+                self.swarm.one_drone(index, "move_forward", 10.0, units="cm", speed=1.0) # Move only selected
 
     def backward(self):
         selected_drone_indices = []
@@ -255,13 +256,13 @@ class SwarmGUI:
 
         if num_selected_drones == num_drones: # Check if ALL drones are selected
             print("Moving backward for ALL drones (all selected)...")
-            self.swarm.move_backward(5.0, units="cm", speed=1.0) # Move all drones
+            self.swarm.move_backward(10.0, units="cm", speed=1.0) # Move all drones
         elif num_selected_drones == 0: # Check if NO drones are selected
             print("No drones selected. Not moving backward.") # Do nothing - no movement
         else: # Some drones are selected (but not all)
             print(f"Moving backward for selected drones: {selected_drone_indices}")
             for index in selected_drone_indices:
-                self.swarm.one_drone(index, "move_backward", 5.0, units="cm", speed=1.0) # Move only selected
+                self.swarm.one_drone(index, "move_backward", 10.0, units="cm", speed=1.0) # Move only selected
 
     def left(self):
         selected_drone_indices = []
@@ -273,13 +274,13 @@ class SwarmGUI:
 
         if num_selected_drones == num_drones: # Check if ALL drones are selected
             print("Moving left for ALL drones (all selected)...")
-            self.swarm.move_left(5.0, units="cm", speed=1.0) # Move all drones
+            self.swarm.move_left(10.0, units="cm", speed=1.0) # Move all drones
         elif num_selected_drones == 0: # Check if NO drones are selected
             print("No drones selected. Not moving left.") # Do nothing - no movement
         else: # Some drones are selected (but not all)
             print(f"Moving left for selected drones: {selected_drone_indices}")
             for index in selected_drone_indices:
-                self.swarm.one_drone(index, "move_left", 5.0, units="cm", speed=1.0) # Move only selected
+                self.swarm.one_drone(index, "move_left", 10.0, units="cm", speed=1.0) # Move only selected
 
     def right(self):
         selected_drone_indices = []
@@ -291,13 +292,13 @@ class SwarmGUI:
 
         if num_selected_drones == num_drones: # Check if ALL drones are selected
             print("Moving right for ALL drones (all selected)...")
-            self.swarm.move_right(5.0, units="cm", speed=1.0) # Move all drones
+            self.swarm.move_right(10.0, units="cm", speed=1.0) # Move all drones
         elif num_selected_drones == 0: # Check if NO drones are selected
             print("No drones selected. Not moving right.") # Do nothing - no movement
         else: # Some drones are selected (but not all)
             print(f"Moving right for selected drones: {selected_drone_indices}")
             for index in selected_drone_indices:
-                self.swarm.one_drone(index, "move_right", 5.0, units="cm", speed=1.0) # Move only selected
+                self.swarm.one_drone(index, "move_right", 10.0, units="cm", speed=1.0) # Move only selected
 
     def run_main_choreo(self):
         print("Running main choreography...")

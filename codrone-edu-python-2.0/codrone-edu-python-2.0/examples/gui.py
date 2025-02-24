@@ -19,6 +19,8 @@ class SwarmGUI:
         self.droneIcons = []
         self.swarm = Swarm()
         self.swarm.connect()
+        self.hasGeneratedGrid = False
+
         self.rows_input = None
         self.cols_input = None
         self.generate_button = None
@@ -193,6 +195,9 @@ class SwarmGUI:
         self.right_border.grid(row=1, column=2, padx=5, pady=5)
 
     def take_off(self):
+        if not self.hasGeneratedGrid:
+            print("Please generate grid before running commands.")
+            return None
         selected_drone_indices = []
         for index, drone in enumerate(self.droneIcons):
             if drone["selected"].get():
@@ -211,6 +216,9 @@ class SwarmGUI:
                 self.swarm.one_drone(index, "takeoff")  # Take off only selected drones
 
     def land(self):
+        if not self.hasGeneratedGrid:
+            print("Please generate grid before running commands.")
+            return None
         selected_drone_indices = []
         for index, drone in enumerate(self.droneIcons):
             if drone["selected"].get():
@@ -229,6 +237,9 @@ class SwarmGUI:
                 self.swarm.one_drone(index, "land")  # Land only selected drones
 
     def forward(self):
+        if not self.hasGeneratedGrid:
+            print("Please generate grid before running commands.")
+            return None
         selected_drone_indices = []
         for index, drone in enumerate(self.droneIcons):
             if drone["selected"].get():
@@ -247,6 +258,9 @@ class SwarmGUI:
                 self.swarm.one_drone(index, "move_forward", 10.0, units="cm", speed=1.0) # Move only selected
 
     def backward(self):
+        if not self.hasGeneratedGrid:
+            print("Please generate grid before running commands.")
+            return None
         selected_drone_indices = []
         for index, drone in enumerate(self.droneIcons):
             if drone["selected"].get():
@@ -265,6 +279,9 @@ class SwarmGUI:
                 self.swarm.one_drone(index, "move_backward", 10.0, units="cm", speed=1.0) # Move only selected
 
     def left(self):
+        if not self.hasGeneratedGrid:
+            print("Please generate grid before running commands.")
+            return None
         selected_drone_indices = []
         for index, drone in enumerate(self.droneIcons):
             if drone["selected"].get():
@@ -283,6 +300,9 @@ class SwarmGUI:
                 self.swarm.one_drone(index, "move_left", 10.0, units="cm", speed=1.0) # Move only selected
 
     def right(self):
+        if not self.hasGeneratedGrid:
+            print("Please generate grid before running commands.")
+            return None
         selected_drone_indices = []
         for index, drone in enumerate(self.droneIcons):
             if drone["selected"].get():
@@ -377,7 +397,7 @@ class SwarmGUI:
     def create_grid(self):
         global swarm_drones, num_drones, canvas, rows, cols
         self.root.geometry("390x690")
-
+        self.hasGeneratedGrid = True
         # --- Disable Input and Button during grid generation ---
         self.generate_button.config(state="disabled")
         self.rows_input.config(state="disabled")

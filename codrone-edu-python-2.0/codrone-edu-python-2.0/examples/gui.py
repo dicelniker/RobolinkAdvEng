@@ -39,6 +39,18 @@ class SwarmGUI:
         self.pink = '#e61848' # Define pink color
         self.hover_purple = '#d098fa' # Define hover purple for red buttons
         self.arrow_hover_blue = '#7214ff' # Define hover blue for arrow buttons
+
+        # --- Title Label ---
+        title_label = tk.Label(
+            self.root,
+            text="CoDrone EDU - Swarm",
+            font=('Terminal', 18, 'bold'),
+            bg=self.dark_blue,
+            fg=self.light_blue,
+            pady=10  # Add some padding below the title
+        )
+        title_label.grid(row=0, column=0, columnspan=2) # Place title at the top, spanning columns
+
         self.create_input_section()
         self.create_control_buttons()
         self.default_colors = ['red', 'blue', 'orange', 'yellow', 'green', 'light blue', 'purple', 'pink', 'white', 'black']
@@ -122,7 +134,7 @@ class SwarmGUI:
 
         # --- Left Section (Takeoff/Landing) with Border ---
         left_control_frame = tk.Frame(self.root, borderwidth=2, relief='solid', padx=5, pady=5, highlightbackground=self.light_blue, highlightcolor=self.light_blue) # Border only, removed bg=self.light_blue, added highlight bg and color
-        left_control_frame.grid(row=1, column=0, padx=10, pady=10, sticky=tk.N + tk.S + tk.W + tk.E)
+        left_control_frame.grid(row=2, column=0, padx=10, pady=10, sticky=tk.N + tk.S + tk.W + tk.E) # row changed to 2
 
         take_off_button = tk.Button(left_control_frame, text="Take Off", command=self.take_off, **button_style)
         take_off_button.pack(pady=5)
@@ -136,7 +148,7 @@ class SwarmGUI:
 
         # --- Right Section (Sequences) with Border ---
         right_control_frame = tk.Frame(self.root, bg=self.dark_blue, borderwidth=2, relief='solid', padx=5, pady=5, highlightbackground=self.light_blue, highlightcolor=self.light_blue) # Set bg to dark blue, with border
-        right_control_frame.grid(row=1, column=1, padx=10, pady=10, sticky=tk.N + tk.S + tk.W + tk.E)
+        right_control_frame.grid(row=2, column=1, padx=10, pady=10, sticky=tk.N + tk.S + tk.W + tk.E) # row changed to 2
 
         tk.Label(right_control_frame, text="Sequences:", font=("Helvetica", 10, "bold"), bg=self.dark_blue, fg=self.light_blue).pack() # bg and fg set explicitly
 
@@ -159,7 +171,7 @@ class SwarmGUI:
 
         # --- Movement Buttons ---
         movement_frame = tk.Frame(self.root, bg='#05001c')
-        movement_frame.grid(row=3, column=0, columnspan=2, pady=10)
+        movement_frame.grid(row=4, column=0, columnspan=2, pady=10) # row changed to 4
 
         self.forward_border = tk.Frame(movement_frame, **pink_border_style)
         self.forward_button = tk.Button(self.forward_border, text="↑", command=lambda: [self.forward(), highlight_button(self.forward_border, self.forward_button), self.root.after(100, lambda: reset_button(self.forward_border, self.forward_button))], **movement_button_style)
@@ -189,10 +201,10 @@ class SwarmGUI:
         self.right_button.bind("<Enter>", on_arrow_button_enter) # Hover effect for arrow buttons
         self.right_button.bind("<Leave>", on_arrow_button_leave) # Hover effect for arrow buttons
 
-        self.forward_border.grid(row=0, column=1, padx=5, pady=5)
-        self.left_border.grid(row=1, column=0, padx=5, pady=5)
-        self.backward_border.grid(row=1, column=1, padx=5, pady=5)
-        self.right_border.grid(row=1, column=2, padx=5, pady=5)
+        self.forward_border.grid(row=0, column=1, padx=5, pady=5) # row changed to 0
+        self.left_border.grid(row=1, column=0, padx=5, pady=5) # row changed to 1
+        self.backward_border.grid(row=1, column=1, padx=5, pady=5) # row changed to 1
+        self.right_border.grid(row=1, column=2, padx=5, pady=5) # row changed to 1
 
     def take_off(self):
         if not self.hasGeneratedGrid:
@@ -379,7 +391,7 @@ class SwarmGUI:
 
         # --- Input Section Frame with Border ---
         input_frame = tk.Frame(self.root, bg=self.light_blue, borderwidth=2, relief='solid', padx=10, pady=5) # Frame with border
-        input_frame.grid(row=0, column=0, columnspan=2, sticky="ew", padx=10, pady=10) # Span both columns, fill width
+        input_frame.grid(row=1, column=0, columnspan=2, sticky="ew", padx=10, pady=10) # row changed to 1 - below title
 
         tk.Label(input_frame, text="Rows:", **self.label_style).grid(row=0, column=0, padx=(0, 5), pady=5, sticky='e')
         self.rows_input = tk.Entry(input_frame, **self.entry_style, width=5)
@@ -425,7 +437,7 @@ class SwarmGUI:
 
         # --- Create Canvas Widget ---
         self.canvas = tk.Canvas(self.root, width=canvas_width, height=canvas_height, bg="white")
-        self.canvas.grid(row=2, column=0, columnspan=2, pady=10, sticky=tk.N + tk.S + tk.W + tk.E)
+        self.canvas.grid(row=3, column=0, columnspan=2, pady=10, sticky=tk.N + tk.S + tk.W + tk.E) # row changed to 3
 
         # --- Draw Grid Lines ---
         for i in range(rows + 1):

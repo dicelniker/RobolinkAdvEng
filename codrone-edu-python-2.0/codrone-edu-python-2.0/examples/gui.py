@@ -226,13 +226,17 @@ class SwarmGUI:
 
         if num_selected_drones == num_drones:
             print("Taking off ALL drones (all selected)...")
-            self.swarm.all_drones("takeoff")  # Take off all drones
-        elif num_selected_drones == 0:
-            print("No drones selected. Not taking off.")  # Do nothing
-        else:
-            print(f"Taking off selected drones: {selected_drone_indices}")
+            self.swarm.all_drones("takeoff")  # Take off all drones (already synchronized)
+        elif num_selected_drones > 0:
+            print(f"Taking off selected drones (synchronized): {selected_drone_indices}")
+            sync_takeoff = Sync() # Create a Sync object
             for index in selected_drone_indices:
-                self.swarm.one_drone(index, "takeoff")  # Take off only selected drones
+                seq = Sequence(index) # Create a Sequence for each selected drone, initialize with index
+                seq.add("takeoff") # Add the takeoff action to the sequence using Sequence.add
+                sync_takeoff.add(seq) # Add sequence to Sync object using Sync.add
+            self.swarm.run(sync_takeoff, type="parallel") # Run synchronized takeoff for selected drones
+        else:
+            print("No drones selected. Not taking off.")
 
     def land(self):
         if not self.hasGeneratedGrid:
@@ -247,13 +251,19 @@ class SwarmGUI:
 
         if num_selected_drones == num_drones:
             print("Landing ALL drones (all selected)...")
-            self.swarm.all_drones("land")  # Land all drones
-        elif num_selected_drones == 0:
-            print("No drones selected. Not landing.")  # Do nothing
-        else:
-            print(f"Landing selected drones: {selected_drone_indices}")
+            self.swarm.all_drones("land")  # Land all drones (already synchronized)
+        elif num_selected_drones > 0:
+            print(f"Landing selected drones (synchronized): {selected_drone_indices}")
+            sync_land = Sync() # Create a Sync object
             for index in selected_drone_indices:
-                self.swarm.one_drone(index, "land")  # Land only selected drones
+                seq = Sequence(index) # Create a Sequence for each selected drone, initialize with index
+                seq.add("land") # Add the land action to the sequence using Sequence.add
+                sync_land.add(seq) # Add sequence to Sync object using Sync.add
+            self.swarm.run(sync_land, type="parallel") # Run synchronized land for selected drones
+        else:
+            print("No drones selected. Not landing.")
+
+    from codrone_edu.swarm import Sync, Sequence  # Make sure this is still imported
 
     def forward(self):
         if not self.hasGeneratedGrid:
@@ -266,15 +276,19 @@ class SwarmGUI:
 
         num_selected_drones = len(selected_drone_indices)
 
-        if num_selected_drones == num_drones: # Check if ALL drones are selected
-            print("Moving forward for ALL drones (all selected)...")
-            self.swarm.move_forward(10.0, units="cm", speed=1.0) # Move all drones
-        elif num_selected_drones == 0: # Check if NO drones are selected
-            print("No drones selected. Not moving forward.") # Do nothing - no movement
-        else: # Some drones are selected (but not all)
-            print(f"Moving forward for selected drones: {selected_drone_indices}")
+        if num_selected_drones == num_drones:  # Check if ALL drones are selected
+            print("Moving forward for ALL drones (all selected - using move_forward)...")
+            self.swarm.move_forward(30.0, units="cm", speed=2.0)  # Move all drones (already synchronized)
+        elif num_selected_drones > 0:
+            print(f"Moving forward for selected drones (synchronized - using move_forward): {selected_drone_indices}")
+            sync_forward = Sync()  # Create a Sync object
             for index in selected_drone_indices:
-                self.swarm.one_drone(index, "move_forward", 20.0, units="cm", speed=20.0) # Move only selected
+                seq = Sequence(index)  # Create a Sequence for each selected drone
+                seq.add("move_forward", 30.0, units="cm", speed=2.0)  # Use library's move_forward
+                sync_forward.add(seq)  # Add sequence to Sync object
+            self.swarm.run(sync_forward, type="parallel")  # Run synchronized forward movement for selected drones
+        else:  # Check if NO drones are selected
+            print("No drones selected. Not moving forward.")  # Do nothing - no movement
 
     def backward(self):
         if not self.hasGeneratedGrid:
@@ -287,15 +301,19 @@ class SwarmGUI:
 
         num_selected_drones = len(selected_drone_indices)
 
-        if num_selected_drones == num_drones: # Check if ALL drones are selected
-            print("Moving backward for ALL drones (all selected)...")
-            self.swarm.move_backward(10.0, units="cm", speed=1.0) # Move all drones
-        elif num_selected_drones == 0: # Check if NO drones are selected
-            print("No drones selected. Not moving backward.") # Do nothing - no movement
-        else: # Some drones are selected (but not all)
-            print(f"Moving backward for selected drones: {selected_drone_indices}")
+        if num_selected_drones == num_drones:  # Check if ALL drones are selected
+            print("Moving backward for ALL drones (all selected - using move_backward)...")
+            self.swarm.move_backward(30.0, units="cm", speed=2.0)  # Move all drones (already synchronized)
+        elif num_selected_drones > 0:
+            print(f"Moving backward for selected drones (synchronized - using move_backward): {selected_drone_indices}")
+            sync_backward = Sync()  # Create a Sync object
             for index in selected_drone_indices:
-                self.swarm.one_drone(index, "move_backward", 20.0, units="cm", speed=20.0) # Move only selected
+                seq = Sequence(index)  # Create a Sequence for each selected drone
+                seq.add("move_backward", 30.0, units="cm", speed=2.0)  # Use library's move_backward
+                sync_backward.add(seq)  # Add sequence to Sync object
+            self.swarm.run(sync_backward, type="parallel")  # Run synchronized backward movement for selected drones
+        else:  # Check if NO drones are selected
+            print("No drones selected. Not moving backward.")  # Do nothing - no movement
 
     def left(self):
         if not self.hasGeneratedGrid:
@@ -308,15 +326,19 @@ class SwarmGUI:
 
         num_selected_drones = len(selected_drone_indices)
 
-        if num_selected_drones == num_drones: # Check if ALL drones are selected
-            print("Moving left for ALL drones (all selected)...")
-            self.swarm.move_left(10.0, units="cm", speed=1.0) # Move all drones
-        elif num_selected_drones == 0: # Check if NO drones are selected
-            print("No drones selected. Not moving left.") # Do nothing - no movement
-        else: # Some drones are selected (but not all)
-            print(f"Moving left for selected drones: {selected_drone_indices}")
+        if num_selected_drones == num_drones:  # Check if ALL drones are selected
+            print("Moving left for ALL drones (all selected - using move_left)...")
+            self.swarm.move_left(30.0, units="cm", speed=2.0)  # Move all drones (already synchronized)
+        elif num_selected_drones > 0:
+            print(f"Moving left for selected drones (synchronized - using move_left): {selected_drone_indices}")
+            sync_left = Sync()  # Create a Sync object
             for index in selected_drone_indices:
-                self.swarm.one_drone(index, "move_left", 20.0, units="cm", speed=20.0) # Move only selected
+                seq = Sequence(index)  # Create a Sequence for each selected drone
+                seq.add("move_left", 30.0, units="cm", speed=2.0)  # Use library's move_left
+                sync_left.add(seq)  # Add sequence to Sync object
+            self.swarm.run(sync_left, type="parallel")  # Run synchronized left movement for selected drones
+        else:  # Check if NO drones are selected
+            print("No drones selected. Not moving left.")  # Do nothing - no movement
 
     def right(self):
         if not self.hasGeneratedGrid:
@@ -329,15 +351,19 @@ class SwarmGUI:
 
         num_selected_drones = len(selected_drone_indices)
 
-        if num_selected_drones == num_drones: # Check if ALL drones are selected
-            print("Moving right for ALL drones (all selected)...")
-            self.swarm.move_right(10.0, units="cm", speed=1.0) # Move all drones
-        elif num_selected_drones == 0: # Check if NO drones are selected
-            print("No drones selected. Not moving right.") # Do nothing - no movement
-        else: # Some drones are selected (but not all)
-            print(f"Moving right for selected drones: {selected_drone_indices}")
+        if num_selected_drones == num_drones:  # Check if ALL drones are selected
+            print("Moving right for ALL drones (all selected - using move_right)...")
+            self.swarm.move_right(30.0, units="cm", speed=2.0)  # Move all drones (already synchronized)
+        elif num_selected_drones > 0:
+            print(f"Moving right for selected drones (synchronized - using move_right): {selected_drone_indices}")
+            sync_right = Sync()  # Create a Sync object
             for index in selected_drone_indices:
-                self.swarm.one_drone(index, "move_right", 20.0, units="cm", speed=20.0) # Move only selected.
+                seq = Sequence(index)  # Create a Sequence for each selected drone
+                seq.add("move_right", 30.0, units="cm", speed=2.0)  # Use library's move_right
+                sync_right.add(seq)  # Add sequence to Sync object
+            self.swarm.run(sync_right, type="parallel")  # Run synchronized right movement for selected drones
+        else:  # Check if NO drones are selected
+            print("No drones selected. Not moving right.")  # Do nothing - no movement
 
     def run_main_choreo(self):
         print("Running main choreography...")
@@ -409,9 +435,11 @@ class SwarmGUI:
         self.generate_button.bind("<Enter>", on_button_enter) # Hover effect for red buttons
         self.generate_button.bind("<Leave>", on_button_leave) # Hover effect for red buttons
 
+    from codrone_edu.swarm import Sync, Sequence  # Make sure this import is at the top
+
     def stabilize_swarm(self):
         """
-        Retrieves drone heights, calculates average, and commands drones to hover.
+        Retrieves drone heights, calculates average, and commands drones to hover using Sync and Sequence for synchronization.
         """
         if not self.hasGeneratedGrid:
             print("Grid not generated, cannot auto-stabilize.")
@@ -450,9 +478,10 @@ class SwarmGUI:
         print(f"Median height of selected drones: {median_height:.2f} cm")
         print(f"Dropped indices: {dropped}, Height list: {height_list}, Height Indices: {height_indices}")
 
-        # Collect movement commands for all selected drones
-        movement_commands = []
-        delay_ms = 100  # Increased delay for stabilization
+        # Create Sync and Sequence objects for synchronized movement
+        sync_stabilize = Sync()
+        movement_commanded = False  # Flag to track if any movement commands were added
+
         for drone in self.droneIcons:
             if drone["selected"].get():
                 current_height = height[drone["drone_index"]]
@@ -460,22 +489,22 @@ class SwarmGUI:
 
                 if drone["drone_index"] in height_indices:
                     if 0.05 <= abs(positionZ_meters):
-                        movement_commands.append({
-                            "drone_index": drone["drone_index"],
-                            "positionZ_meters": positionZ_meters
-                        })
+                        seq = Sequence(drone["drone_index"])  # Create sequence for this drone
+                        seq.add("move_distance", 0, 0, positionZ_meters, 0.25)  # Add move_distance command to sequence
+                        sync_stabilize.add(seq)  # Add sequence to Sync object
+                        movement_commanded = True  # Set flag as movement command is added
                         # Print statement showing movement for each drone
                         print(
-                            f"Drone {drone['drone_index']} (color: {self.default_colors[drone['drone_index']]}) will move by {positionZ_meters:.2f} meters vertically from a height of {height[drone["drone_index"]]}.")
+                            f"Drone {drone['drone_index']} (color: {self.default_colors[drone['drone_index']]}) will move by {positionZ_meters:.2f} meters vertically from a height of {height[drone['drone_index']]}.")
                     else:
                         print(
                             f"Drone {drone['drone_index']} (color: {self.default_colors[drone['drone_index']]}) height difference ({positionZ_meters:.2f}m) below threshold of 0.05m. No movement commanded.")
 
-        # Execute movement commands with delays
-        for i, command in enumerate(movement_commands):
-            idx = command["drone_index"]
-            posZ = command["positionZ_meters"]
-            self.swarm.one_drone(idx, "move_distance",0, 0, posZ, 0.25)
+        # Execute synchronized movement if any movement commands were added
+        if movement_commanded:
+            self.swarm.run(sync_stabilize, type="parallel")
+        else:
+            print("No drones needed to move for stabilization.")
     def create_grid(self):
         global swarm_drones, num_drones, canvas, rows, cols
         self.root.geometry("390x690")

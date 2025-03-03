@@ -146,6 +146,13 @@ class SwarmGUI:
         land_button.bind("<Enter>", on_button_enter) # Hover effect for red buttons
         land_button.bind("<Leave>", on_button_leave) # Hover effect for red buttons
 
+        # --- Auto-Stabilization Buttons ---
+        stabilize_button = tk.Button(left_control_frame, text="Stabilize Swarm",
+                                           command=self.stabilize_swarm, **button_style)
+        stabilize_button.pack(pady=15)  # Adjust pady as needed
+        stabilize_button.bind("<Enter>", on_button_enter)
+        stabilize_button.bind("<Leave>", on_button_leave)
+
         # --- Right Section (Sequences) with Border ---
         right_control_frame = tk.Frame(self.root, bg=self.dark_blue, borderwidth=2, relief='solid', padx=5, pady=5, highlightbackground=self.light_blue, highlightcolor=self.light_blue) # Set bg to dark blue, with border
         right_control_frame.grid(row=2, column=1, padx=10, pady=10, sticky=tk.N + tk.S + tk.W + tk.E) # row changed to 2
@@ -267,7 +274,7 @@ class SwarmGUI:
         else: # Some drones are selected (but not all)
             print(f"Moving forward for selected drones: {selected_drone_indices}")
             for index in selected_drone_indices:
-                self.swarm.one_drone(index, "move_forward", 10.0, units="cm", speed=1.0) # Move only selected
+                self.swarm.one_drone(index, "move_forward", 20.0, units="cm", speed=20.0) # Move only selected
 
     def backward(self):
         if not self.hasGeneratedGrid:
@@ -288,7 +295,7 @@ class SwarmGUI:
         else: # Some drones are selected (but not all)
             print(f"Moving backward for selected drones: {selected_drone_indices}")
             for index in selected_drone_indices:
-                self.swarm.one_drone(index, "move_backward", 10.0, units="cm", speed=1.0) # Move only selected
+                self.swarm.one_drone(index, "move_backward", 20.0, units="cm", speed=20.0) # Move only selected
 
     def left(self):
         if not self.hasGeneratedGrid:
@@ -309,7 +316,7 @@ class SwarmGUI:
         else: # Some drones are selected (but not all)
             print(f"Moving left for selected drones: {selected_drone_indices}")
             for index in selected_drone_indices:
-                self.swarm.one_drone(index, "move_left", 10.0, units="cm", speed=1.0) # Move only selected
+                self.swarm.one_drone(index, "move_left", 20.0, units="cm", speed=20.0) # Move only selected
 
     def right(self):
         if not self.hasGeneratedGrid:
@@ -330,28 +337,24 @@ class SwarmGUI:
         else: # Some drones are selected (but not all)
             print(f"Moving right for selected drones: {selected_drone_indices}")
             for index in selected_drone_indices:
-                self.swarm.one_drone(index, "move_right", 10.0, units="cm", speed=1.0) # Move only selected
+                self.swarm.one_drone(index, "move_right", 20.0, units="cm", speed=20.0) # Move only selected.
 
     def run_main_choreo(self):
         print("Running main choreography...")
         # import mainchoreo
         # mainchoreo.run_sequence(self.swarm)
-
     def run_hexagon(self):
         print("Running hexagon choreography...")
         # import hexagon
         # hexagon.run_sequence(self.swarm)
-
     def run_spiral_and_flip(self):
         print("Running spiral and flip choreography...")
         # import spiralandflip
         # spiralandflip.run_sequence(self.swarm)
-
     def run_upward_spiral(self):
         print("Running upward spiral choreography...")
         # import upwardspiral
         # upwardspiral.run_sequence(self.swarm)
-
     def run_wiggle(self):
         print("Running wiggle choreography...")
         # import wiggle
@@ -406,6 +409,73 @@ class SwarmGUI:
         self.generate_button.bind("<Enter>", on_button_enter) # Hover effect for red buttons
         self.generate_button.bind("<Leave>", on_button_leave) # Hover effect for red buttons
 
+    def stabilize_swarm(self):
+        """
+        Retrieves drone heights, calculates average, and commands drones to hover.
+        """
+        if not self.hasGeneratedGrid:
+            print("Grid not generated, cannot auto-stabilize.")
+            return
+
+        # Find median height of selected drones
+        selected_drone_indices = []
+        pos = self.swarm.get_position_data()
+        height = []
+        for i in pos:
+            height.append(i[3])
+        for drone in self.droneIcons:
+            if drone["selected"].get():
+                selected_drone_indices.append(drone["drone_index"])
+
+        height_list = []
+        height_indices = []
+        dropped = []
+        for i in selected_drone_indices:
+            if (height[i] == 0.0 or height[i] == 999.9):
+                dropped.append(i)
+            else:
+                height_list.append(height[i])
+                height_indices.append(i)
+
+        height_list.sort()
+
+        if not height_list:  # Check if height_list is empty
+            print("No valid height data received from selected drones to calculate median.")
+            return  # Exit if no valid height data
+
+        mid_index = len(height_list) // 2
+        median_height = (height_list[mid_index - 1] + height_list[mid_index]) / 2 if len(height_list) % 2 == 0 else \
+            height_list[mid_index]
+
+        print(f"Median height of selected drones: {median_height:.2f} cm")
+        print(f"Dropped indices: {dropped}, Height list: {height_list}, Height Indices: {height_indices}")
+
+        # Collect movement commands for all selected drones
+        movement_commands = []
+        delay_ms = 100  # Increased delay for stabilization
+        for drone in self.droneIcons:
+            if drone["selected"].get():
+                current_height = height[drone["drone_index"]]
+                positionZ_meters = median_height - current_height
+
+                if drone["drone_index"] in height_indices:
+                    if 0.05 <= abs(positionZ_meters):
+                        movement_commands.append({
+                            "drone_index": drone["drone_index"],
+                            "positionZ_meters": positionZ_meters
+                        })
+                        # Print statement showing movement for each drone
+                        print(
+                            f"Drone {drone['drone_index']} (color: {self.default_colors[drone['drone_index']]}) will move by {positionZ_meters:.2f} meters vertically from a height of {height[drone["drone_index"]]}.")
+                    else:
+                        print(
+                            f"Drone {drone['drone_index']} (color: {self.default_colors[drone['drone_index']]}) height difference ({positionZ_meters:.2f}m) below threshold of 0.05m. No movement commanded.")
+
+        # Execute movement commands with delays
+        for i, command in enumerate(movement_commands):
+            idx = command["drone_index"]
+            posZ = command["positionZ_meters"]
+            self.swarm.one_drone(idx, "move_distance",0, 0, posZ, 0.25)
     def create_grid(self):
         global swarm_drones, num_drones, canvas, rows, cols
         self.root.geometry("390x690")
@@ -476,7 +546,7 @@ class SwarmGUI:
                 # Store drone information
                 drone = {"color": rgba_color, "position": (x, y),
                          "oval": drone_oval, "drone_index": drones_placed,
-                         "selected": tk.BooleanVar(value=True)}
+                         "drone_obj": swarm_drones[drones_placed], "selected": tk.BooleanVar(value=True)}
                 self.swarm.one_drone(drone["drone_index"], "set_drone_LED",*rgba_color)
                 self.droneIcons.append(drone)
 

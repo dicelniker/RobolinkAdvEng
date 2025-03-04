@@ -364,9 +364,26 @@ class SwarmGUI:
         # import spiralandflip
         # spiralandflip.run_sequence(self.swarm)
     def run_upward_spiral(self):
-        print("Running upward spiral choreography...")
-        # import upwardspiral
-        # upwardspiral.run_sequence(self.swarm)
+        if not self.hasGeneratedGrid:
+            print("Please generate grid before running commands.")
+            return None
+        selected_drone_indices = []
+        for index, drone in enumerate(self.droneIcons):
+            if drone["selected"].get():
+                selected_drone_indices.append(index)
+
+        num_selected_drones = len(selected_drone_indices)
+
+        if num_selected_drones > 0:
+            print(f"Running upward spiral for the following drones: {selected_drone_indices}")
+            sync_right = Sync()  # Create a Sync object
+            for index in selected_drone_indices:
+                seq = Sequence(index)  # Create a Sequence for each selected drone
+                seq.add("go", 0, 0, 25, 10, 5)
+                sync_right.add(seq)  # Add sequence to Sync object
+            self.swarm.run(sync_right, type="parallel")  # Run synchronized right movement for selected drones
+        else:  # Check if NO drones are selected
+            print("No drones selected. Not moving right.")  # Do nothing - no movement
     def run_wiggle(self):
         print("Running wiggle choreography...")
         # import wiggle

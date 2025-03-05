@@ -1,7 +1,10 @@
+import math
 import tkinter as tk
-from codrone_edu.swarm import *
 from tkinter import colorchooser
+
 import matplotlib.colors as mcolors
+from codrone_edu.swarm import *
+
 
 #pink e61848
 #dark blue 05001c
@@ -40,22 +43,34 @@ class SwarmGUI:
         self.hover_purple = '#d098fa' # Define hover purple for red buttons
         self.arrow_hover_blue = '#7214ff' # Define hover blue for arrow buttons
 
-        # --- Title Label ---
+        # Create a main container frame to organize the layout
+        self.main_container = tk.Frame(self.root, bg='#05001c')
+        self.main_container.pack(expand=True, fill='both', padx=10, pady=10)
+
+        # Create left frame for controls
+        self.left_frame = tk.Frame(self.main_container, bg='#05001c')
+        self.left_frame.pack(side='left', fill='y', padx=(0, 10))
+
+        # Create right frame for the graph
+        self.right_frame = tk.Frame(self.main_container, bg='#05001c')
+        self.right_frame.pack(side='left', expand=True, fill='both')
+
+        # Title Label (in left frame)
         title_label = tk.Label(
-            self.root,
+            self.left_frame,
             text="CoDrone EDU - Swarm",
             font=('Terminal', 18, 'bold'),
             bg=self.dark_blue,
             fg=self.light_blue,
-            pady=10  # Add some padding below the title
+            pady=10
         )
-        title_label.grid(row=0, column=0, columnspan=2) # Place title at the top, spanning columns
+        title_label.pack(pady=(0, 10))
 
         self.create_input_section()
         self.create_control_buttons()
         self.default_colors = ['red', 'blue', 'orange', 'yellow', 'green', 'light blue', 'purple', 'pink', 'white', 'black']
         self.bind_keys()
-        self.root.geometry("390x490")
+        self.root.geometry("400x690")
 
     def process_color(self, color_str):
         rgba_color = list(mcolors.to_rgba(color_str))
@@ -133,8 +148,9 @@ class SwarmGUI:
             event.widget.config(bg='#05001c') # Reset background color for arrow buttons on leave to default dark blue
 
         # --- Left Section (Takeoff/Landing) with Border ---
-        left_control_frame = tk.Frame(self.root, borderwidth=2, relief='solid', padx=5, pady=5, highlightbackground=self.light_blue, highlightcolor=self.light_blue) # Border only, removed bg=self.light_blue, added highlight bg and color
-        left_control_frame.grid(row=2, column=0, padx=10, pady=10, sticky=tk.N + tk.S + tk.W + tk.E) # row changed to 2
+        left_control_frame = tk.Frame(self.left_frame, borderwidth=2, relief='solid', padx=5, pady=5,
+                                      highlightbackground=self.light_blue, highlightcolor=self.light_blue)
+        left_control_frame.pack(fill='x', pady=10)
 
         take_off_button = tk.Button(left_control_frame, text="Take Off", command=self.take_off, **button_style)
         take_off_button.pack(pady=5)
@@ -154,8 +170,10 @@ class SwarmGUI:
         stabilize_button.bind("<Leave>", on_button_leave)
 
         # --- Right Section (Sequences) with Border ---
-        right_control_frame = tk.Frame(self.root, bg=self.dark_blue, borderwidth=2, relief='solid', padx=5, pady=5, highlightbackground=self.light_blue, highlightcolor=self.light_blue) # Set bg to dark blue, with border
-        right_control_frame.grid(row=2, column=1, padx=10, pady=10, sticky=tk.N + tk.S + tk.W + tk.E) # row changed to 2
+        right_control_frame = tk.Frame(self.left_frame, bg=self.dark_blue, borderwidth=2, relief='solid',
+                                       padx=5, pady=5, highlightbackground=self.light_blue,
+                                       highlightcolor=self.light_blue)
+        right_control_frame.pack(fill='x', pady=10)
 
         tk.Label(right_control_frame, text="Sequences:", font=("Helvetica", 10, "bold"), bg=self.dark_blue, fg=self.light_blue).pack() # bg and fg set explicitly
 
@@ -177,8 +195,8 @@ class SwarmGUI:
             btn.bind("<Leave>", on_button_leave) # Hover effect for red buttons
 
         # --- Movement Buttons ---
-        movement_frame = tk.Frame(self.root, bg='#05001c')
-        movement_frame.grid(row=4, column=0, columnspan=2, pady=10) # row changed to 4
+        movement_frame = tk.Frame(self.left_frame, bg='#05001c')
+        movement_frame.pack(pady=10)
 
         self.forward_border = tk.Frame(movement_frame, **pink_border_style)
         self.forward_button = tk.Button(self.forward_border, text="↑", command=lambda: [self.forward(), highlight_button(self.forward_border, self.forward_button), self.root.after(100, lambda: reset_button(self.forward_border, self.forward_button))], **movement_button_style)
@@ -421,24 +439,27 @@ class SwarmGUI:
         def on_button_leave(event):
             event.widget.config(bg=self.pink)
 
-        # --- Input Section Frame with Border ---
-        input_frame = tk.Frame(self.root, bg=self.light_blue, borderwidth=2, relief='solid', padx=10, pady=5) # Frame with border
-        input_frame.grid(row=1, column=0, columnspan=2, sticky="ew", padx=10, pady=10) # row changed to 1 - below title
+        # Create input frame in left frame
+        input_frame = tk.Frame(self.left_frame, bg=self.light_blue, borderwidth=2, relief='solid', padx=10, pady=5)
+        input_frame.pack(fill='x', pady=10)
 
-        tk.Label(input_frame, text="Rows:", **self.label_style).grid(row=0, column=0, padx=(0, 5), pady=5, sticky='e')
-        self.rows_input = tk.Entry(input_frame, **self.entry_style, width=5)
-        self.rows_input.grid(row=0, column=1, padx=(0, 10), pady=5, sticky='w')
+        # Grid layout for input elements
+        input_grid = tk.Frame(input_frame, bg=self.light_blue)
+        input_grid.pack(pady=5)
 
-        tk.Label(input_frame, text="Columns:", **self.label_style).grid(row=0, column=2, padx=(10, 5), pady=5, sticky='e')
-        self.cols_input = tk.Entry(input_frame, **self.entry_style, width=5)
-        self.cols_input.grid(row=0, column=3, padx=(0, 10), pady=5, sticky='w')
+        tk.Label(input_grid, text="Rows:", **self.label_style).grid(row=0, column=0, padx=(0, 5), pady=5)
+        self.rows_input = tk.Entry(input_grid, **self.entry_style, width=5)
+        self.rows_input.grid(row=0, column=1, padx=(0, 10), pady=5)
 
-        self.generate_button = tk.Button(input_frame, text="Generate Grid", command=self.create_grid, **self.button_style)
+        tk.Label(input_grid, text="Columns:", **self.label_style).grid(row=0, column=2, padx=(10, 5), pady=5)
+        self.cols_input = tk.Entry(input_grid, **self.entry_style, width=5)
+        self.cols_input.grid(row=0, column=3, padx=(0, 10), pady=5)
+
+        self.generate_button = tk.Button(input_grid, text="Generate Grid", command=self.create_grid,
+                                         **self.button_style)
         self.generate_button.grid(row=0, column=4, padx=(10, 0), pady=5)
         self.generate_button.bind("<Enter>", on_button_enter) # Hover effect for red buttons
         self.generate_button.bind("<Leave>", on_button_leave) # Hover effect for red buttons
-
-    from codrone_edu.swarm import Sync, Sequence  # Make sure this import is at the top
 
     def stabilize_swarm(self):
         """
@@ -508,106 +529,137 @@ class SwarmGUI:
             self.swarm.run(sync_stabilize, type="parallel")
         else:
             print("No drones needed to move for stabilization.")
+
+    def update_drone_position(self, drone, dx, dy):
+        """Update drone position on the matplotlib plot"""
+        # Update stored positions
+        drone["x_position"] += dx
+        drone["y_position"] += dy
+
+        # Update scatter plot position
+        drone["plot"].set_offsets([[drone["x_position"], drone["y_position"]]])
+
+        # Update annotation position and text
+        drone["annotation"].set_position((drone["x_position"], drone["y_position"]))
+        drone["annotation"].set_text(
+            f'Drone {drone["drone_index"]}\n({drone["x_position"]:.1f}, {drone["y_position"]:.1f})'
+        )
+
+        # Redraw the canvas
+        self.canvas_widget.draw()
+
     def create_grid(self):
-        global swarm_drones, num_drones, canvas, rows, cols
-        self.root.geometry("390x690")
+        global swarm_drones, num_drones, rows, cols
+        self.root.geometry("1100x800")  # Increased width for better visualization
         self.hasGeneratedGrid = True
-        # --- Disable Input and Button during grid generation ---
+
+        # Disable input and button during grid generation
         self.generate_button.config(state="disabled")
         self.rows_input.config(state="disabled")
         self.cols_input.config(state="disabled")
 
-        # --- Connect to Swarm and Get Drone Objects ---
+        # Connect to Swarm and Get Drone Objects
         swarm_drones = self.swarm.get_drones()
         num_drones = len(swarm_drones)
 
-        # --- Get Rows and Columns from Input ---
-        rows = int(self.rows_input.get())
-        cols = int(self.cols_input.get())
+        # Clear Existing Canvas if Present
+        if hasattr(self, 'canvas_widget'):
+            self.canvas_widget.destroy()
 
-        # --- Clear Existing Canvas if Present ---
-        if self.canvas:
-            self.canvas.destroy()
-        self.droneIcons.clear()
+        # Import required matplotlib modules
+        import matplotlib.pyplot as plt
+        from matplotlib.backends.backend_tkagg import FigureCanvasTkAgg
+        from matplotlib.figure import Figure
 
-        # --- Define Canvas and Grid Parameters ---
-        cell_width = 50
-        cell_height = 50
-        padding = 20
-        canvas_width = cols * cell_width + 2 * padding
-        canvas_height = rows * cell_height + 2 * padding
+        # Create Figure and Axes
+        self.fig = Figure(figsize=(6, 6))
+        self.ax = self.fig.add_subplot(111)
 
-        # --- Create Canvas Widget ---
-        self.canvas = tk.Canvas(self.root, width=canvas_width, height=canvas_height, bg="white")
-        self.canvas.grid(row=3, column=0, columnspan=2, pady=10, sticky=tk.N + tk.S + tk.W + tk.E) # row changed to 3
+        # Configure the plot
+        self.ax.set_xlim(-5, 5)
+        self.ax.set_ylim(-5, 5)
+        self.ax.grid(True, linestyle='--', alpha=0.7)
+        self.ax.set_xlabel('X (m)')
+        self.ax.set_ylabel('Y (m)')
+        self.ax.set_title('Drone Positions')
 
-        # --- Draw Grid Lines ---
-        for i in range(rows + 1):
-            self.canvas.create_line(padding, i * cell_height + padding,
-                                  cols * cell_width + padding, i * cell_height + padding,
-                                  fill=self.grid_line_color, width=1)
-        for j in range(cols + 1):
-            self.canvas.create_line(j * cell_width + padding, padding,
-                                  j * cell_width + padding, rows * cell_height + padding,
-                                  fill=self.grid_line_color, width=1)
+        # Make the plot background match the GUI
+        self.fig.patch.set_facecolor('#05001c')
+        self.ax.set_facecolor('white')
 
-        # --- Place Drone Icons on the Grid ---
-        drones_placed = 0
-        current_row = 0
-        self.drone_checkboxes = []
+        # Add the plot to Tkinter
+        self.canvas_widget = FigureCanvasTkAgg(self.fig, master=self.right_frame)
+        self.canvas_widget.draw()
+        self.canvas_widget.get_tk_widget().pack(expand=True, fill='both', padx=10, pady=10)
 
-        while drones_placed < num_drones and current_row < rows:
-            for col in range(cols + 1):
-                if drones_placed >= num_drones:
-                    break
+        # Store drone positions and plot elements
+        self.drone_plots = []
+        self.drone_annotations = []
+        self.droneIcons = []
 
-                # Calculate position for the drone icon
-                x = col * cell_width + padding
-                y = current_row * cell_height + padding
-                checkbox_x_offset = 2
-                checkbox_y_offset = -14
+        # Place Drone Icons on the Grid
+        radius = 1.0  # 1 meter radius
+        for i in range(num_drones):
+            # Calculate position in circular formation (in meters)
+            angle = (2 * math.pi * i) / num_drones
+            x_pos = radius * math.cos(angle)
+            y_pos = radius * math.sin(angle)
 
-                # Determine drone color from default color list
-                color_index = drones_placed % len(self.default_colors)
-                color = self.default_colors[color_index]
+            # Get color for the drone
+            color_index = i % len(self.default_colors)
+            color = self.default_colors[color_index]
+            rgba_color = self.process_color(color)
 
-                # Create oval for drone icon
-                drone_oval = self.canvas.create_oval(x - 5, y - 5, x + 5, y + 5, fill=color)
-                rgba_color = self.process_color(color)
+            # Plot drone position
+            drone_plot = self.ax.scatter(x_pos, y_pos, color=color, s=100)
+            self.drone_plots.append(drone_plot)
 
-                # Store drone information
-                drone = {"color": rgba_color, "position": (x, y),
-                         "oval": drone_oval, "drone_index": drones_placed,
-                         "drone_obj": swarm_drones[drones_placed], "selected": tk.BooleanVar(value=True)}
-                self.swarm.one_drone(drone["drone_index"], "set_drone_LED",*rgba_color)
-                self.droneIcons.append(drone)
+            # Add drone index and position annotation
+            annotation = self.ax.annotate(
+                f'Drone {i}\n({x_pos:.1f}, {y_pos:.1f})',
+                (x_pos, y_pos),
+                xytext=(0, 10),
+                textcoords='offset points',
+                ha='center',
+                bbox=dict(boxstyle='round,pad=0.5', fc='white', alpha=0.7),
+                fontsize=8
+            )
+            self.drone_annotations.append(annotation)
 
-                # Create Checkbutton for drone selection
-                drone_checkbox = tk.Checkbutton(
-                    self.canvas,
-                    text=drone["drone_index"],  # No text for checkbox itself
-                    variable=drone["selected"],  # Link to drone's 'selected' state
-                    bg="white",  # Match canvas background
-                    highlightbackground="white",  # Remove highlight border
-                    highlightcolor="white",
-                    bd=0,  # Remove default border
-                    onvalue=True,
-                    offvalue=False
-                )
-                self.drone_checkboxes.append(drone_checkbox)  # Store checkbox reference
+            # Store drone information
+            drone = {
+                "color": rgba_color,
+                "x_position": x_pos,
+                "y_position": y_pos,
+                "plot": drone_plot,
+                "annotation": annotation,
+                "drone_index": i,
+                "drone_obj": swarm_drones[i],
+                "selected": tk.BooleanVar(value=True)
+            }
+            self.droneIcons.append(drone)
 
-                # Place Checkbutton on canvas, to the right of the icon
-                self.canvas.create_window(x + checkbox_x_offset, y + checkbox_y_offset, window=drone_checkbox)
+            # Create Checkbutton frame for drone selection
+            check_frame = tk.Frame(self.left_frame, bg=self.dark_blue)
+            check_frame.pack(pady=2)
 
-                # Bind click event to drone icon for color picking
-                def on_drone_click(event, drone=drone):
-                    self.open_color_picker(drone)
+            drone_checkbox = tk.Checkbutton(
+                check_frame,
+                text=f"Drone {i}",
+                variable=drone["selected"],
+                bg=self.dark_blue,
+                fg=color,
+                selectcolor=self.dark_blue,
+                activebackground=self.dark_blue,
+                activeforeground=color
+            )
+            drone_checkbox.pack(side='left')
 
-                self.canvas.tag_bind(drone_oval, "<Button-1>", on_drone_click)
+            # Set drone LED color
+            self.swarm.one_drone(drone["drone_index"], "set_drone_LED", *rgba_color)
 
-                drones_placed += 1
-
-            current_row += 1
+        # Draw the plot
+        self.canvas_widget.draw()
 
     def bind_keys(self):
         def key_highlight(border_frame, button):

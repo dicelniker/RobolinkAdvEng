@@ -71,24 +71,25 @@ class SwarmGUI:
         self.default_colors = ['red', 'blue', 'orange', 'yellow', 'green', 'light blue', 'purple', 'pink', 'white', 'black']
         self.bind_keys()
         self.root.geometry("400x690")
+        self.create_grid()
 
     def process_color(self, color_str):
         rgba_color = list(mcolors.to_rgba(color_str))
         for i in range(4):
             rgba_color[i] = int(255 * rgba_color[i])
         return rgba_color
-
-    def open_color_picker(self, drone):
-        color_code = colorchooser.askcolor(title="Choose Drone Color")
-        if color_code[1]:
-            new_color = color_code[1]
-            rgb_value = color_code[0]
-            print(f"Selected RGB color: {rgb_value}")
-            drone["color"] = new_color
-            rgba_color = self.process_color(drone["color"])
-            self.swarm.one_drone(drone["drone_index"], "set_drone_LED", *rgba_color)
-            self.swarm.one_drone(drone["drone_index"], "set_controller_LED", *rgba_color)
-            self.canvas.itemconfig(drone["oval"], fill=new_color)
+    #
+    # def open_color_picker(self, drone):
+    #     color_code = colorchooser.askcolor(title="Choose Drone Color")
+    #     if color_code[1]:
+    #         new_color = color_code[1]
+    #         rgb_value = color_code[0]
+    #         print(f"Selected RGB color: {rgb_value}")
+    #         drone["color"] = new_color
+    #         rgba_color = self.process_color(drone["color"])
+    #         self.swarm.one_drone(drone["drone_index"], "set_drone_LED", *rgba_color)
+    #         self.swarm.one_drone(drone["drone_index"], "set_controller_LED", *rgba_color)
+    #         self.canvas.itemconfig(drone["oval"], fill=new_color)
 
     def create_control_buttons(self):
         button_style = {
@@ -447,19 +448,27 @@ class SwarmGUI:
         input_grid = tk.Frame(input_frame, bg=self.light_blue)
         input_grid.pack(pady=5)
 
-        tk.Label(input_grid, text="Rows:", **self.label_style).grid(row=0, column=0, padx=(0, 5), pady=5)
-        self.rows_input = tk.Entry(input_grid, **self.entry_style, width=5)
-        self.rows_input.grid(row=0, column=1, padx=(0, 10), pady=5)
+        tk.Label(input_grid, text="#:", **self.label_style).grid(row=0, column=0, padx=(0, 5), pady=5)
+        self.drone_index_input = tk.Entry(input_grid, **self.entry_style, width=3)
+        self.drone_index_input.grid(row=0, column=1, padx=(0, 10), pady=5)
 
-        tk.Label(input_grid, text="Columns:", **self.label_style).grid(row=0, column=2, padx=(10, 5), pady=5)
-        self.cols_input = tk.Entry(input_grid, **self.entry_style, width=5)
-        self.cols_input.grid(row=0, column=3, padx=(0, 10), pady=5)
+        tk.Label(input_grid, text="X:", **self.label_style).grid(row=0, column=2, padx=(10, 5), pady=5)
+        self.x_coord_input = tk.Entry(input_grid, **self.entry_style, width=3)
+        self.x_coord_input.grid(row=0, column=3, padx=(0, 10), pady=5)
 
-        self.generate_button = tk.Button(input_grid, text="Generate Grid", command=self.create_grid,
-                                         **self.button_style)
-        self.generate_button.grid(row=0, column=4, padx=(10, 0), pady=5)
-        self.generate_button.bind("<Enter>", on_button_enter) # Hover effect for red buttons
-        self.generate_button.bind("<Leave>", on_button_leave) # Hover effect for red buttons
+        tk.Label(input_grid, text="Y:", **self.label_style).grid(row=0, column=4, padx=(10, 5), pady=5)
+        self.y_coord_input = tk.Entry(input_grid, **self.entry_style, width=3)
+        self.y_coord_input.grid(row=0, column=5, padx=(0, 10), pady=5)
+
+        tk.Label(input_grid, text="Z:", **self.label_style).grid(row=0, column=6, padx=(10, 5), pady=5)
+        self.z_coord_input = tk.Entry(input_grid, **self.entry_style, width=3)
+        self.z_coord_input.grid(row=0, column=7, padx=(0, 10), pady=5)
+
+        self.set_coords_button = tk.Button(input_grid, text="Set Coords", command=self.set_drone_position,
+                                           **self.button_style)
+        self.set_coords_button.grid(row=0, column=8, padx=(10, 0), pady=5)
+        self.set_coords_button.bind("<Enter>", on_button_enter) # Hover effect for red buttons
+        self.set_coords_button.bind("<Leave>", on_button_leave) # Hover effect for red buttons
 
     def stabilize_swarm(self):
         """
@@ -530,33 +539,46 @@ class SwarmGUI:
         else:
             print("No drones needed to move for stabilization.")
 
-    def update_drone_position(self, drone, dx, dy):
-        """Update drone position on the matplotlib plot"""
-        # Update stored positions
-        drone["x_position"] += dx
-        drone["y_position"] += dy
+    def set_drone_position(self):
+        drone_index = int(self.drone_index_input.get())
+        x_coord = float(self.x_coord_input.get())
+        y_coord = float(self.y_coord_input.get())
+        z_coord = float(self.z_coord_input.get())
 
-        # Update scatter plot position
-        drone["plot"].set_offsets([[drone["x_position"], drone["y_position"]]])
+        if 0 <= drone_index < len(self.droneIcons):
+            drone = self.droneIcons[drone_index]
+            drone["x_position"] = x_coord
+            drone["y_position"] = y_coord
+            drone["z_position"] = z_coord
 
-        # Update annotation position and text
-        drone["annotation"].set_position((drone["x_position"], drone["y_position"]))
-        drone["annotation"].set_text(
-            f'Drone {drone["drone_index"]}\n({drone["x_position"]:.1f}, {drone["y_position"]:.1f})'
-        )
+            if drone["plot"] is not None:
+                drone["plot"].set_offsets([[x_coord, y_coord]])
+            else:
+                drone["plot"] = self.ax.scatter(x_coord, y_coord, color=self.default_colors[drone_index], s=100)
 
-        # Redraw the canvas
-        self.canvas_widget.draw()
+            if drone["annotation"] is not None:
+                drone["annotation"].set_position((x_coord, y_coord))
+                drone["annotation"].set_text(f'Drone {drone_index}\n({x_coord:.1f}, {y_coord:.1f}, {z_coord: .1f})')
+            else:
+                drone["annotation"] = self.ax.annotate(
+                    f'Drone {drone_index}\n({x_coord:.1f}, {y_coord:.1f}, {z_coord: .1f})',
+                    (x_coord, y_coord),
+                    xytext=(0, 10),
+                    textcoords='offset points',
+                    ha='center',
+                    bbox=dict(boxstyle='round,pad=0.5', fc='white', alpha=0.7),
+                    fontsize=8
+                )
+
+            self.canvas_widget.draw()
+            print(f"Drone {drone_index} position set to ({x_coord}, {y_coord}, {z_coord})")
+        else:
+            print("Invalid drone index")
 
     def create_grid(self):
         global swarm_drones, num_drones, rows, cols
-        self.root.geometry("1100x800")  # Increased width for better visualization
+        self.root.geometry("1200x800")  # Increased width for better visualization
         self.hasGeneratedGrid = True
-
-        # Disable input and button during grid generation
-        self.generate_button.config(state="disabled")
-        self.rows_input.config(state="disabled")
-        self.cols_input.config(state="disabled")
 
         # Connect to Swarm and Get Drone Objects
         swarm_drones = self.swarm.get_drones()
@@ -576,9 +598,9 @@ class SwarmGUI:
         self.ax = self.fig.add_subplot(111)
 
         # Configure the plot
-        self.ax.set_xlim(-5, 5)
-        self.ax.set_ylim(-5, 5)
         self.ax.grid(True, linestyle='--', alpha=0.7)
+        self.ax.set_xlim(-10, 10)
+        self.ax.set_ylim(-10, 10)
         self.ax.set_xlabel('X (m)')
         self.ax.set_ylabel('Y (m)')
         self.ax.set_title('Drone Positions')
@@ -598,12 +620,13 @@ class SwarmGUI:
         self.droneIcons = []
 
         # Place Drone Icons on the Grid
-        radius = 1.0  # 1 meter radius
         for i in range(num_drones):
-            # Calculate position in circular formation (in meters)
-            angle = (2 * math.pi * i) / num_drones
-            x_pos = radius * math.cos(angle)
-            y_pos = radius * math.sin(angle)
+            # Default position for the first drone
+            if i == 0:
+                x_pos, y_pos, z_pos = 0.0, 0.0, 0.0
+            else:
+                # Set default position for other drones
+                x_pos, y_pos, z_pos = None, None, None
 
             # Get color for the drone
             color_index = i % len(self.default_colors)
@@ -611,19 +634,25 @@ class SwarmGUI:
             rgba_color = self.process_color(color)
 
             # Plot drone position
-            drone_plot = self.ax.scatter(x_pos, y_pos, color=color, s=100)
+            if x_pos is not None and y_pos is not None:
+                drone_plot = self.ax.scatter(x_pos, y_pos, color=color, s=100)
+            else:
+                drone_plot = None
             self.drone_plots.append(drone_plot)
 
             # Add drone index and position annotation
-            annotation = self.ax.annotate(
-                f'Drone {i}\n({x_pos:.1f}, {y_pos:.1f})',
-                (x_pos, y_pos),
-                xytext=(0, 10),
-                textcoords='offset points',
-                ha='center',
-                bbox=dict(boxstyle='round,pad=0.5', fc='white', alpha=0.7),
-                fontsize=8
-            )
+            if x_pos is not None and y_pos is not None:
+                annotation = self.ax.annotate(
+                    f'Drone {i}\n({x_pos:.1f}, {y_pos:.1f}, {z_pos: .1f})',
+                    (x_pos, y_pos),
+                    xytext=(0, 10),
+                    textcoords='offset points',
+                    ha='center',
+                    bbox=dict(boxstyle='round,pad=0.5', fc='white', alpha=0.7),
+                    fontsize=8
+                )
+            else:
+                annotation = None
             self.drone_annotations.append(annotation)
 
             # Store drone information
@@ -631,6 +660,9 @@ class SwarmGUI:
                 "color": rgba_color,
                 "x_position": x_pos,
                 "y_position": y_pos,
+                "z_position": z_pos,
+                "x_offset": x_pos,
+                "y_offset": y_pos,
                 "plot": drone_plot,
                 "annotation": annotation,
                 "drone_index": i,

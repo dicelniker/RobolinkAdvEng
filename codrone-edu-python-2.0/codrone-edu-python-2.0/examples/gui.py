@@ -163,12 +163,18 @@ class SwarmGUI:
         land_button.bind("<Enter>", on_button_enter) # Hover effect for red buttons
         land_button.bind("<Leave>", on_button_leave) # Hover effect for red buttons
 
-        # --- Auto-Stabilization Buttons ---
+        # --- Other Buttons ---
         stabilize_button = tk.Button(left_control_frame, text="Stabilize Swarm",
                                            command=self.stabilize_swarm, **button_style)
         stabilize_button.pack(pady=15)  # Adjust pady as needed
         stabilize_button.bind("<Enter>", on_button_enter)
         stabilize_button.bind("<Leave>", on_button_leave)
+
+        # stabilize_button = tk.Button(left_control_frame, text="Update Positions",
+        #                              command=self.update_timer, **button_style)
+        # stabilize_button.pack(pady=15)  # Adjust pady as needed
+        # stabilize_button.bind("<Enter>", on_button_enter)
+        # stabilize_button.bind("<Leave>", on_button_leave)
 
         # --- Right Section (Sequences) with Border ---
         right_control_frame = tk.Frame(self.left_frame, bg=self.dark_blue, borderwidth=2, relief='solid',
@@ -295,14 +301,20 @@ class SwarmGUI:
 
         if num_selected_drones > 0:
             print(f"Moving forward for selected drones: {selected_drone_indices}")
-            sync_forward = Sync()  # Create a Sync object
+            sync_forward = Sync()
             for index in selected_drone_indices:
-                seq = Sequence(index)  # Create a Sequence for each selected drone
+                seq = Sequence(index)
                 seq.add("move_distance", 0.2, 0, 0, 0.5)
-                sync_forward.add(seq)  # Add sequence to Sync object
-            self.swarm.run(sync_forward, type="parallel")  # Run synchronized forward movement for selected drones
-        else:  # Check if NO drones are selected
-            print("No drones selected. Not moving forward.")  # Do nothing - no movement
+                sync_forward.add(seq)
+
+                # Update displayed position
+                drone = self.droneIcons[index]
+                new_x = drone["x_position"] + 0.2  # Add 0.2m to x position
+                self.set_drone_position(index, new_x, drone["y_position"], drone["z_position"])
+
+            self.swarm.run(sync_forward, type="parallel")
+        else:
+            print("No drones selected. Not moving forward.")
 
     def backward(self):
         if not self.hasGeneratedGrid:
@@ -317,14 +329,20 @@ class SwarmGUI:
 
         if num_selected_drones > 0:
             print(f"Moving backward for selected drones: {selected_drone_indices}")
-            sync_backward = Sync()  # Create a Sync object
+            sync_backward = Sync()
             for index in selected_drone_indices:
-                seq = Sequence(index)  # Create a Sequence for each selected drone
+                seq = Sequence(index)
                 seq.add("move_distance", -0.2, 0, 0, 0.5)
-                sync_backward.add(seq)  # Add sequence to Sync object
-            self.swarm.run(sync_backward, type="parallel")  # Run synchronized backward movement for selected drones
-        else:  # Check if NO drones are selected
-            print("No drones selected. Not moving backward.")  # Do nothing - no movement
+                sync_backward.add(seq)
+
+                # Update displayed position
+                drone = self.droneIcons[index]
+                new_x = drone["x_position"] - 0.2  # Subtract 0.2m from x position
+                self.set_drone_position(index, new_x, drone["y_position"], drone["z_position"])
+
+            self.swarm.run(sync_backward, type="parallel")
+        else:
+            print("No drones selected. Not moving backward.")
 
     def left(self):
         if not self.hasGeneratedGrid:
@@ -339,14 +357,20 @@ class SwarmGUI:
 
         if num_selected_drones > 0:
             print(f"Moving left for selected drones: {selected_drone_indices}")
-            sync_left = Sync()  # Create a Sync object
+            sync_left = Sync()
             for index in selected_drone_indices:
-                seq = Sequence(index)  # Create a Sequence for each selected drone
+                seq = Sequence(index)
                 seq.add("move_distance", 0, 0.2, 0, 0.5)
-                sync_left.add(seq)  # Add sequence to Sync object
-            self.swarm.run(sync_left, type="parallel")  # Run synchronized left movement for selected drones
-        else:  # Check if NO drones are selected
-            print("No drones selected. Not moving left.")  # Do nothing - no movement
+                sync_left.add(seq)
+
+                # Update displayed position
+                drone = self.droneIcons[index]
+                new_y = drone["y_position"] + 0.2  # Add 0.2m to y position
+                self.set_drone_position(index, drone["x_position"], new_y, drone["z_position"])
+
+            self.swarm.run(sync_left, type="parallel")
+        else:
+            print("No drones selected. Not moving left.")
 
     def right(self):
         if not self.hasGeneratedGrid:
@@ -361,14 +385,20 @@ class SwarmGUI:
 
         if num_selected_drones > 0:
             print(f"Moving right for selected drones: {selected_drone_indices}")
-            sync_right = Sync()  # Create a Sync object
+            sync_right = Sync()
             for index in selected_drone_indices:
-                seq = Sequence(index)  # Create a Sequence for each selected drone
+                seq = Sequence(index)
                 seq.add("move_distance", 0, -0.2, 0, 0.5)
-                sync_right.add(seq)  # Add sequence to Sync object
-            self.swarm.run(sync_right, type="parallel")  # Run synchronized right movement for selected drones
-        else:  # Check if NO drones are selected
-            print("No drones selected. Not moving right.")  # Do nothing - no movement
+                sync_right.add(seq)
+
+                # Update displayed position
+                drone = self.droneIcons[index]
+                new_y = drone["y_position"] - 0.2  # Subtract 0.2m from y position
+                self.set_drone_position(index, drone["x_position"], new_y, drone["z_position"])
+
+            self.swarm.run(sync_right, type="parallel")
+        else:
+            print("No drones selected. Not moving right.")
 
     def run_main_choreo(self):
         print("Running main choreography...")
@@ -464,16 +494,22 @@ class SwarmGUI:
         self.z_coord_input = tk.Entry(input_grid, **self.entry_style, width=3)
         self.z_coord_input.grid(row=0, column=7, padx=(0, 10), pady=5)
 
-        self.set_coords_button = tk.Button(input_grid, text="Set Coords", command=self.set_drone_position,
-                                           **self.button_style)
+        self.set_coords_button = tk.Button(
+            input_grid,
+            text="Set Coords",
+            command=lambda: self.set_drone_position(
+                int(self.drone_index_input.get()),
+                float(self.x_coord_input.get()),
+                float(self.y_coord_input.get()),
+                float(self.z_coord_input.get())
+            ),
+            **self.button_style
+        )
         self.set_coords_button.grid(row=0, column=8, padx=(10, 0), pady=5)
         self.set_coords_button.bind("<Enter>", on_button_enter) # Hover effect for red buttons
         self.set_coords_button.bind("<Leave>", on_button_leave) # Hover effect for red buttons
 
     def stabilize_swarm(self):
-        """
-        Retrieves drone heights, calculates average, and commands drones to hover using Sync and Sequence for synchronization.
-        """
         if not self.hasGeneratedGrid:
             print("Grid not generated, cannot auto-stabilize.")
             return
@@ -539,12 +575,21 @@ class SwarmGUI:
         else:
             print("No drones needed to move for stabilization.")
 
-    def set_drone_position(self):
-        drone_index = int(self.drone_index_input.get())
-        x_coord = float(self.x_coord_input.get())
-        y_coord = float(self.y_coord_input.get())
-        z_coord = float(self.z_coord_input.get())
+    # not working
+    # def update_timer(self):
+    #     self.update_graph()
+    #     self.root.after(5000, self.update_timer)
+    #
+    # def update_graph(self):
+    #     data = self.swarm.get_position_data()
+    #     for i in range(len(self.droneIcons)):
+    #         pos = data[i]
+    #         x_coord = pos[1]
+    #         y_coord = pos[2]
+    #         z_coord = pos[3]
+    #         self.set_drone_position(i, x_coord, y_coord, z_coord)
 
+    def set_drone_position(self, drone_index, x_coord, y_coord, z_coord):
         if 0 <= drone_index < len(self.droneIcons):
             drone = self.droneIcons[drone_index]
             drone["x_position"] = x_coord
@@ -571,7 +616,7 @@ class SwarmGUI:
                 )
 
             self.canvas_widget.draw()
-            print(f"Drone {drone_index} position set to ({x_coord}, {y_coord}, {z_coord})")
+            print(f"Drone {drone_index} position set to ({x_coord:.1f}, {y_coord:.1f}, {z_coord:.1f})")
         else:
             print("Invalid drone index")
 
@@ -599,8 +644,8 @@ class SwarmGUI:
 
         # Configure the plot
         self.ax.grid(True, linestyle='--', alpha=0.7)
-        self.ax.set_xlim(-10, 10)
-        self.ax.set_ylim(-10, 10)
+        self.ax.set_xlim(-2, 2)
+        self.ax.set_ylim(-2, 2)
         self.ax.set_xlabel('X (m)')
         self.ax.set_ylabel('Y (m)')
         self.ax.set_title('Drone Positions')

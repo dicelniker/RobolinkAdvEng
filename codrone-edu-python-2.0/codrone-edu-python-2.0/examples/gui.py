@@ -100,7 +100,7 @@ class SwarmGUI:
             'bd': 1,
             'width': 15,
             'height': 1,
-            'cursor': "hand2"
+            'cursor': "heart"
         }
         movement_button_style = {
             'font': ('Helvetica', 12, 'bold'),
@@ -113,8 +113,7 @@ class SwarmGUI:
             'height': 1,
             'foreground': '#e61848', # initial foreground color - will be overridden by fg: 'white'
             'activeforeground': '#3fd4ff',
-            'borderwidth': 0,
-            'cursor': 'hand2'
+            'borderwidth': 0
         }
         pink_border_style = {
             'highlightbackground': '#e61848',
@@ -171,14 +170,14 @@ class SwarmGUI:
         stabilize_button.bind("<Enter>", on_button_enter)
         stabilize_button.bind("<Leave>", on_button_leave)
 
-        # stabilize_button = tk.Button(left_control_frame, text="Update Positions",
-        #                              command=self.update_timer, **button_style)
-        # stabilize_button.pack(pady=15)  # Adjust pady as needed
-        # stabilize_button.bind("<Enter>", on_button_enter)
-        # stabilize_button.bind("<Leave>", on_button_leave)
+        update_button = tk.Button(left_control_frame, text="Auto Update",
+                                     command=self.update_timer, **button_style)
+        update_button.pack(pady=15)  # Adjust pady as needed
+        update_button.bind("<Enter>", on_button_enter)
+        update_button.bind("<Leave>", on_button_leave)
 
         # --- Right Section (Sequences) with Border ---
-        right_control_frame = tk.Frame(self.left_frame, bg=self.dark_blue, relief='solid',
+        right_control_frame = tk.Frame(self.left_frame, bg=self.dark_blue, borderwidth=2, relief='solid',
                                        padx=5, pady=5, highlightbackground=self.light_blue,
                                        highlightcolor=self.light_blue)
         right_control_frame.pack(fill='x', pady=10)
@@ -192,7 +191,7 @@ class SwarmGUI:
             ("Main Choreo", self.run_main_choreo),
             ("Hexagon", self.run_hexagon),
             ("Spiral and Flip", self.run_spiral_and_flip),
-            ("Upward Spiral", self.run_upward_spiral),
+            ("Upward Spiral", self.run_spiral),
             ("Wiggle", self.run_wiggle)
         ]
 
@@ -413,7 +412,7 @@ class SwarmGUI:
         print("Running spiral and flip choreography...")
         # import spiralandflip
         # spiralandflip.run_sequence(self.swarm)
-    def run_upward_spiral(self):
+    def run_spiral(self):
         if not self.hasGeneratedGrid:
             print("Please generate grid before running commands.")
             return None
@@ -429,7 +428,7 @@ class SwarmGUI:
             sync_right = Sync()  # Create a Sync object
             for index in selected_drone_indices:
                 seq = Sequence(index)  # Create a Sequence for each selected drone
-                seq.add("go", 0, 0, 25, 10, 5)
+                seq.add("go", 0, 0, 25, 20, 5)
                 sync_right.add(seq)  # Add sequence to Sync object
             self.swarm.run(sync_right, type="parallel")  # Run synchronized right movement for selected drones
         else:  # Check if NO drones are selected
@@ -462,7 +461,7 @@ class SwarmGUI:
             'bd': 1,
             'width': 12,
             'height': 1,
-            'cursor': "hand2"
+            'cursor': "heart"
         }
 
         def on_button_enter(event):
@@ -577,49 +576,98 @@ class SwarmGUI:
             print("No drones needed to move for stabilization.")
 
     # not working
-    # def update_timer(self):
-    #     self.update_graph()
-    #     self.root.after(5000, self.update_timer)
-    #
-    # def update_graph(self):
-    #     data = self.swarm.get_position_data()
-    #     for i in range(len(self.droneIcons)):
-    #         pos = data[i]
-    #         x_coord = pos[1]
-    #         y_coord = pos[2]
-    #         z_coord = pos[3]
-    #         self.set_drone_position(i, x_coord, y_coord, z_coord)
+    def update_timer(self):
+        self.update_graph()
+        self.root.after(1000, self.update_timer)
+
+    def update_graph(self):
+        data = self.swarm.get_position_data()
+        for i in range(len(self.droneIcons)):
+            pos = data[i]
+            drone = self.droneIcons[i]
+
+            # Get raw coordinates from position data
+            x_coord = pos[1]
+            y_coord = pos[2]
+            z_coord = pos[3]
+
+            # Add the stored offsets to the coordinates
+            adjusted_x = x_coord + drone["x_offset"] if drone["x_offset"] is not None else x_coord
+            adjusted_y = y_coord + drone["y_offset"] if drone["y_offset"] is not None else y_coord
+
+            # Update position with adjusted coordinates
+            self.set_drone_position(i, adjusted_x, adjusted_y, z_coord)
+
+# Should run when the drones are landed
+    def reset_offsets(self):
+        for i in range(len(self.droneIcons)):
+            drone = self.droneIcons[i]
+            drone["x_offset"] = drone["x_position"]
+            drone["y_offset"] = drone["y_position"]
 
     def set_drone_position(self, drone_index, x_coord, y_coord, z_coord):
-        if 0 <= drone_index < len(self.droneIcons):
-            drone = self.droneIcons[drone_index]
-            drone["x_position"] = x_coord
-            drone["y_position"] = y_coord
-            drone["z_position"] = z_coord
+        if not (0 <= drone_index < len(self.droneIcons)):
+            print(f"Invalid drone index: {drone_index}")
+            return
 
-            if drone["plot"] is not None:
-                drone["plot"].set_offsets([[x_coord, y_coord]])
-            else:
-                drone["plot"] = self.ax.scatter(x_coord, y_coord, color=self.default_colors[drone_index], s=100)
+        drone = self.droneIcons[drone_index]
 
-            if drone["annotation"] is not None:
-                drone["annotation"].set_position((x_coord, y_coord))
-                drone["annotation"].set_text(f'Drone {drone_index}\n({x_coord:.1f}, {y_coord:.1f}, {z_coord: .1f})')
-            else:
-                drone["annotation"] = self.ax.annotate(
-                    f'Drone {drone_index}\n({x_coord:.1f}, {y_coord:.1f}, {z_coord: .1f})',
-                    (x_coord, y_coord),
-                    xytext=(0, 10),
-                    textcoords='offset points',
-                    ha='center',
-                    bbox=dict(boxstyle='round,pad=0.5', fc='white', alpha=0.7),
-                    fontsize=8
-                )
+        # If this is the first position set for this drone (initial position is None)
+        if drone["x_position"] is None and drone["y_position"] is None:
+            drone["x_offset"] = x_coord
+            drone["y_offset"] = y_coord
+            print(f"Initial offset set for Drone {drone_index}: ({x_coord:.1f}, {y_coord:.1f})")
 
-            self.canvas_widget.draw()
-            print(f"Drone {drone_index} position set to ({x_coord:.1f}, {y_coord:.1f}, {z_coord:.1f})")
+        # Update stored positions
+        drone["x_position"] = x_coord
+        drone["y_position"] = y_coord
+        drone["z_position"] = z_coord
+
+        # First remove existing annotation if it exists
+        if drone["annotation"] is not None:
+            drone["annotation"].remove()
+
+        # Create new annotation
+        drone["annotation"] = self.ax.annotate(
+            f'Drone {drone_index}\n({x_coord:.1f}, {y_coord:.1f}, {z_coord:.1f})',
+            xy=(x_coord, y_coord),  # Point to annotate
+            xytext=(0, 15),  # Offset text by 15 points above
+            textcoords='offset points',
+            ha='center',
+            va='bottom',
+            bbox=dict(
+                boxstyle='round,pad=0.5',
+                fc='white',
+                ec='gray',
+                alpha=0.7
+            ),
+            fontsize=8,
+            zorder=4
+        )
+
+        # Update scatter plot
+        if drone["plot"] is not None:
+            # Update existing plot
+            drone["plot"].set_offsets([[x_coord, y_coord]])
+            drone["plot"].set_color(self.default_colors[drone_index])
         else:
-            print("Invalid drone index")
+            # Create new plot if none exists
+            drone["plot"] = self.ax.scatter(
+                x_coord,
+                y_coord,
+                color=self.default_colors[drone_index],
+                s=100,
+                zorder=3
+            )
+
+        # Update the display
+        self.ax.relim()
+        self.ax.autoscale_view()
+
+        # Force a complete redraw
+        self.canvas_widget.draw()
+
+        # print(f"Drone {drone_index} position updated to ({x_coord:.1f}, {y_coord:.1f}, {z_coord:.1f})")
 
     def create_grid(self):
         global swarm_drones, num_drones, rows, cols

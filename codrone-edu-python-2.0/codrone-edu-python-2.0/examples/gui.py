@@ -578,7 +578,7 @@ class SwarmGUI:
     # not working
     def update_timer(self):
         self.update_graph()
-        self.root.after(1000, self.update_timer)
+        self.root.after(500, self.update_timer)
 
     def update_graph(self):
         data = self.swarm.get_position_data()

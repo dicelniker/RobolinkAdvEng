@@ -178,7 +178,7 @@ class SwarmGUI:
         # stabilize_button.bind("<Leave>", on_button_leave)
 
         # --- Right Section (Sequences) with Border ---
-        right_control_frame = tk.Frame(self.left_frame, bg=self.dark_blue, borderwidth=2, relief='solid',
+        right_control_frame = tk.Frame(self.left_frame, bg=self.dark_blue, relief='solid',
                                        padx=5, pady=5, highlightbackground=self.light_blue,
                                        highlightcolor=self.light_blue)
         right_control_frame.pack(fill='x', pady=10)

@@ -100,7 +100,7 @@ class SwarmGUI:
             'bd': 1,
             'width': 15,
             'height': 1,
-            'cursor': "heart"
+            'cursor': "hand2"
         }
         movement_button_style = {
             'font': ('Helvetica', 12, 'bold'),
@@ -113,7 +113,8 @@ class SwarmGUI:
             'height': 1,
             'foreground': '#e61848', # initial foreground color - will be overridden by fg: 'white'
             'activeforeground': '#3fd4ff',
-            'borderwidth': 0
+            'borderwidth': 0,
+            'cursor': 'hand2'
         }
         pink_border_style = {
             'highlightbackground': '#e61848',
@@ -177,7 +178,7 @@ class SwarmGUI:
         update_button.bind("<Leave>", on_button_leave)
 
         # --- Right Section (Sequences) with Border ---
-        right_control_frame = tk.Frame(self.left_frame, bg=self.dark_blue, borderwidth=2, relief='solid',
+        right_control_frame = tk.Frame(self.left_frame, bg=self.dark_blue, relief='solid',
                                        padx=5, pady=5, highlightbackground=self.light_blue,
                                        highlightcolor=self.light_blue)
         right_control_frame.pack(fill='x', pady=10)
@@ -461,7 +462,7 @@ class SwarmGUI:
             'bd': 1,
             'width': 12,
             'height': 1,
-            'cursor': "heart"
+            'cursor': "hand2"
         }
 
         def on_button_enter(event):

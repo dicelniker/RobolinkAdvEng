@@ -277,6 +277,7 @@ class SwarmGUI:
 
         if num_selected_drones == num_drones:
             print("Landing ALL drones (all selected)...")
+            self.reset_offsets()
             self.swarm.all_drones("land")  # Land all drones (already synchronized)
         elif num_selected_drones > 0:
             print(f"Landing selected drones (synchronized): {selected_drone_indices}")
@@ -285,6 +286,7 @@ class SwarmGUI:
                 seq = Sequence(index) # Create a Sequence for each selected drone, initialize with index
                 seq.add("land") # Add the land action to the sequence using Sequence.add
                 sync_land.add(seq) # Add sequence to Sync object using Sync.add
+                self.reset_offsets()
             self.swarm.run(sync_land, type="parallel") # Run synchronized land for selected drones
         else:
             print("No drones selected. Not landing.")
@@ -307,11 +309,6 @@ class SwarmGUI:
                 seq = Sequence(index)
                 seq.add("move_distance", 0.2, 0, 0, 0.5)
                 sync_forward.add(seq)
-
-                # Update displayed position
-                drone = self.droneIcons[index]
-                new_x = drone["x_position"] + 0.2  # Add 0.2m to x position
-                self.set_drone_position(index, new_x, drone["y_position"], drone["z_position"])
 
             self.swarm.run(sync_forward, type="parallel")
         else:
@@ -336,11 +333,6 @@ class SwarmGUI:
                 seq.add("move_distance", -0.2, 0, 0, 0.5)
                 sync_backward.add(seq)
 
-                # Update displayed position
-                drone = self.droneIcons[index]
-                new_x = drone["x_position"] - 0.2  # Subtract 0.2m from x position
-                self.set_drone_position(index, new_x, drone["y_position"], drone["z_position"])
-
             self.swarm.run(sync_backward, type="parallel")
         else:
             print("No drones selected. Not moving backward.")
@@ -364,11 +356,6 @@ class SwarmGUI:
                 seq.add("move_distance", 0, 0.2, 0, 0.5)
                 sync_left.add(seq)
 
-                # Update displayed position
-                drone = self.droneIcons[index]
-                new_y = drone["y_position"] + 0.2  # Add 0.2m to y position
-                self.set_drone_position(index, drone["x_position"], new_y, drone["z_position"])
-
             self.swarm.run(sync_left, type="parallel")
         else:
             print("No drones selected. Not moving left.")
@@ -391,11 +378,6 @@ class SwarmGUI:
                 seq = Sequence(index)
                 seq.add("move_distance", 0, -0.2, 0, 0.5)
                 sync_right.add(seq)
-
-                # Update displayed position
-                drone = self.droneIcons[index]
-                new_y = drone["y_position"] - 0.2  # Subtract 0.2m from y position
-                self.set_drone_position(index, drone["x_position"], new_y, drone["z_position"])
 
             self.swarm.run(sync_right, type="parallel")
         else:
@@ -601,7 +583,14 @@ class SwarmGUI:
 
 # Should run when the drones are landed
     def reset_offsets(self):
-        for i in range(len(self.droneIcons)):
+        selected_drone_indices = []
+        for index, drone in enumerate(self.droneIcons):
+            if drone["selected"].get():
+                selected_drone_indices.append(index)
+
+        num_selected_drones = len(selected_drone_indices)
+
+        for i in range(num_selected_drones):
             drone = self.droneIcons[i]
             drone["x_offset"] = drone["x_position"]
             drone["y_offset"] = drone["y_position"]

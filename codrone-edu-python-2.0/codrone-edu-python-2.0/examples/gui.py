@@ -1,3 +1,4 @@
+
 import math
 import tkinter as tk
 from tkinter import colorchooser
@@ -72,6 +73,7 @@ class SwarmGUI:
         self.bind_keys()
         self.root.geometry("400x690")
         self.create_grid()
+        self.is_landed = {i: True for i in range(len(self.swarm.get_drones()))}
 
     def process_color(self, color_str):
         rgba_color = list(mcolors.to_rgba(color_str))
@@ -239,31 +241,6 @@ class SwarmGUI:
         self.backward_border.grid(row=1, column=1, padx=5, pady=5) # row changed to 1
         self.right_border.grid(row=1, column=2, padx=5, pady=5) # row changed to 1
 
-    def take_off(self):
-        if not self.hasGeneratedGrid:
-            print("Please generate grid before running commands.")
-            return None
-        selected_drone_indices = []
-        for index, drone in enumerate(self.droneIcons):
-            if drone["selected"].get():
-                selected_drone_indices.append(index)
-
-        num_selected_drones = len(selected_drone_indices)
-
-        if num_selected_drones == num_drones:
-            print("Taking off ALL drones (all selected)...")
-            self.swarm.all_drones("takeoff")  # Take off all drones (already synchronized)
-        elif num_selected_drones > 0:
-            print(f"Taking off selected drones (synchronized): {selected_drone_indices}")
-            sync_takeoff = Sync() # Create a Sync object
-            for index in selected_drone_indices:
-                seq = Sequence(index) # Create a Sequence for each selected drone, initialize with index
-                seq.add("takeoff") # Add the takeoff action to the sequence using Sequence.add
-                sync_takeoff.add(seq) # Add sequence to Sync object using Sync.add
-            self.swarm.run(sync_takeoff, type="parallel") # Run synchronized takeoff for selected drones
-        else:
-            print("No drones selected. Not taking off.")
-
     def land(self):
         if not self.hasGeneratedGrid:
             print("Please generate grid before running commands.")
@@ -277,19 +254,50 @@ class SwarmGUI:
 
         if num_selected_drones == num_drones:
             print("Landing ALL drones (all selected)...")
+            self.swarm.all_drones("land")
+            for i in range(num_drones):
+                self.is_landed[i] = True
             self.reset_offsets()
-            self.swarm.all_drones("land")  # Land all drones (already synchronized)
         elif num_selected_drones > 0:
             print(f"Landing selected drones (synchronized): {selected_drone_indices}")
-            sync_land = Sync() # Create a Sync object
+            sync_land = Sync()
             for index in selected_drone_indices:
-                seq = Sequence(index) # Create a Sequence for each selected drone, initialize with index
-                seq.add("land") # Add the land action to the sequence using Sequence.add
-                sync_land.add(seq) # Add sequence to Sync object using Sync.add
-                self.reset_offsets()
-            self.swarm.run(sync_land, type="parallel") # Run synchronized land for selected drones
+                seq = Sequence(index)
+                seq.add("land")
+                sync_land.add(seq)
+                self.is_landed[index] = True
+            self.swarm.run(sync_land, type="parallel")
+            self.reset_offsets()
         else:
             print("No drones selected. Not landing.")
+
+    def take_off(self):
+        if not self.hasGeneratedGrid:
+            print("Please generate grid before running commands.")
+            return None
+        selected_drone_indices = []
+        for index, drone in enumerate(self.droneIcons):
+            if drone["selected"].get():
+                selected_drone_indices.append(index)
+
+        num_selected_drones = len(selected_drone_indices)
+
+        if num_selected_drones == num_drones:
+            print("Taking off ALL drones (all selected)...")
+            self.swarm.all_drones("takeoff")
+            for i in range(num_drones):
+                self.is_landed[i] = False
+        elif num_selected_drones > 0:
+            print(f"Taking off selected drones (synchronized): {selected_drone_indices}")
+            sync_takeoff = Sync()
+            for index in selected_drone_indices:
+                seq = Sequence(index)
+                seq.add("takeoff")
+                sync_takeoff.add(seq)
+                self.is_landed[index] = False
+            self.swarm.run(sync_takeoff, type="parallel")
+        else:
+            print("No drones selected. Not taking off.")
 
     def forward(self):
         if not self.hasGeneratedGrid:
@@ -561,7 +569,7 @@ class SwarmGUI:
     # not working
     def update_timer(self):
         self.update_graph()
-        self.root.after(500, self.update_timer)
+        self.root.after(100, self.update_timer)
 
     def update_graph(self):
         data = self.swarm.get_position_data()
@@ -569,10 +577,19 @@ class SwarmGUI:
             pos = data[i]
             drone = self.droneIcons[i]
 
+            # Skip position updates if drone is landed
+            if self.is_landed[i]:
+                self.set_drone_position(i, drone["x_offset"], drone["y_offset"], 0)
+                continue
+
             # Get raw coordinates from position data
             x_coord = pos[1]
             y_coord = pos[2]
             z_coord = pos[3]
+
+            # Skip invalid readings
+            if x_coord == 999.9 or y_coord == 999.9 or z_coord == 999.9:
+                continue
 
             # Add the stored offsets to the coordinates
             adjusted_x = x_coord + drone["x_offset"] if drone["x_offset"] is not None else x_coord
@@ -594,6 +611,7 @@ class SwarmGUI:
             drone = self.droneIcons[i]
             drone["x_offset"] = drone["x_position"]
             drone["y_offset"] = drone["y_position"]
+            # print(f"Saving offsets for drone {i}, x: {drone["x_offset"]:.1f}, y: {drone["y_offset"]:.1f}")
 
     def set_drone_position(self, drone_index, x_coord, y_coord, z_coord):
         if not (0 <= drone_index < len(self.droneIcons)):
@@ -606,7 +624,7 @@ class SwarmGUI:
         if drone["x_position"] is None and drone["y_position"] is None:
             drone["x_offset"] = x_coord
             drone["y_offset"] = y_coord
-            print(f"Initial offset set for Drone {drone_index}: ({x_coord:.1f}, {y_coord:.1f})")
+            # print(f"Initial offset set for Drone {drone_index}: ({x_coord:.1f}, {y_coord:.1f})")
 
         # Update stored positions
         drone["x_position"] = x_coord

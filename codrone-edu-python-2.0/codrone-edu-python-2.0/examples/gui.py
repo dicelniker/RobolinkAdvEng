@@ -241,15 +241,15 @@ class SwarmGUI:
         self.backward_border.grid(row=1, column=1, padx=5, pady=5) # row changed to 1
         self.right_border.grid(row=1, column=2, padx=5, pady=5) # row changed to 1
 
-    def land(self):
-        if not self.hasGeneratedGrid:
-            print("Please generate grid before running commands.")
-            return None
+    def getIndices(self):
         selected_drone_indices = []
         for index, drone in enumerate(self.droneIcons):
             if drone["selected"].get():
                 selected_drone_indices.append(index)
+        return selected_drone_indices
 
+    def land(self):
+        selected_drone_indices = self.getIndices()
         num_selected_drones = len(selected_drone_indices)
 
         if num_selected_drones == num_drones:
@@ -272,14 +272,7 @@ class SwarmGUI:
             print("No drones selected. Not landing.")
 
     def take_off(self):
-        if not self.hasGeneratedGrid:
-            print("Please generate grid before running commands.")
-            return None
-        selected_drone_indices = []
-        for index, drone in enumerate(self.droneIcons):
-            if drone["selected"].get():
-                selected_drone_indices.append(index)
-
+        selected_drone_indices = self.getIndices()
         num_selected_drones = len(selected_drone_indices)
 
         if num_selected_drones == num_drones:
@@ -300,14 +293,7 @@ class SwarmGUI:
             print("No drones selected. Not taking off.")
 
     def forward(self):
-        if not self.hasGeneratedGrid:
-            print("Please generate grid before running commands.")
-            return None
-        selected_drone_indices = []
-        for index, drone in enumerate(self.droneIcons):
-            if drone["selected"].get():
-                selected_drone_indices.append(index)
-
+        selected_drone_indices = self.getIndices()
         num_selected_drones = len(selected_drone_indices)
 
         if num_selected_drones > 0:
@@ -323,14 +309,7 @@ class SwarmGUI:
             print("No drones selected. Not moving forward.")
 
     def backward(self):
-        if not self.hasGeneratedGrid:
-            print("Please generate grid before running commands.")
-            return None
-        selected_drone_indices = []
-        for index, drone in enumerate(self.droneIcons):
-            if drone["selected"].get():
-                selected_drone_indices.append(index)
-
+        selected_drone_indices = self.getIndices()
         num_selected_drones = len(selected_drone_indices)
 
         if num_selected_drones > 0:
@@ -346,14 +325,7 @@ class SwarmGUI:
             print("No drones selected. Not moving backward.")
 
     def left(self):
-        if not self.hasGeneratedGrid:
-            print("Please generate grid before running commands.")
-            return None
-        selected_drone_indices = []
-        for index, drone in enumerate(self.droneIcons):
-            if drone["selected"].get():
-                selected_drone_indices.append(index)
-
+        selected_drone_indices = self.getIndices()
         num_selected_drones = len(selected_drone_indices)
 
         if num_selected_drones > 0:
@@ -369,14 +341,7 @@ class SwarmGUI:
             print("No drones selected. Not moving left.")
 
     def right(self):
-        if not self.hasGeneratedGrid:
-            print("Please generate grid before running commands.")
-            return None
-        selected_drone_indices = []
-        for index, drone in enumerate(self.droneIcons):
-            if drone["selected"].get():
-                selected_drone_indices.append(index)
-
+        selected_drone_indices = self.getIndices()
         num_selected_drones = len(selected_drone_indices)
 
         if num_selected_drones > 0:
@@ -404,14 +369,7 @@ class SwarmGUI:
         # import spiralandflip
         # spiralandflip.run_sequence(self.swarm)
     def run_spiral(self):
-        if not self.hasGeneratedGrid:
-            print("Please generate grid before running commands.")
-            return None
-        selected_drone_indices = []
-        for index, drone in enumerate(self.droneIcons):
-            if drone["selected"].get():
-                selected_drone_indices.append(index)
-
+        selected_drone_indices = self.getIndices()
         num_selected_drones = len(selected_drone_indices)
 
         if num_selected_drones > 0:
@@ -600,11 +558,7 @@ class SwarmGUI:
 
 # Should run when the drones are landed
     def reset_offsets(self):
-        selected_drone_indices = []
-        for index, drone in enumerate(self.droneIcons):
-            if drone["selected"].get():
-                selected_drone_indices.append(index)
-
+        selected_drone_indices = self.getIndices()
         num_selected_drones = len(selected_drone_indices)
 
         for i in range(num_selected_drones):

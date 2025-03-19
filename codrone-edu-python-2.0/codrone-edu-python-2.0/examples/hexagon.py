@@ -1,14 +1,14 @@
 import math
-from swarm2 import *
-from codrone_edu import *
+from codrone_edu.swarm import *
 
-class Choreography():
+
+class Hexagon:
 
     def __init__(self):
         return
 
-    def runSequence(self, swarm):
-        drones = swarm.get_drone_objects()
+    def run_sequence(self, swarm):
+        drones = swarm.get_drones()
 
         drone1 = drones[0]
         drone2 = drones[1]

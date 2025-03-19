@@ -1,4 +1,3 @@
-
 import math
 import tkinter as tk
 from tkinter import colorchooser
@@ -19,23 +18,37 @@ class SwarmGUI:
         self.root = tk.Tk()
         self.root.title("Swarm GUI")
         self.root.configure(bg='#05001c')  # dark blue
-        self.canvas = None
+
+        self.label_style = {
+            'font': ('Helvetica', 10, 'bold'),
+            'bg': '#3fd4ff',  # light blue
+            'fg': '#05001c'  # dark blue
+        }
+
+        self.entry_style = {
+            'font': ('Helvetica', 10, 'bold'),
+            'relief': 'solid',
+            'bd': 1,
+            'highlightthickness': 1,
+            'highlightbackground': '#4169E1',
+            'highlightcolor': '#4169E1',
+            'bg': 'white'
+        }
+
+        self.button_style = {
+            'font': ('Helvetica', 10, 'bold'),
+            'bg': '#e61848',  # pink
+            'fg': '#fff',
+            'relief': 'solid',
+            'bd': 1,
+            'width': 12,
+            'height': 1,
+            'cursor': "hand2"
+        }
+
         self.droneIcons = []
         self.swarm = Swarm()
         self.swarm.connect()
-        self.hasGeneratedGrid = False
-
-        self.rows_input = None
-        self.cols_input = None
-        self.generate_button = None
-        self.forward_border = None
-        self.backward_border = None
-        self.left_border = None
-        self.right_border = None
-        self.forward_button = None
-        self.backward_button = None
-        self.left_button = None
-        self.right_button = None
 
         self.light_blue = '#3fd4ff'  # Define light blue color
         self.grid_line_color = '#4169E1' # Define grid line color
@@ -80,20 +93,9 @@ class SwarmGUI:
         for i in range(4):
             rgba_color[i] = int(255 * rgba_color[i])
         return rgba_color
-    #
-    # def open_color_picker(self, drone):
-    #     color_code = colorchooser.askcolor(title="Choose Drone Color")
-    #     if color_code[1]:
-    #         new_color = color_code[1]
-    #         rgb_value = color_code[0]
-    #         print(f"Selected RGB color: {rgb_value}")
-    #         drone["color"] = new_color
-    #         rgba_color = self.process_color(drone["color"])
-    #         self.swarm.one_drone(drone["drone_index"], "set_drone_LED", *rgba_color)
-    #         self.swarm.one_drone(drone["drone_index"], "set_controller_LED", *rgba_color)
-    #         self.canvas.itemconfig(drone["oval"], fill=new_color)
 
     def create_control_buttons(self):
+        # Define styles
         button_style = {
             'font': ('Helvetica', 10, 'bold'),
             'bg': self.pink,
@@ -104,33 +106,30 @@ class SwarmGUI:
             'height': 1,
             'cursor': "hand2"
         }
+
         movement_button_style = {
             'font': ('Helvetica', 12, 'bold'),
-            'bg': '#05001c', # default background is dark blue
-            'fg': 'white', # default foreground is white (for arrow symbol)
+            'bg': '#05001c',
+            'fg': 'white',
             'relief': 'solid',
             'padx': 3,
             'pady': 3,
             'width': 2,
             'height': 1,
-            'foreground': '#e61848', # initial foreground color - will be overridden by fg: 'white'
+            'foreground': '#e61848',
             'activeforeground': '#3fd4ff',
             'borderwidth': 0,
             'cursor': 'hand2'
         }
+
         pink_border_style = {
             'highlightbackground': '#e61848',
             'highlightcolor': '#e61848',
             'highlightthickness': 2,
             'bd': 0
         }
-        light_blue_border_style = {
-            'highlightbackground': '#3fd4ff',
-            'highlightcolor': '#3fd4ff',
-            'highlightthickness': 2,
-            'bd': 0
-        }
 
+        # Helper functions for button effects
         def highlight_button(border_frame, button):
             border_frame.config(highlightbackground='#3fd4ff', highlightcolor='#3fd4ff')
             button.config(bg='white', fg='#3fd4ff')
@@ -139,57 +138,63 @@ class SwarmGUI:
             border_frame.config(highlightbackground='#e61848', highlightcolor='#e61848')
             button.config(bg='#05001c', fg='white')
 
-        def on_button_enter(event):
-            event.widget.config(bg=self.hover_purple)
-
-        def on_button_leave(event):
-            event.widget.config(bg=self.pink)
-
         def on_arrow_button_enter(event):
-            event.widget.config(bg=self.arrow_hover_blue) # Change background color for arrow buttons on hover
+            event.widget.config(bg=self.arrow_hover_blue)
 
         def on_arrow_button_leave(event):
-            event.widget.config(bg='#05001c') # Reset background color for arrow buttons on leave to default dark blue
+            event.widget.config(bg='#05001c')
 
-        # --- Left Section (Takeoff/Landing) with Border ---
-        left_control_frame = tk.Frame(self.left_frame, borderwidth=2, relief='solid', padx=5, pady=5,
-                                      highlightbackground=self.light_blue, highlightcolor=self.light_blue)
+        # Create main control frame
+        left_control_frame = self.create_border_frame(
+            self.left_frame,
+            {
+                'borderwidth': 2,
+                'relief': 'solid',
+                'padx': 5,
+                'pady': 5,
+                'highlightbackground': self.light_blue,
+                'highlightcolor': self.light_blue
+            }
+        )
         left_control_frame.pack(fill='x', pady=10)
 
-        take_off_button = tk.Button(left_control_frame, text="Take Off", command=self.take_off, **button_style)
-        take_off_button.pack(pady=5)
-        take_off_button.bind("<Enter>", on_button_enter) # Hover effect for red buttons
-        take_off_button.bind("<Leave>", on_button_leave) # Hover effect for red buttons
+        # Create main control buttons
+        main_buttons = [
+            ("Take Off", self.take_off),
+            ("Land", self.land),
+            ("Stabilize Swarm", self.stabilize_swarm),
+            ("Auto Update", self.update_timer)
+        ]
 
-        land_button = tk.Button(left_control_frame, text="Land", command=self.land, **button_style)
-        land_button.pack(pady=15)
-        land_button.bind("<Enter>", on_button_enter) # Hover effect for red buttons
-        land_button.bind("<Leave>", on_button_leave) # Hover effect for red buttons
+        for text, command in main_buttons:
+            self.create_button(left_control_frame, text, command, button_style).pack(pady=5)
 
-        # --- Other Buttons ---
-        stabilize_button = tk.Button(left_control_frame, text="Stabilize Swarm",
-                                           command=self.stabilize_swarm, **button_style)
-        stabilize_button.pack(pady=15)  # Adjust pady as needed
-        stabilize_button.bind("<Enter>", on_button_enter)
-        stabilize_button.bind("<Leave>", on_button_leave)
-
-        update_button = tk.Button(left_control_frame, text="Auto Update",
-                                     command=self.update_timer, **button_style)
-        update_button.pack(pady=15)  # Adjust pady as needed
-        update_button.bind("<Enter>", on_button_enter)
-        update_button.bind("<Leave>", on_button_leave)
-
-        # --- Right Section (Sequences) with Border ---
-        right_control_frame = tk.Frame(self.left_frame, bg=self.dark_blue, relief='solid',
-                                       padx=5, pady=5, highlightbackground=self.light_blue,
-                                       highlightcolor=self.light_blue)
+        # Create choreography section
+        right_control_frame = self.create_border_frame(
+            self.left_frame,
+            {
+                'bg': self.dark_blue,
+                'relief': 'solid',
+                'padx': 5,
+                'pady': 5,
+                'highlightbackground': self.light_blue,
+                'highlightcolor': self.light_blue
+            }
+        )
         right_control_frame.pack(fill='x', pady=10)
 
-        tk.Label(right_control_frame, text="Sequences:", font=("Helvetica", 10, "bold"), bg=self.dark_blue, fg=self.light_blue).pack() # bg and fg set explicitly
+        tk.Label(
+            right_control_frame,
+            text="Sequences:",
+            font=("Helvetica", 10, "bold"),
+            bg=self.dark_blue,
+            fg=self.light_blue
+        ).pack()
 
-        choreo_frame = tk.Frame(right_control_frame, bg=self.dark_blue) # choreo frame bg also dark blue to match
+        choreo_frame = tk.Frame(right_control_frame, bg=self.dark_blue)
         choreo_frame.pack(pady=10)
 
+        # Create choreography buttons
         choreo_buttons = [
             ("Main Choreo", self.run_main_choreo),
             ("Hexagon", self.run_hexagon),
@@ -199,57 +204,89 @@ class SwarmGUI:
         ]
 
         for text, command in choreo_buttons:
-            btn = tk.Button(choreo_frame, text=text, command=command, **button_style)
-            btn.pack(pady=3)
-            btn.bind("<Enter>", on_button_enter) # Hover effect for red buttons
-            btn.bind("<Leave>", on_button_leave) # Hover effect for red buttons
+            self.create_button(choreo_frame, text, command, button_style).pack(pady=3)
 
-        # --- Movement Buttons ---
+        # Create movement controls
         movement_frame = tk.Frame(self.left_frame, bg='#05001c')
         movement_frame.pack(pady=10)
 
-        self.forward_border = tk.Frame(movement_frame, **pink_border_style)
-        self.forward_button = tk.Button(self.forward_border, text="↑", command=lambda: [self.forward(), highlight_button(self.forward_border, self.forward_button), self.root.after(100, lambda: reset_button(self.forward_border, self.forward_button))], **movement_button_style)
-        self.forward_button.pack(in_=self.forward_border)
-        self.forward_button.config(fg='white') # set arrow color to white
-        self.forward_button.bind("<Enter>", on_arrow_button_enter) # Hover effect for arrow buttons
-        self.forward_button.bind("<Leave>", on_arrow_button_leave) # Hover effect for arrow buttons
+        # Create movement buttons with borders
+        movement_controls = [
+            ('forward', '↑', (0, 1), lambda: self.forward()),
+            ('backward', '↓', (1, 1), lambda: self.backward()),
+            ('left', '←', (1, 0), lambda: self.left()),
+            ('right', '→', (1, 2), lambda: self.right())
+        ]
 
-        self.backward_border = tk.Frame(movement_frame, **pink_border_style)
-        self.backward_button = tk.Button(self.backward_border, text="↓", command=lambda: [self.backward(), highlight_button(self.backward_border, self.backward_button), self.root.after(100, lambda: reset_button(self.backward_border, self.backward_button))], **movement_button_style)
-        self.backward_button.pack(in_=self.backward_border)
-        self.backward_button.config(fg='white') # set arrow color to white
-        self.backward_button.bind("<Enter>", on_arrow_button_enter) # Hover effect for arrow buttons
-        self.backward_button.bind("<Leave>", on_arrow_button_leave) # Hover effect for arrow buttons
+        for name, symbol, (row, col), command in movement_controls:
+            # Create border frame
+            border = self.create_border_frame(movement_frame, pink_border_style)
+            setattr(self, f"{name}_border", border)
 
-        self.left_border = tk.Frame(movement_frame, **pink_border_style)
-        self.left_button = tk.Button(self.left_border, text="←", command=lambda: [self.left(), highlight_button(self.left_border, self.left_button), self.root.after(100, lambda: reset_button(self.left_border, self.left_button))], **movement_button_style)
-        self.left_button.pack(in_=self.left_border)
-        self.left_button.config(fg='white') # set arrow color to white
-        self.left_button.bind("<Enter>", on_arrow_button_enter) # Hover effect for arrow buttons
-        self.left_button.bind("<Leave>", on_arrow_button_leave) # Hover effect for arrow buttons
+            # Create button
+            button = tk.Button(
+                border,
+                text=symbol,
+                command=lambda b=border, btn=f"{name}_button", cmd=command:
+                [cmd(), highlight_button(b, getattr(self, btn)),
+                 self.root.after(100, lambda: reset_button(b, getattr(self, btn)))],
+                **movement_button_style
+            )
+            button.pack(in_=border)
+            button.config(fg='white')
+            button.bind("<Enter>", on_arrow_button_enter)
+            button.bind("<Leave>", on_arrow_button_leave)
+            setattr(self, f"{name}_button", button)
 
-        self.right_border = tk.Frame(movement_frame, **pink_border_style)
-        self.right_button = tk.Button(self.right_border, text="→", command=lambda: [self.right(), highlight_button(self.right_border, self.right_button), self.root.after(100, lambda: reset_button(self.right_border, self.right_button))], **movement_button_style)
-        self.right_button.pack(in_=self.right_border)
-        self.right_button.config(fg='white') # set arrow color to white
-        self.right_button.bind("<Enter>", on_arrow_button_enter) # Hover effect for arrow buttons
-        self.right_button.bind("<Leave>", on_arrow_button_leave) # Hover effect for arrow buttons
-
-        self.forward_border.grid(row=0, column=1, padx=5, pady=5) # row changed to 0
-        self.left_border.grid(row=1, column=0, padx=5, pady=5) # row changed to 1
-        self.backward_border.grid(row=1, column=1, padx=5, pady=5) # row changed to 1
-        self.right_border.grid(row=1, column=2, padx=5, pady=5) # row changed to 1
-
-    def getIndices(self):
+            # Position the button
+            border.grid(row=row, column=col, padx=5, pady=5)
+    def get_indices(self):
         selected_drone_indices = []
         for index, drone in enumerate(self.droneIcons):
             if drone["selected"].get():
                 selected_drone_indices.append(index)
         return selected_drone_indices
 
+    def create_button(self, parent, text, command, style, bind_hover=True):
+        """Helper method to create buttons with consistent styling"""
+        button = tk.Button(parent, text=text, command=command, **style)
+        if bind_hover:
+            button.bind("<Enter>", lambda e: e.widget.config(bg=self.hover_purple))
+            button.bind("<Leave>", lambda e: e.widget.config(bg=self.pink))
+        return button
+
+    def create_border_frame(self, parent, style):
+        """Helper method to create border frames with consistent styling"""
+        return tk.Frame(parent, **style)
+
+
+    def move_drones(self, direction, x=0.0, y=0.0, z=0.0, speed=0.5):
+        """Generic method for drone movement"""
+        selected_drone_indices = self.get_indices()
+        if not selected_drone_indices:
+            print(f"No drones selected. Not moving {direction}.")
+            return
+
+        print(f"Moving {direction} for selected drones: {selected_drone_indices}")
+        sync_move = Sync()
+        for index in selected_drone_indices:
+            seq = Sequence(index)
+            seq.add("move_distance", x, y, z, speed)
+            sync_move.add(seq)
+        self.swarm.run(sync_move, type="parallel")
+
+    def run_choreography(self, choreo_name, sequence_func):
+        """Generic method for running choreography sequences"""
+        selected_drone_indices = self.get_indices()
+        if not selected_drone_indices:
+            print(f"No drones selected. Not running {choreo_name}.")
+            return
+
+        print(f"Running {choreo_name} for the following drones: {selected_drone_indices}")
+        sequence_func(self.swarm, selected_drone_indices)
+
     def land(self):
-        selected_drone_indices = self.getIndices()
+        selected_drone_indices = self.get_indices()
         num_selected_drones = len(selected_drone_indices)
 
         if num_selected_drones == num_drones:
@@ -272,7 +309,7 @@ class SwarmGUI:
             print("No drones selected. Not landing.")
 
     def take_off(self):
-        selected_drone_indices = self.getIndices()
+        selected_drone_indices = self.get_indices()
         num_selected_drones = len(selected_drone_indices)
 
         if num_selected_drones == num_drones:
@@ -293,83 +330,34 @@ class SwarmGUI:
             print("No drones selected. Not taking off.")
 
     def forward(self):
-        selected_drone_indices = self.getIndices()
-        num_selected_drones = len(selected_drone_indices)
-
-        if num_selected_drones > 0:
-            print(f"Moving forward for selected drones: {selected_drone_indices}")
-            sync_forward = Sync()
-            for index in selected_drone_indices:
-                seq = Sequence(index)
-                seq.add("move_distance", 0.2, 0, 0, 0.5)
-                sync_forward.add(seq)
-
-            self.swarm.run(sync_forward, type="parallel")
-        else:
-            print("No drones selected. Not moving forward.")
+        self.move_drones("forward", x=0.2)
 
     def backward(self):
-        selected_drone_indices = self.getIndices()
-        num_selected_drones = len(selected_drone_indices)
-
-        if num_selected_drones > 0:
-            print(f"Moving backward for selected drones: {selected_drone_indices}")
-            sync_backward = Sync()
-            for index in selected_drone_indices:
-                seq = Sequence(index)
-                seq.add("move_distance", -0.2, 0, 0, 0.5)
-                sync_backward.add(seq)
-
-            self.swarm.run(sync_backward, type="parallel")
-        else:
-            print("No drones selected. Not moving backward.")
+        self.move_drones("backward", x=-0.2)
 
     def left(self):
-        selected_drone_indices = self.getIndices()
-        num_selected_drones = len(selected_drone_indices)
-
-        if num_selected_drones > 0:
-            print(f"Moving left for selected drones: {selected_drone_indices}")
-            sync_left = Sync()
-            for index in selected_drone_indices:
-                seq = Sequence(index)
-                seq.add("move_distance", 0, 0.2, 0, 0.5)
-                sync_left.add(seq)
-
-            self.swarm.run(sync_left, type="parallel")
-        else:
-            print("No drones selected. Not moving left.")
+        self.move_drones("left", y=0.2)
 
     def right(self):
-        selected_drone_indices = self.getIndices()
-        num_selected_drones = len(selected_drone_indices)
-
-        if num_selected_drones > 0:
-            print(f"Moving right for selected drones: {selected_drone_indices}")
-            sync_right = Sync()
-            for index in selected_drone_indices:
-                seq = Sequence(index)
-                seq.add("move_distance", 0, -0.2, 0, 0.5)
-                sync_right.add(seq)
-
-            self.swarm.run(sync_right, type="parallel")
-        else:
-            print("No drones selected. Not moving right.")
+        self.move_drones("right", y=-0.2)
 
     def run_main_choreo(self):
-        print("Running main choreography...")
-        # import mainchoreo
-        # mainchoreo.run_sequence(self.swarm)
+        print("run main")
+            #self.run_choreography("main choreography", mainchoreo.run_sequence)
+
     def run_hexagon(self):
-        print("Running hexagon choreography...")
-        # import hexagon
-        # hexagon.run_sequence(self.swarm)
+        print("run_hexagon")
+            # self.run_choreography("hexagon choreography", hexagon.run_sequence)
+
     def run_spiral_and_flip(self):
-        print("Running spiral and flip choreography...")
-        # import spiralandflip
-        # spiralandflip.run_sequence(self.swarm)
+        print("run spiral and flip")
+            #self.run_choreography("spiral and flip choreography", spiralandflip.run_sequence)
+
+    def run_wiggle(self):
+        print("run wiggle")
+            #self.run_choreography("wiggle choreography", wiggle.run_sequence)
     def run_spiral(self):
-        selected_drone_indices = self.getIndices()
+        selected_drone_indices = self.get_indices()
         num_selected_drones = len(selected_drone_indices)
 
         if num_selected_drones > 0:
@@ -382,10 +370,6 @@ class SwarmGUI:
             self.swarm.run(sync_right, type="parallel")  # Run synchronized right movement for selected drones
         else:  # Check if NO drones are selected
             print("No drones selected. Not moving right.")  # Do nothing - no movement
-    def run_wiggle(self):
-        print("Running wiggle choreography...")
-        # import wiggle
-        # wiggle.run_sequence(self.swarm)
 
     def create_input_section(self):
         self.label_style = {
@@ -455,8 +439,8 @@ class SwarmGUI:
             **self.button_style
         )
         self.set_coords_button.grid(row=0, column=8, padx=(10, 0), pady=5)
-        self.set_coords_button.bind("<Enter>", on_button_enter) # Hover effect for red buttons
-        self.set_coords_button.bind("<Leave>", on_button_leave) # Hover effect for red buttons
+        self.set_coords_button.bind("<Enter>", on_button_enter)  # Hover effect for red buttons
+        self.set_coords_button.bind("<Leave>", on_button_leave)  # Hover effect for red buttons
 
     def stabilize_swarm(self):
         if not self.hasGeneratedGrid:
@@ -558,7 +542,7 @@ class SwarmGUI:
 
 # Should run when the drones are landed
     def reset_offsets(self):
-        selected_drone_indices = self.getIndices()
+        selected_drone_indices = self.get_indices()
         num_selected_drones = len(selected_drone_indices)
 
         for i in range(num_selected_drones):

@@ -1,3 +1,4 @@
+
 import math
 import tkinter as tk
 from tkinter import colorchooser
@@ -82,7 +83,7 @@ class SwarmGUI:
 
         self.create_input_section()
         self.create_control_buttons()
-        self.default_colors = ['red', 'blue', 'orange', 'yellow', 'green', 'light blue', 'purple', 'pink', 'white', 'black']
+        self.default_colors = ['red', 'blue', 'orange', 'yellow', 'green', '#00ffff', 'purple', 'pink', 'white', 'black']
         self.bind_keys()
         self.root.geometry("400x690")
         self.create_grid()
@@ -346,8 +347,9 @@ class SwarmGUI:
             #self.run_choreography("main choreography", mainchoreo.run_sequence)
 
     def run_hexagon(self):
-        print("run_hexagon")
-            # self.run_choreography("hexagon choreography", hexagon.run_sequence)
+        from hexagon import Hexagon
+        runHexagonChoreo = Hexagon()
+        self.run_choreography("hexagon choreography", runHexagonChoreo.run_sequence)
 
     def run_spiral_and_flip(self):
         print("run spiral and flip")

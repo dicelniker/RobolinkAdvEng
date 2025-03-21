@@ -7,15 +7,18 @@ class Hexagon:
     def __init__(self):
         return
 
-    def run_sequence(self, swarm):
+    def run_sequence(self, swarm, selected_drone_indices):
         drones = swarm.get_drones()
+        if len(selected_drone_indices) != 6:
+            print("Please select six drones to run the choreography")
+            return
 
-        drone1 = drones[0]
-        drone2 = drones[1]
-        drone3 = drones[2]
-        drone4 = drones[3]
-        drone5 = drones[4]
-        drone6 = drones[5]
+        drone1 = drones[selected_drone_indices[0]]
+        drone2 = drones[selected_drone_indices[1]]
+        drone3 = drones[selected_drone_indices[2]]
+        drone4 = drones[selected_drone_indices[3]]
+        drone5 = drones[selected_drone_indices[4]]
+        drone6 = drones[selected_drone_indices[5]]
 
         a = 1.5*math.sqrt(3)/2
         b = 1.5*0.5

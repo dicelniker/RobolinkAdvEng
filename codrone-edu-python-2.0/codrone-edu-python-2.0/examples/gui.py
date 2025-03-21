@@ -356,7 +356,24 @@ class SwarmGUI:
             #self.run_choreography("spiral and flip choreography", spiralandflip.run_sequence)
 
     def run_wiggle(self):
-        print("run wiggle")
+        vel = 0.3
+        zigdist = 0.1
+        selected_drone_indices = self.get_indices()
+        num_selected_drones = len(selected_drone_indices)
+        if num_selected_drones > 0:
+            #self.run_choreography("wiggle choreography", wiggle.run_sequence)
+            print(f'Running wiggle for the following drones: {selected_drone_indices}')
+            sync_wig = Sync()
+            for index in selected_drone_indices:
+                seq = Sequence(index)  # Create a Sequence for each selected drone
+                seq.add('move_distance', 0,0,0.2,vel)
+                for i in range(3):
+                    seq.add('move_distance', zigdist, zigdist, 0, vel)
+                    seq.add('move_distance', zigdist, -zigdist, 0, vel)
+                sync_wig.add(seq)  # Add sequence to Sync object
+            self.swarm.run(sync_wig, type="parallel")  # Run synchronized right movement for selected drones
+        else:
+            print("No drones")
             #self.run_choreography("wiggle choreography", wiggle.run_sequence)
     def run_spiral(self):
         selected_drone_indices = self.get_indices()

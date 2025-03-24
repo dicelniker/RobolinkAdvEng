@@ -1,19 +1,17 @@
 import math
 
-from swarm2 import *
-from codrone_edu import *
+from codrone_edu.swarm import *
 
 class Choreography():
 
     def __init__(self):
         return
 
-    def runSequence(self, swarm):
-        drones = swarm.get_drone_objects()
-        drone1, drone2, drone3 = drones[0], drones[1], drones[2]
+    def runSequence(self, swarm, selected_drone_indices):
+        sync = Sync()
 
         # Define movement parameters
-        forward_distance = 3.0  # total forward distance in meters
+        forward_distance = 2.0  # total forward distance in meters
         amplitude = 0.3  # how far to wiggle side to side in meters
         steps = 30  # number of points in the path
         duration = 6  # total time for movement in seconds
@@ -28,8 +26,10 @@ class Choreography():
             z = 0  # Maintain constant height
 
             # Send position commands to all drones
-            for drone in [drone1, drone2, drone3]:
-                drone.sendControlPosition(x, y, z, 0.5, 0, 0)
+            for i in selected_drone_indices:
+                seq = Sequence(i)
+                seq.add('sendControlPosition', x, y, z, 0.5, 0, 0)
+                sync.add(seq)
 
             # Wait a short time between movements for smooth motion
             sleep(duration / steps)

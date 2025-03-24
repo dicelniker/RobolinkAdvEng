@@ -276,15 +276,46 @@ class SwarmGUI:
             sync_move.add(seq)
         self.swarm.run(sync_move, type="parallel")
 
-    def run_choreography(self, choreo_name, sequence_func):
-        """Generic method for running choreography sequences"""
-        selected_drone_indices = self.get_indices()
-        if not selected_drone_indices:
-            print(f"No drones selected. Not running {choreo_name}.")
+    def goto_position(self, drone_index, target_x, target_y, target_z, speed=0.5):
+        """
+        Move a drone to a specific position on both the graph and in the physical world.
+
+        Parameters:
+        - drone_index: Index of the drone to move
+        - target_x: Target X coordinate on the graph
+        - target_y: Target Y coordinate on the graph
+        - target_z: Target Z coordinate (height)
+        - speed: Movement speed (default 0.5 m/s)
+        """
+        if not (0 <= drone_index < len(self.droneIcons)):
+            print(f"Invalid drone index: {drone_index}")
             return
 
-        print(f"Running {choreo_name} for the following drones: {selected_drone_indices}")
-        sequence_func(self.swarm, selected_drone_indices)
+        drone = self.droneIcons[drone_index]
+
+        # Get current position
+        current_x = drone["x_position"] if drone["x_position"] is not None else 0
+        current_y = drone["y_position"] if drone["y_position"] is not None else 0
+        current_z = drone["z_position"] if drone["z_position"] is not None else 0
+
+        # Calculate relative movement needed
+        # Subtract the offsets because sendControlPosition is relative to drone's own coordinate system
+        final_x = target_x - (drone["x_offset"] if drone["x_offset"] is not None else 0)
+        final_y = target_y - (drone["y_offset"] if drone["y_offset"] is not None else 0)
+        final_z = target_z
+
+        print(f"Moving drone {drone_index} to position ({target_x:.2f}, {target_y:.2f}, {target_z:.2f})")
+        print(f"Current position: ({current_x:.2f}, {current_y:.2f}, {current_z:.2f})")
+
+        # Create sequence for the movement
+        seq = Sequence(drone_index)
+        seq.add("sendControlPosition", final_x, final_y, final_z, speed, 0, 0)
+
+        # Execute the movement
+        self.swarm.run(seq)
+
+        # Update the position on the graph
+        self.set_drone_position(drone_index, target_x, target_y, target_z)
 
     def land(self):
         selected_drone_indices = self.get_indices()
@@ -343,37 +374,34 @@ class SwarmGUI:
         self.move_drones("right", y=-0.2)
 
     def run_main_choreo(self):
-        print("run main")
-            #self.run_choreography("main choreography", mainchoreo.run_sequence)
+        from mainChoreography import MainChoreo
+        run = MainChoreo(self)
+        selected_drone_indices = self.get_indices()
+        if not selected_drone_indices:
+            print(f"No drones selected. Not running main choreo sequence.")
+            return
+
+        print(f"Running main choreo sequence for the following drones: {selected_drone_indices}")
+        run.run_sequence(self.swarm, selected_drone_indices)
 
     def run_hexagon(self):
         from hexagon import Hexagon
         runHexagonChoreo = Hexagon()
-        self.run_choreography("hexagon choreography", runHexagonChoreo.run_sequence)
+        selected_drone_indices = self.get_indices()
+        if not selected_drone_indices:
+            print(f"No drones selected. Not running hexagon sequence.")
+            return
+
+        print(f"Running hexagon sequence for the following drones: {selected_drone_indices}")
+        self.take_off()
+        runHexagonChoreo.run_sequence(self.swarm, selected_drone_indices)
 
     def run_spiral_and_flip(self):
         print("run spiral and flip")
             #self.run_choreography("spiral and flip choreography", spiralandflip.run_sequence)
 
     def run_wiggle(self):
-        vel = 0.3
-        zigdist = 0.1
-        selected_drone_indices = self.get_indices()
-        num_selected_drones = len(selected_drone_indices)
-        if num_selected_drones > 0:
-            #self.run_choreography("wiggle choreography", wiggle.run_sequence)
-            print(f'Running wiggle for the following drones: {selected_drone_indices}')
-            sync_wig = Sync()
-            for index in selected_drone_indices:
-                seq = Sequence(index)  # Create a Sequence for each selected drone
-                seq.add('move_distance', 0,0,0.2,vel)
-                for i in range(3):
-                    seq.add('move_distance', zigdist, zigdist, 0, vel)
-                    seq.add('move_distance', zigdist, -zigdist, 0, vel)
-                sync_wig.add(seq)  # Add sequence to Sync object
-            self.swarm.run(sync_wig, type="parallel")  # Run synchronized right movement for selected drones
-        else:
-            print("No drones")
+        print("run wiggle")
             #self.run_choreography("wiggle choreography", wiggle.run_sequence)
     def run_spiral(self):
         selected_drone_indices = self.get_indices()

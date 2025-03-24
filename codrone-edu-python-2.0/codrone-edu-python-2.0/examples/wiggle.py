@@ -33,3 +33,5 @@ class Choreography():
 
             # Wait a short time between movements for smooth motion
             sleep(duration / steps)
+            
+        swarm.run(sync)

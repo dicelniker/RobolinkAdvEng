@@ -1,0 +1,1657 @@
+<html><head><style>body {
+   color: black;
+}
+</style></head><body><h2 id="drone-class-documentation">Drone Class Documentation</h2>
+<p><strong>Description:</strong> This class provides an interface for interacting with the CoDrone EDU drone. It includes functionalities for connecting to the drone, controlling its movement, accessing sensor data, managing LEDs and buzzers, and performing advanced flight sequences.</p>
+<h3 id="initialization-__init__-">Initialization (<code>__init__</code>)</h3>
+<p><strong>Description:</strong> Initializes the Drone object, setting up serial communication, receiver, event handlers, and other internal variables.</p>
+<p><strong>Parameters:</strong></p>
+<ul>
+<li><code>flagCheckBackground</code>: Boolean, determines whether to automatically update data in the background. Default: True</li>
+<li><code>flagShowErrorMessage</code>: Boolean, determines whether to display error messages. Default: False</li>
+<li><code>flagShowLogMessage</code>: Boolean, determines whether to display log messages. Default: False</li>
+<li><code>flagShowTransferData</code>: Boolean, determines whether to display transferred data. Default: False</li>
+<li><code>flagShowReceiveData</code>: Boolean, determines whether to display received data. Default: False</li>
+<li><code>swarm</code>: Boolean, True if drone is part of a swarm, False otherwise. When True, asyncio.sleep is not overwritten. Default: False</li>
+</ul>
+<p><strong>Returns:</strong> None</p>
+<h3 id="destructor-__del__-">Destructor (<code>__del__</code>)</h3>
+<p><strong>Description:</strong> Releases the serial port if its still open when the object is destroyed. Disconnects the drone when object is destroyed.</p>
+<p><strong>Parameters:</strong> None</p>
+<p><strong>Returns:</strong> None</p>
+<h3 id="methods">Methods</h3>
+<h4 id="-add_callback-name-callback-"><code>add_callback(name, callback)</code></h4>
+<p><strong>Description:</strong> Adds a callback function for specific events on the Emscripten platform only.</p>
+<p><strong>Parameters:</strong></p>
+<ul>
+<li><code>name</code>: String, the name of the event (&#39;roll_pitch&#39; or &#39;speed&#39;).</li>
+<li><code>callback</code>: Function, the callback function to be executed.</li>
+</ul>
+<p><strong>Returns:</strong> None</p>
+<h4 id="-get_sensor_data-delay-0-01-"><code>get_sensor_data(delay=0.01)</code></h4>
+<p><strong>Description:</strong> Requests and returns a list of sensor data, including altitude, motion, position, range, and state information.</p>
+<p><strong>Parameters:</strong></p>
+<ul>
+<li><code>delay</code>: Float, the delay in seconds between each sensor request. Default: 0.01</li>
+</ul>
+<p><strong>Returns:</strong> List, a list containing sensor data.</p>
+<h4 id="-update_error_data-drone_type-"><code>update_error_data(drone_type)</code></h4>
+<p><strong>Description:</strong> Updates the error data based on the provided drone type.</p>
+<p><strong>Parameters:</strong></p>
+<ul>
+<li><code>drone_type</code>: DroneType object containing error flags for sensor and state.</li>
+</ul>
+<p><strong>Returns:</strong> None</p>
+<h4 id="-update_altitude_data-drone_type-"><code>update_altitude_data(drone_type)</code></h4>
+<p><strong>Description:</strong> Updates the altitude data based on the provided drone type.</p>
+<p><strong>Parameters:</strong></p>
+<ul>
+<li><code>drone_type</code>: DroneType object containing altitude data (temperature, pressure, altitude, rangeHeight).</li>
+</ul>
+<p><strong>Returns:</strong> None</p>
+<h4 id="-get_altitude_data-delay-0-01-"><code>get_altitude_data(delay=0.01)</code></h4>
+<p><strong>Description:</strong> Requests and returns the current altitude data.</p>
+<p><strong>Parameters:</strong></p>
+<ul>
+<li><code>delay</code>: Float, the delay in seconds after sending the request. Default: 0.01</li>
+</ul>
+<p><strong>Returns:</strong> List, a list containing altitude data.</p>
+<h4 id="-get_error_data-delay-0-2-print_error-true-"><code>get_error_data(delay=0.2, print_error=True)</code></h4>
+<p><strong>Description:</strong> Retrieves the current error data from the drone. Optional prints the error flags.</p>
+<p><strong>Parameters:</strong></p>
+<ul>
+<li><code>delay</code>: Float, the delay in seconds after sending the request. Default: 0.2</li>
+<li><code>print_error</code>: Boolean, whether to print the error data to the console. Default: True</li>
+</ul>
+<p><strong>Returns:</strong> List, a list containing error data.</p>
+<h4 id="-get_pressure-unit-pa-"><code>get_pressure(unit=&quot;Pa&quot;)</code></h4>
+<p><strong>Description:</strong> Requests the pressure reading from the drone in the specified unit.</p>
+<p><strong>Parameters:</strong></p>
+<ul>
+<li><code>unit</code>: String, the unit of pressure (&#39;Pa&#39;, &#39;KPa&#39;, &#39;mB&#39;, &#39;inHg&#39;, &#39;torr&#39;, &#39;atm&#39;). Default: &#39;Pa&#39;</li>
+</ul>
+<p><strong>Returns:</strong> Float, the pressure reading in the specified unit.</p>
+<h4 id="-get_elevation-unit-m-"><code>get_elevation(unit=&quot;m&quot;)</code></h4>
+<p><strong>Description:</strong> Requests the elevation from the drone in the specified unit.</p>
+<p><strong>Parameters:</strong></p>
+<ul>
+<li><code>unit</code>: String, the unit of elevation (&#39;m&#39;, &#39;km&#39;, &#39;ft&#39;, &#39;mi&#39;). Default: &#39;m&#39;</li>
+</ul>
+<p><strong>Returns:</strong> Float, the elevation in the specified unit.</p>
+<h4 id="-set_initial_pressure-"><code>set_initial_pressure()</code></h4>
+<p><strong>Description:</strong> Sets the initial pressure for calculating height from pressure.</p>
+<p><strong>Parameters:</strong> None</p>
+<p><strong>Returns:</strong> None</p>
+<h4 id="-height_from_pressure-b-0-m-9-34-"><code>height_from_pressure(b=0, m=9.34)</code></h4>
+<p><strong>Description:</strong> Calculates the height from the pressure using the formula: (initial_pressure - current_pressure + b) * m.</p>
+<p><strong>Parameters:</strong></p>
+<ul>
+<li><code>b</code>: Float, the slope intercept. Default: 0</li>
+<li><code>m</code>: Float, the slope in millimeters per pascal. Default: 9.34</li>
+</ul>
+<p><strong>Returns:</strong> Float, the height in millimeters.</p>
+<h4 id="-get_drone_temperature-unit-c-"><code>get_drone_temperature(unit=&quot;C&quot;)</code></h4>
+<p><strong>Description:</strong> Requests and returns the temperature reading from the drone in the specified unit.</p>
+<p><strong>Parameters:</strong></p>
+<ul>
+<li><code>unit</code>: String, the unit of temperature (&#39;C&#39;, &#39;F&#39;, &#39;K&#39;). Default: &#39;C&#39;</li>
+</ul>
+<p><strong>Returns:</strong> Float, the temperature in the specified unit.</p>
+<h4 id="-update_range_data-drone_type-"><code>update_range_data(drone_type)</code></h4>
+<p><strong>Description:</strong> Updates the range data based on the provided drone type.</p>
+<p><strong>Parameters:</strong></p>
+<ul>
+<li><code>drone_type</code>: DroneType object containing range data (front, bottom).</li>
+</ul>
+<p><strong>Returns:</strong> None</p>
+<h4 id="-get_range_data-delay-0-01-"><code>get_range_data(delay=0.01)</code></h4>
+<p><strong>Description:</strong> Requests and returns the current range data.</p>
+<p><strong>Parameters:</strong></p>
+<ul>
+<li><code>delay</code>: Float, the delay in seconds after sending the request. Default: 0.01</li>
+</ul>
+<p><strong>Returns:</strong> List, a list containing range data.</p>
+<h4 id="-convert_meter-meter-conversion-cm-"><code>convert_meter(meter, conversion=&quot;cm&quot;)</code></h4>
+<p><strong>Description:</strong> Converts a distance in meters to the specified unit.</p>
+<p><strong>Parameters:</strong></p>
+<ul>
+<li><code>meter</code>: Float, the distance in meters.</li>
+<li><code>conversion</code>: String, the unit to convert to (&#39;cm&#39;, &#39;mm&#39;, &#39;in&#39;, &#39;m&#39;). Default: &#39;cm&#39;</li>
+</ul>
+<p><strong>Returns:</strong> Float, the converted distance.</p>
+<h4 id="-convert_millimeter-millimeter-conversion-cm-"><code>convert_millimeter(millimeter, conversion=&quot;cm&quot;)</code></h4>
+<p><strong>Description:</strong> Converts a distance in millimeters to the specified unit.</p>
+<p><strong>Parameters:</strong></p>
+<ul>
+<li><code>millimeter</code>: Float, the distance in millimeters.</li>
+<li><code>conversion</code>: String, the unit to convert to (&#39;cm&#39;, &#39;mm&#39;, &#39;in&#39;, &#39;m&#39;). Default: &#39;cm&#39;</li>
+</ul>
+<p><strong>Returns:</strong> Float, the converted distance.</p>
+<h4 id="-get_front_range-unit-cm-"><code>get_front_range(unit=&quot;cm&quot;)</code></h4>
+<p><strong>Description:</strong> Requests the front range data from the drone in the specified unit.</p>
+<p><strong>Parameters:</strong></p>
+<ul>
+<li><code>unit</code>: String, the unit of distance (&#39;cm&#39;, &#39;mm&#39;, &#39;in&#39;, &#39;m&#39;). Default: &#39;cm&#39;</li>
+</ul>
+<p><strong>Returns:</strong> Float, the front range in the specified unit.</p>
+<h4 id="-get_bottom_range-unit-cm-"><code>get_bottom_range(unit=&quot;cm&quot;)</code></h4>
+<p><strong>Description:</strong> Requests the bottom range data from the drone in the specified unit.</p>
+<p><strong>Parameters:</strong></p>
+<ul>
+<li><code>unit</code>: String, the unit of distance (&#39;cm&#39;, &#39;mm&#39;, &#39;in&#39;, &#39;m&#39;). Default: &#39;cm&#39;</li>
+</ul>
+<p><strong>Returns:</strong> Float, the bottom range in the specified unit.</p>
+<h4 id="-update_color_data-drone_type-"><code>update_color_data(drone_type)</code></h4>
+<p><strong>Description:</strong> Updates the color data based on the provided drone type.</p>
+<p><strong>Parameters:</strong></p>
+<ul>
+<li><code>drone_type</code>: DroneType object containing color data (hsvl, color, card).</li>
+</ul>
+<p><strong>Returns:</strong> None</p>
+<h4 id="-get_color_data-delay-0-01-"><code>get_color_data(delay=0.01)</code></h4>
+<p><strong>Description:</strong> Requests and returns the current color data.</p>
+<p><strong>Parameters:</strong></p>
+<ul>
+<li><code>delay</code>: Float, the delay in seconds after sending the request. Default: 0.01</li>
+</ul>
+<p><strong>Returns:</strong> List, a list containing color data.</p>
+<h4 id="-update_position_data-drone_type-"><code>update_position_data(drone_type)</code></h4>
+<p><strong>Description:</strong> Updates the position data based on the provided drone type.</p>
+<p><strong>Parameters:</strong></p>
+<ul>
+<li><code>drone_type</code>: DroneType object containing position data (x, y, z).</li>
+</ul>
+<p><strong>Returns:</strong> None</p>
+<h4 id="-get_position_data-delay-0-01-"><code>get_position_data(delay=0.01)</code></h4>
+<p><strong>Description:</strong> Requests and returns the current position data.</p>
+<p><strong>Parameters:</strong></p>
+<ul>
+<li><code>delay</code>: Float, the delay in seconds after sending the request. Default: 0.01</li>
+</ul>
+<p><strong>Returns:</strong> List, a list containing position data.</p>
+<h4 id="-get_pos_x-unit-cm-"><code>get_pos_x(unit=&quot;cm&quot;)</code></h4>
+<p><strong>Description:</strong> Requests the x-coordinate position data from the drone in the specified unit.</p>
+<p><strong>Parameters:</strong></p>
+<ul>
+<li><code>unit</code>: String, the unit of distance (&#39;cm&#39;, &#39;mm&#39;, &#39;in&#39;, &#39;m&#39;). Default: &#39;cm&#39;</li>
+</ul>
+<p><strong>Returns:</strong> Float, the x-coordinate position in the specified unit.</p>
+<h4 id="-get_pos_y-unit-cm-"><code>get_pos_y(unit=&quot;cm&quot;)</code></h4>
+<p><strong>Description:</strong> Requests the y-coordinate position data from the drone in the specified unit.</p>
+<p><strong>Parameters:</strong></p>
+<ul>
+<li><code>unit</code>: String, the unit of distance (&#39;cm&#39;, &#39;mm&#39;, &#39;in&#39;, &#39;m&#39;). Default: &#39;cm&#39;</li>
+</ul>
+<p><strong>Returns:</strong> Float, the y-coordinate position in the specified unit.</p>
+<h4 id="-get_pos_z-unit-cm-"><code>get_pos_z(unit=&quot;cm&quot;)</code></h4>
+<p><strong>Description:</strong> Requests the z-coordinate position data from the drone in the specified unit.</p>
+<p><strong>Parameters:</strong></p>
+<ul>
+<li><code>unit</code>: String, the unit of distance (&#39;cm&#39;, &#39;mm&#39;, &#39;in&#39;, &#39;m&#39;). Default: &#39;cm&#39;</li>
+</ul>
+<p><strong>Returns:</strong> Float, the z-coordinate position in the specified unit.</p>
+<h4 id="-get_height-unit-cm-"><code>get_height(unit=&quot;cm&quot;)</code></h4>
+<p><strong>Description:</strong> Gets the height of the drone</p>
+<p><strong>Parameters:</strong></p>
+<ul>
+<li><code>unit</code>: String, the unit of distance (&#39;cm&#39;, &#39;mm&#39;, &#39;in&#39;, &#39;m&#39;). Default: &#39;cm&#39;</li>
+</ul>
+<p><strong>Returns:</strong> Float, the height of the drone.</p>
+<h4 id="-update_flow_data-drone_type-"><code>update_flow_data(drone_type)</code></h4>
+<p><strong>Description:</strong> Updates the raw flow data based on the provided drone type.</p>
+<p><strong>Parameters:</strong></p>
+<ul>
+<li><code>drone_type</code>: DroneType object containing flow data (x, y).</li>
+</ul>
+<p><strong>Returns:</strong> None</p>
+<h4 id="-get_flow_data-delay-0-01-"><code>get_flow_data(delay=0.01)</code></h4>
+<p><strong>Description:</strong> Requests and returns the current raw flow data.</p>
+<p><strong>Parameters:</strong></p>
+<ul>
+<li><code>delay</code>: Float, the delay in seconds after sending the request. Default: 0.01</li>
+</ul>
+<p><strong>Returns:</strong> List, a list containing flow data.</p>
+<h4 id="-get_flow_velocity_x-unit-cm-"><code>get_flow_velocity_x(unit=&quot;cm&quot;)</code></h4>
+<p><strong>Description:</strong> Requests the X component of the flow velocity from the drone in the specified unit.</p>
+<p><strong>Parameters:</strong></p>
+<ul>
+<li><code>unit</code>: String, the unit of distance (&#39;cm&#39;, &#39;mm&#39;, &#39;in&#39;, &#39;m&#39;). Default: &#39;cm&#39;</li>
+</ul>
+<p><strong>Returns:</strong> Float, the x flow velocity in the specified unit.</p>
+<h4 id="-get_flow_velocity_y-unit-cm-"><code>get_flow_velocity_y(unit=&quot;cm&quot;)</code></h4>
+<p><strong>Description:</strong> Requests the Y component of the flow velocity from the drone in the specified unit.</p>
+<p><strong>Parameters:</strong></p>
+<ul>
+<li><code>unit</code>: String, the unit of distance (&#39;cm&#39;, &#39;mm&#39;, &#39;in&#39;, &#39;m&#39;). Default: &#39;cm&#39;</li>
+</ul>
+<p><strong>Returns:</strong> Float, the y flow velocity in the specified unit.</p>
+<h4 id="-update_state_data-drone_type-"><code>update_state_data(drone_type)</code></h4>
+<p><strong>Description:</strong> Updates the state data based on the provided drone type.</p>
+<p><strong>Parameters:</strong></p>
+<ul>
+<li><code>drone_type</code>: DroneType object containing state data (modeSystem, modeFlight, modeControlFlight, headless, sensorOrientation, battery).</li>
+</ul>
+<p><strong>Returns:</strong> None</p>
+<h4 id="-get_state_data-delay-0-01-"><code>get_state_data(delay=0.01)</code></h4>
+<p><strong>Description:</strong> Requests and returns the current state data.</p>
+<p><strong>Parameters:</strong></p>
+<ul>
+<li><code>delay</code>: Float, the delay in seconds after sending the request. Default: 0.01</li>
+</ul>
+<p><strong>Returns:</strong> List, a list containing state data.</p>
+<h4 id="-get_battery-"><code>get_battery()</code></h4>
+<p><strong>Description:</strong> Returns the battery level of the drone as a percentage.</p>
+<p><strong>Parameters:</strong> None</p>
+<p><strong>Returns:</strong> Integer, the battery level (0-100).</p>
+<h4 id="-get_flight_state-"><code>get_flight_state()</code></h4>
+<p><strong>Description:</strong> Returns the current flight state of the drone</p>
+<p><strong>Parameters:</strong> None</p>
+<p><strong>Returns:</strong> The current flight state of the drone.</p>
+<h4 id="-get_movement_state-"><code>get_movement_state()</code></h4>
+<p><strong>Description:</strong> Returns the current movement state of the drone</p>
+<p><strong>Parameters:</strong> None</p>
+<p><strong>Returns:</strong> The current movement state of the drone.</p>
+<h4 id="-get_control_speed-"><code>get_control_speed()</code></h4>
+<p><strong>Description:</strong> Returns the control speed of the drone</p>
+<p><strong>Parameters:</strong> None</p>
+<p><strong>Returns:</strong> The current control speed of the drone.</p>
+<h4 id="-speed_change-speed_level-1-"><code>speed_change(speed_level=1)</code></h4>
+<p><strong>Description:</strong> Changes the control speed of the drone.</p>
+<p><strong>Parameters:</strong></p>
+<ul>
+<li><code>speed_level</code>: Integer, the desired speed level (1-3). Default: 1</li>
+</ul>
+<p><strong>Returns:</strong> None</p>
+<h4 id="-update_motion_data-drone_type-"><code>update_motion_data(drone_type)</code></h4>
+<p><strong>Description:</strong> Updates the motion data based on the provided drone type.</p>
+<p><strong>Parameters:</strong></p>
+<ul>
+<li><code>drone_type</code>: DroneType object containing motion data (accelX, accelY, accelZ, gyroRoll, gyroPitch, gyroYaw, angleRoll, anglePitch, angleYaw).</li>
+</ul>
+<p><strong>Returns:</strong> None</p>
+<h4 id="-get_motion_data-delay-0-01-"><code>get_motion_data(delay=0.01)</code></h4>
+<p><strong>Description:</strong> Requests and returns the current motion data.</p>
+<p><strong>Parameters:</strong></p>
+<ul>
+<li><code>delay</code>: Float, the delay in seconds after sending the request. Default: 0.01</li>
+</ul>
+<p><strong>Returns:</strong> List, a list containing motion data.</p>
+<h4 id="-update_raw_motion_data-drone_type-"><code>update_raw_motion_data(drone_type)</code></h4>
+<p><strong>Description:</strong> Updates the raw motion data based on the provided drone type.</p>
+<p><strong>Parameters:</strong></p>
+<ul>
+<li><code>drone_type</code>: DroneType object containing raw motion data (accelX, accelY, accelZ, gyroRoll, gyroPitch, gyroYaw).</li>
+</ul>
+<p><strong>Returns:</strong> None</p>
+<h4 id="-get_raw_motion_data-delay-0-01-"><code>get_raw_motion_data(delay=0.01)</code></h4>
+<p><strong>Description:</strong> Requests and returns the current raw motion data.</p>
+<p><strong>Parameters:</strong></p>
+<ul>
+<li><code>delay</code>: Float, the delay in seconds after sending the request. Default: 0.01</li>
+</ul>
+<p><strong>Returns:</strong> List, a list containing raw motion data.</p>
+<h4 id="-get_accel_x-"><code>get_accel_x()</code></h4>
+<p><strong>Description:</strong> Returns the X acceleration data from the drone.</p>
+<p><strong>Parameters:</strong> None</p>
+<p><strong>Returns:</strong> Integer, the X acceleration value.</p>
+<h4 id="-get_accel_y-"><code>get_accel_y()</code></h4>
+<p><strong>Description:</strong> Returns the Y acceleration data from the drone.</p>
+<p><strong>Parameters:</strong> None</p>
+<p><strong>Returns:</strong> Integer, the Y acceleration value.</p>
+<h4 id="-get_accel_z-"><code>get_accel_z()</code></h4>
+<p><strong>Description:</strong> Returns the Z acceleration data from the drone.</p>
+<p><strong>Parameters:</strong> None</p>
+<p><strong>Returns:</strong> Integer, the Z acceleration value.</p>
+<h4 id="-get_angular_speed_x-"><code>get_angular_speed_x()</code></h4>
+<p><strong>Description:</strong> Returns the X gyro data from the drone.</p>
+<p><strong>Parameters:</strong> None</p>
+<p><strong>Returns:</strong> Integer, the X gyro value.</p>
+<h4 id="-get_angular_speed_y-"><code>get_angular_speed_y()</code></h4>
+<p><strong>Description:</strong> Returns the Y gyro data from the drone.</p>
+<p><strong>Parameters:</strong> None</p>
+<p><strong>Returns:</strong> Integer, the Y gyro value.</p>
+<h4 id="-get_angular_speed_z-"><code>get_angular_speed_z()</code></h4>
+<p><strong>Description:</strong> Returns the Z gyro data from the drone.</p>
+<p><strong>Parameters:</strong> None</p>
+<p><strong>Returns:</strong> Integer, the Z gyro value.</p>
+<h4 id="-get_angle_x-"><code>get_angle_x()</code></h4>
+<p><strong>Description:</strong> Returns the roll angle data from the drone.</p>
+<p><strong>Parameters:</strong> None</p>
+<p><strong>Returns:</strong> Integer, the roll angle value.</p>
+<h4 id="-get_angle_y-"><code>get_angle_y()</code></h4>
+<p><strong>Description:</strong> Returns the pitch angle data from the drone.</p>
+<p><strong>Parameters:</strong> None</p>
+<p><strong>Returns:</strong> Integer, the pitch angle value.</p>
+<h4 id="-get_angle_z-"><code>get_angle_z()</code></h4>
+<p><strong>Description:</strong> Returns the yaw angle data from the drone.</p>
+<p><strong>Parameters:</strong> None</p>
+<p><strong>Returns:</strong> Integer, the yaw angle value.</p>
+<h4 id="-update_joystick_data-drone_type-"><code>update_joystick_data(drone_type)</code></h4>
+<p><strong>Description:</strong> Updates the joystick data based on the provided drone type.</p>
+<p><strong>Parameters:</strong></p>
+<ul>
+<li><code>drone_type</code>: DroneType object containing joystick data (x, y, direction, event).</li>
+</ul>
+<p><strong>Returns:</strong> None</p>
+<h4 id="-get_joystick_data-delay-0-01-"><code>get_joystick_data(delay=0.01)</code></h4>
+<p><strong>Description:</strong> Requests and returns the current joystick data.</p>
+<p><strong>Parameters:</strong></p>
+<ul>
+<li><code>delay</code>: Float, the delay in seconds after sending the request. Default: 0.01</li>
+</ul>
+<p><strong>Returns:</strong> List, a list containing joystick data.</p>
+<h4 id="-get_left_joystick_x-"><code>get_left_joystick_x()</code></h4>
+<p><strong>Description:</strong> Getter for left joystick X (horizontal) value.</p>
+<p><strong>Parameters:</strong> None</p>
+<p><strong>Returns:</strong> Integer, the x value of left joystick</p>
+<h4 id="-get_left_joystick_y-"><code>get_left_joystick_y()</code></h4>
+<p><strong>Description:</strong> Getter for left joystick Y (vertical) value.</p>
+<p><strong>Parameters:</strong> None</p>
+<p><strong>Returns:</strong> Integer, the y value of left joystick</p>
+<h4 id="-get_right_joystick_x-"><code>get_right_joystick_x()</code></h4>
+<p><strong>Description:</strong> Getter for right joystick X (horizontal) value.</p>
+<p><strong>Parameters:</strong> None</p>
+<p><strong>Returns:</strong> Integer, the x value of right joystick</p>
+<h4 id="-get_right_joystick_y-"><code>get_right_joystick_y()</code></h4>
+<p><strong>Description:</strong> Getter for right joystick Y (vertical) value.</p>
+<p><strong>Parameters:</strong> None</p>
+<p><strong>Returns:</strong> Integer, the y value of right joystick</p>
+<h4 id="-get_button_data-"><code>get_button_data()</code></h4>
+<p><strong>Description:</strong> Returns the data from the contoller button presses</p>
+<p><strong>Parameters:</strong> None</p>
+<p><strong>Returns:</strong> Integer, the value of the button being pressed</p>
+<h4 id="-l1_pressed-"><code>l1_pressed()</code></h4>
+<p><strong>Description:</strong> Returns true if L1 button is pressed or held</p>
+<p><strong>Parameters:</strong> None</p>
+<p><strong>Returns:</strong> Boolean</p>
+<h4 id="-l2_pressed-"><code>l2_pressed()</code></h4>
+<p><strong>Description:</strong> Returns true if L2 button is pressed or held</p>
+<p><strong>Parameters:</strong> None</p>
+<p><strong>Returns:</strong> Boolean</p>
+<h4 id="-r1_pressed-"><code>r1_pressed()</code></h4>
+<p><strong>Description:</strong> Returns true if R1 button is pressed or held</p>
+<p><strong>Parameters:</strong> None</p>
+<p><strong>Returns:</strong> Boolean</p>
+<h4 id="-r2_pressed-"><code>r2_pressed()</code></h4>
+<p><strong>Description:</strong> Returns true if R2 button is pressed or held</p>
+<p><strong>Parameters:</strong> None</p>
+<p><strong>Returns:</strong> Boolean</p>
+<h4 id="-h_pressed-"><code>h_pressed()</code></h4>
+<p><strong>Description:</strong> Returns true if H button is pressed or held</p>
+<p><strong>Parameters:</strong> None</p>
+<p><strong>Returns:</strong> Boolean</p>
+<h4 id="-power_pressed-"><code>power_pressed()</code></h4>
+<p><strong>Description:</strong> Returns true if Power button is pressed or held</p>
+<p><strong>Parameters:</strong> None</p>
+<p><strong>Returns:</strong> Boolean</p>
+<h4 id="-up_arrow_pressed-"><code>up_arrow_pressed()</code></h4>
+<p><strong>Description:</strong> Returns true if up arrow button is pressed or held</p>
+<p><strong>Parameters:</strong> None</p>
+<p><strong>Returns:</strong> Boolean</p>
+<h4 id="-left_arrow_pressed-"><code>left_arrow_pressed()</code></h4>
+<p><strong>Description:</strong> Returns true if left arrow button is pressed or held</p>
+<p><strong>Parameters:</strong> None</p>
+<p><strong>Returns:</strong> Boolean</p>
+<h4 id="-right_arrow_pressed-"><code>right_arrow_pressed()</code></h4>
+<p><strong>Description:</strong> Returns true if right arrow button is pressed or held</p>
+<p><strong>Parameters:</strong> None</p>
+<p><strong>Returns:</strong> Boolean</p>
+<h4 id="-down_arrow_pressed-"><code>down_arrow_pressed()</code></h4>
+<p><strong>Description:</strong> Returns true if down arrow button is pressed or held</p>
+<p><strong>Parameters:</strong> None</p>
+<p><strong>Returns:</strong> Boolean</p>
+<h4 id="-s_pressed-"><code>s_pressed()</code></h4>
+<p><strong>Description:</strong> Returns true if S button is pressed or held</p>
+<p><strong>Parameters:</strong> None</p>
+<p><strong>Returns:</strong> Boolean</p>
+<h4 id="-p_pressed-"><code>p_pressed()</code></h4>
+<p><strong>Description:</strong> Returns true if P button is pressed or held</p>
+<p><strong>Parameters:</strong> None</p>
+<p><strong>Returns:</strong> Boolean</p>
+<h4 id="-update_trim_data-drone_type-"><code>update_trim_data(drone_type)</code></h4>
+<p><strong>Description:</strong> Updates the trim data based on the provided drone type.</p>
+<p><strong>Parameters:</strong></p>
+<ul>
+<li><code>drone_type</code>: DroneType object containing trim data (roll, pitch, yaw, throttle).</li>
+</ul>
+<p><strong>Returns:</strong> None</p>
+<h4 id="-get_trim_data-delay-0-08-"><code>get_trim_data(delay=0.08)</code></h4>
+<p><strong>Description:</strong> Requests and returns the current trim data.</p>
+<p><strong>Parameters:</strong></p>
+<ul>
+<li><code>delay</code>: Float, the delay in seconds after sending the request. Default: 0.08</li>
+</ul>
+<p><strong>Returns:</strong> List, a list containing trim data.</p>
+<h4 id="-go-roll-pitch-yaw-throttle-duration-"><code>go(roll, pitch, yaw, throttle, duration)</code></h4>
+<p><strong>Description:</strong> Sends roll, pitch, yaw, throttle values continuously to the drone for duration (seconds)</p>
+<p><strong>Parameters:</strong></p>
+<ul>
+<li><code>roll</code>: int from -100-100</li>
+<li><code>pitch</code>: int from -100-100</li>
+<li><code>yaw</code>: int from -100-100</li>
+<li><code>throttle</code>: int from -100-100</li>
+<li><code>duration</code>: Float duration of sending the commands</li>
+</ul>
+<p><strong>Returns:</strong> None</p>
+<h4 id="-isopen-"><code>isOpen()</code></h4>
+<p><strong>Description:</strong> Checks if the serial port is currently open.</p>
+<p><strong>Parameters:</strong> None</p>
+<p><strong>Returns:</strong> Boolean, True if the port is open, False otherwise.</p>
+<h4 id="-isconnected-"><code>isConnected()</code></h4>
+<p><strong>Description:</strong> Checks if the device has a successful connection</p>
+<p><strong>Parameters:</strong> None</p>
+<p><strong>Returns:</strong> Boolean, True if the device is connected, False otherwise.</p>
+<h4 id="-update_count_data-count-"><code>update_count_data(count)</code></h4>
+<p><strong>Description:</strong> Updates the count data based on the provided  object.</p>
+<p><strong>Parameters:</strong></p>
+<ul>
+<li><code>count</code>: Count type object containing the number of flight variables.</li>
+</ul>
+<p><strong>Returns:</strong> None</p>
+<h4 id="-get_count_data-delay-0-05-"><code>get_count_data(delay=0.05)</code></h4>
+<p><strong>Description:</strong> Requests and returns the current count data.</p>
+<p><strong>Parameters:</strong></p>
+<ul>
+<li><code>delay</code>: Float, the delay in seconds after sending the request. Default: 0.05</li>
+</ul>
+<p><strong>Returns:</strong> List, a list containing count data.</p>
+<h4 id="-get_flight_time-"><code>get_flight_time()</code></h4>
+<p><strong>Description:</strong> Returns the current total flight time</p>
+<p><strong>Parameters:</strong> None</p>
+<p><strong>Returns:</strong> Float, the total flight time for the drone</p>
+<h4 id="-get_takeoff_count-"><code>get_takeoff_count()</code></h4>
+<p><strong>Description:</strong> Returns the number of takeoffs the drone has done.</p>
+<p><strong>Parameters:</strong> None</p>
+<p><strong>Returns:</strong> Float, the number of takeoffs for the drone</p>
+<h4 id="-get_landing_count-"><code>get_landing_count()</code></h4>
+<p><strong>Description:</strong> Returns the number of landings the drone has done.</p>
+<p><strong>Parameters:</strong> None</p>
+<p><strong>Returns:</strong> Float, the number of landings for the drone</p>
+<h4 id="-get_accident_count-"><code>get_accident_count()</code></h4>
+<p><strong>Description:</strong> Returns the number of accidents the drone has had.</p>
+<p><strong>Parameters:</strong> None</p>
+<p><strong>Returns:</strong> Float, the number of accidents for the drone</p>
+<h4 id="-receive_cpu_id_data-device_cpu_id-"><code>receive_cpu_id_data(device_cpu_id)</code></h4>
+<p><strong>Description:</strong> Receives the CPU ID for the drone and controller using base64 encoding.</p>
+<p><strong>Parameters:</strong></p>
+<ul>
+<li><code>device_cpu_id</code>: DeviceCpuID object containing the cpu_id byte array</li>
+</ul>
+<p><strong>Returns:</strong> None</p>
+<h4 id="-update_cpu_id_data-source-cpu_id_string-"><code>update_cpu_id_data(source, cpu_id_string)</code></h4>
+<p><strong>Description:</strong> Updates the CPU ID based on the provided source.</p>
+<p><strong>Parameters:</strong></p>
+<ul>
+<li><code>source</code>: DeviceType, the source of the CPU ID (Drone or Controller).</li>
+<li><code>cpu_id_string</code>: String, the base64 encoded CPU ID.</li>
+</ul>
+<p><strong>Returns:</strong> None</p>
+<h4 id="-get_cpu_id_data-delay-0-05-"><code>get_cpu_id_data(delay=0.05)</code></h4>
+<p><strong>Description:</strong> Requests and returns the CPU ID data for both the drone and controller.</p>
+<p><strong>Parameters:</strong></p>
+<ul>
+<li><code>delay</code>: Float, the delay in seconds after sending the request. Default: 0.05</li>
+</ul>
+<p><strong>Returns:</strong> List, a list containing CPU ID data.</p>
+<h4 id="-update_information-information-"><code>update_information(information)</code></h4>
+<p><strong>Description:</strong> Updates the information data based on the provided information.</p>
+<p><strong>Parameters:</strong></p>
+<ul>
+<li><code>information</code>: object containing model number and firmware version</li>
+</ul>
+<p><strong>Returns:</strong> None</p>
+<h4 id="-get_information_data-delay-0-05-"><code>get_information_data(delay=0.05)</code></h4>
+<p><strong>Description:</strong> Requests and returns the current information data.</p>
+<p><strong>Parameters:</strong></p>
+<ul>
+<li><code>delay</code>: Float, the delay in seconds after sending the request. Default: 0.05</li>
+</ul>
+<p><strong>Returns:</strong> List, a list containing information data.</p>
+<h4 id="-update_address-source-device_address_string-"><code>update_address(source, device_address_string)</code></h4>
+<p><strong>Description:</strong> Updates the address data based on the provided source.</p>
+<p><strong>Parameters:</strong></p>
+<ul>
+<li><code>source</code>: DeviceType, the source of the address (Drone or Controller).</li>
+<li><code>device_address_string</code>: String, the base64 encoded address.</li>
+</ul>
+<p><strong>Returns:</strong> None</p>
+<h4 id="-receive_address_data-device_address-"><code>receive_address_data(device_address)</code></h4>
+<p><strong>Description:</strong> Receives the base64 address data from the drone.</p>
+<p><strong>Parameters:</strong></p>
+<ul>
+<li><code>device_address</code>: Object, containing the base64 address.</li>
+</ul>
+<p><strong>Returns:</strong> None</p>
+<h4 id="-get_address_data-delay-0-05-"><code>get_address_data(delay=0.05)</code></h4>
+<p><strong>Description:</strong> Requests and returns the address data for both the drone and controller.</p>
+<p><strong>Parameters:</strong></p>
+<ul>
+<li><code>delay</code>: Float, the delay in seconds after sending the request. Default: 0.05</li>
+</ul>
+<p><strong>Returns:</strong> List, a list containing address data.</p>
+<h4 id="-update_lostconnection_data-lostconnection-"><code>update_lostconnection_data(lostconnection)</code></h4>
+<p><strong>Description:</strong> Update the lostconnection data with the provided object</p>
+<p><strong>Parameters:</strong></p>
+<ul>
+<li><code>lostconnection</code>: The time before lost connection</li>
+</ul>
+<p><strong>Returns:</strong> None</p>
+<h4 id="-get_lostconnection_data-delay-0-05-"><code>get_lostconnection_data(delay=0.05)</code></h4>
+<p><strong>Description:</strong> Requests and returns the lost connection data for the drone and controller</p>
+<p><strong>Parameters:</strong></p>
+<ul>
+<li><code>delay</code>: Float, the delay in seconds after sending the request. Default: 0.05</li>
+</ul>
+<p><strong>Returns:</strong> List, list of time before lost connection</p>
+<h4 id="-open-portname-none-"><code>open(portName=None)</code></h4>
+<p><strong>Description:</strong> Opens a serial port connection to the drone&#39;s controller.</p>
+<p><strong>Parameters:</strong></p>
+<ul>
+<li><code>portName</code>: String, the name of the serial port. If None, the function attempts to autodetect the port. Default: None</li>
+</ul>
+<p><strong>Returns:</strong> Boolean, True if the connection was successful, False otherwise.</p>
+<h4 id="-close-"><code>close()</code></h4>
+<p><strong>Description:</strong> Closes the serial port connection to the drone.</p>
+<p><strong>Parameters:</strong> None</p>
+<p><strong>Returns:</strong> None</p>
+<h4 id="-maketransferdataarray-header-data-"><code>makeTransferDataArray(header, data)</code></h4>
+<p><strong>Description:</strong> Constructs the full byte array to be sent.  Includes header, data, and CRC.</p>
+<p><strong>Parameters:</strong></p>
+<ul>
+<li><code>header</code>: Header object for the message</li>
+<li><code>data</code>: Data payload</li>
+</ul>
+<p><strong>Returns:</strong> Bytearray, the data to send.</p>
+<h4 id="-transfer-header-data-"><code>transfer(header, data)</code></h4>
+<p><strong>Description:</strong> Transfers data to the drone via the serial port.</p>
+<p><strong>Parameters:</strong></p>
+<ul>
+<li><code>header</code>: Header object for the message</li>
+<li><code>data</code>: Data payload</li>
+</ul>
+<p><strong>Returns:</strong> Bytearray, the data that was sent.</p>
+<h4 id="-check-"><code>check()</code></h4>
+<p><strong>Description:</strong> Checks the serial port buffer for incoming data and processes it.</p>
+<p><strong>Parameters:</strong> None</p>
+<p><strong>Returns:</strong> DataType, the type of data that was received.</p>
+<h4 id="-checkdetail-"><code>checkDetail()</code></h4>
+<p><strong>Description:</strong> Checks the serial port buffer for incoming data and processes it, returning the header and raw data.</p>
+<p><strong>Parameters:</strong> None</p>
+<p><strong>Returns:</strong> Tuple, (Header, raw_data)</p>
+<h4 id="-seteventhandler-datatype-eventhandler-"><code>setEventHandler(dataType, eventHandler)</code></h4>
+<p><strong>Description:</strong> Sets an event handler function to be called when data of the specified type is received.</p>
+<p><strong>Parameters:</strong></p>
+<ul>
+<li><code>dataType</code>: DataType, the type of data to trigger the event.</li>
+<li><code>eventHandler</code>: Function, the function to be called when the event is triggered.</li>
+</ul>
+<p><strong>Returns:</strong> None</p>
+<h4 id="-getheader-datatype-"><code>getHeader(dataType)</code></h4>
+<p><strong>Description:</strong> Gets the header for the specified data type.</p>
+<p><strong>Parameters:</strong></p>
+<ul>
+<li><code>dataType</code>: DataType, the type of data to retrieve the header for.</li>
+</ul>
+<p><strong>Returns:</strong> Header, the header object.</p>
+<h4 id="-getdata-datatype-"><code>getData(dataType)</code></h4>
+<p><strong>Description:</strong> Gets the data for the specified data type.</p>
+<p><strong>Parameters:</strong></p>
+<ul>
+<li><code>dataType</code>: DataType, the type of data to retrieve.</li>
+</ul>
+<p><strong>Returns:</strong> The data object.</p>
+<h4 id="-getcount-datatype-"><code>getCount(dataType)</code></h4>
+<p><strong>Description:</strong> Gets the number of times data of the specified type has been received.</p>
+<p><strong>Parameters:</strong></p>
+<ul>
+<li><code>dataType</code>: DataType, the type of data to retrieve the count for.</li>
+</ul>
+<p><strong>Returns:</strong> Integer, the number of times data of the specified type has been received.</p>
+<h4 id="-sendping-devicetype-"><code>sendPing(deviceType)</code></h4>
+<p><strong>Description:</strong> Sends a ping command to the specified device.</p>
+<p><strong>Parameters:</strong></p>
+<ul>
+<li><code>deviceType</code>: DeviceType, the device to ping (Drone or Controller).</li>
+</ul>
+<p><strong>Returns:</strong> Bytearray, data transferred.</p>
+<h4 id="-sendrequest-devicetype-datatype-"><code>sendRequest(deviceType, dataType)</code></h4>
+<p><strong>Description:</strong> Sends a request for data of the specified type from the specified device.</p>
+<p><strong>Parameters:</strong></p>
+<ul>
+<li><code>deviceType</code>: DeviceType, the device to request data from (Drone or Controller).</li>
+<li><code>dataType</code>: DataType, the type of data to request.</li>
+</ul>
+<p><strong>Returns:</strong> Bytearray, data transferred.</p>
+<h4 id="-sendpairing-devicetype-address0-address1-address2-scramble-channel0-channel1-channel2-channel3-"><code>sendPairing(deviceType, address0, address1, address2, scramble, channel0, channel1, channel2, channel3)</code></h4>
+<p><strong>Description:</strong> Sends a pairing command to the specified device.</p>
+<p><strong>Parameters:</strong></p>
+<ul>
+<li><code>deviceType</code>: DeviceType, the device to pair with (Drone or Controller).</li>
+<li><code>address0</code>: Integer, address component 0.</li>
+<li><code>address1</code>: Integer, address component 1.</li>
+<li><code>address2</code>: Integer, address component 2.</li>
+<li><code>scramble</code>: Integer, scramble value.</li>
+<li><code>channel0</code>: Integer, channel component 0.</li>
+<li><code>channel1</code>: Integer, channel component 1.</li>
+<li><code>channel2</code>: Integer, channel component 2.</li>
+<li><code>channel3</code>: Integer, channel component 3.</li>
+</ul>
+<p><strong>Returns:</strong> Bytearray, data transferred.</p>
+<h4 id="-connect-portname-none-"><code>connect(portname=None)</code></h4>
+<p><strong>Description:</strong> Connects to the drone via the serial port.</p>
+<p><strong>Parameters:</strong></p>
+<ul>
+<li><code>portname</code>: String, the name of the serial port. If None, the function attempts to autodetect the port. Default: None</li>
+</ul>
+<p><strong>Returns:</strong> Boolean, True if the connection was successful, False otherwise.</p>
+<h4 id="-disconnect-"><code>disconnect()</code></h4>
+<p><strong>Description:</strong> Disconnects from the drone by closing the serial port.</p>
+<p><strong>Parameters:</strong> None</p>
+<p><strong>Returns:</strong> None</p>
+<h4 id="-takeoff-"><code>takeoff()</code></h4>
+<p><strong>Description:</strong> Sends a command to initiate the drone&#39;s takeoff sequence.</p>
+<p><strong>Parameters:</strong> None</p>
+<p><strong>Returns:</strong> None</p>
+<h4 id="-land-"><code>land()</code></h4>
+<p><strong>Description:</strong> Sends a command to initiate the drone&#39;s landing sequence.</p>
+<p><strong>Parameters:</strong> None</p>
+<p><strong>Returns:</strong> None</p>
+<h4 id="-emergency_stop-"><code>emergency_stop()</code></h4>
+<p><strong>Description:</strong> Sends a command to immediately stop all motors on the drone.</p>
+<p><strong>Parameters:</strong> None</p>
+<p><strong>Returns:</strong> None</p>
+<h4 id="-hover-duration-0-01-"><code>hover(duration=0.01)</code></h4>
+<p><strong>Description:</strong> Commands the drone to hover in place for a specified duration.</p>
+<p><strong>Parameters:</strong></p>
+<ul>
+<li><code>duration</code>: Float, the duration in seconds to hover. Default: 0.01</li>
+</ul>
+<p><strong>Returns:</strong> None</p>
+<h4 id="-reset_move_values-attempts-3-"><code>reset_move_values(attempts=3)</code></h4>
+<p><strong>Description:</strong> Resets the roll, pitch, yaw, and throttle values to 0, effectively stopping any movement.</p>
+<p><strong>Parameters:</strong></p>
+<ul>
+<li><code>attempts</code>: Integer, the number of hover attempts. Default: 3</li>
+</ul>
+<p><strong>Returns:</strong> None</p>
+<h4 id="-set_roll-power-"><code>set_roll(power)</code></h4>
+<p><strong>Description:</strong> Sets the roll value for flight movement.</p>
+<p><strong>Parameters:</strong></p>
+<ul>
+<li><code>power</code>: Integer, from -100 to 100.</li>
+</ul>
+<p><strong>Returns:</strong> None</p>
+<h4 id="-set_pitch-power-"><code>set_pitch(power)</code></h4>
+<p><strong>Description:</strong> Sets the pitch value for flight movement.</p>
+<p><strong>Parameters:</strong></p>
+<ul>
+<li><code>power</code>: Integer, from -100 to 100.</li>
+</ul>
+<p><strong>Returns:</strong> None</p>
+<h4 id="-set_yaw-power-"><code>set_yaw(power)</code></h4>
+<p><strong>Description:</strong> Sets the yaw value for flight movement.</p>
+<p><strong>Parameters:</strong></p>
+<ul>
+<li><code>power</code>: Integer, from -100 to 100.</li>
+</ul>
+<p><strong>Returns:</strong> None</p>
+<h4 id="-set_throttle-power-"><code>set_throttle(power)</code></h4>
+<p><strong>Description:</strong> Sets the throttle value for flight movement.</p>
+<p><strong>Parameters:</strong></p>
+<ul>
+<li><code>power</code>: Integer, from -100 to 100.</li>
+</ul>
+<p><strong>Returns:</strong> None</p>
+<h4 id="-move-duration-none-"><code>move(duration=None)</code></h4>
+<p><strong>Description:</strong> Sends the current roll, pitch, yaw, and throttle values to the drone to initiate movement.</p>
+<p><strong>Parameters:</strong></p>
+<ul>
+<li><code>duration</code>: Float, the duration in seconds to move. If None, sends values once. Default: None</li>
+</ul>
+<p><strong>Returns:</strong> None</p>
+<h4 id="-print_move_values-deprecated-"><code>print_move_values()</code> <em>(Deprecated)</em></h4>
+<p><strong>Description:</strong> Prints the current roll, pitch, yaw, and throttle values.</p>
+<p><strong>Parameters:</strong> None</p>
+<p><strong>Returns:</strong> None</p>
+<h4 id="-get_move_values-"><code>get_move_values()</code></h4>
+<p><strong>Description:</strong> Returns the current roll, pitch, yaw, and throttle values as a list.</p>
+<p><strong>Parameters:</strong> None</p>
+<p><strong>Returns:</strong> List, a list containing roll, pitch, yaw, and throttle values.</p>
+<h4 id="-turn-power-50-seconds-none-"><code>turn(power=50, seconds=None)</code></h4>
+<p><strong>Description:</strong> Turns the drone in the yaw direction.</p>
+<p><strong>Parameters:</strong></p>
+<ul>
+<li><code>power</code>: Integer, from -100 to 100, the yaw power. Default: 50</li>
+<li><code>seconds</code>: Float, the duration in seconds to turn. If None, turns indefinitely until stopped. Default: None</li>
+</ul>
+<p><strong>Returns:</strong> None</p>
+<h4 id="-set_waypoint-"><code>set_waypoint()</code></h4>
+<p><strong>Description:</strong> Saves the current drone position as a waypoint.</p>
+<p><strong>Parameters:</strong> None</p>
+<p><strong>Returns:</strong> None</p>
+<h4 id="-sendtakeoff-"><code>sendTakeOff()</code></h4>
+<p><strong>Description:</strong> Sends the takeoff command to the drone.</p>
+<p><strong>Parameters:</strong> None</p>
+<p><strong>Returns:</strong> Bytearray, data transferred.</p>
+<h4 id="-sendlanding-"><code>sendLanding()</code></h4>
+<p><strong>Description:</strong> Sends the landing command to the drone.</p>
+<p><strong>Parameters:</strong> None</p>
+<p><strong>Returns:</strong> Bytearray, data transferred.</p>
+<h4 id="-sendstop-"><code>sendStop()</code></h4>
+<p><strong>Description:</strong> Sends the stop command to the drone, initiating emergency stop.</p>
+<p><strong>Parameters:</strong> None</p>
+<p><strong>Returns:</strong> Bytearray, data transferred.</p>
+<h4 id="-sendcontrol-roll-pitch-yaw-throttle-"><code>sendControl(roll, pitch, yaw, throttle)</code></h4>
+<p><strong>Description:</strong> Sends control values for roll, pitch, yaw, and throttle to the drone.</p>
+<p><strong>Parameters:</strong></p>
+<ul>
+<li><code>roll</code>: Integer, from -100 to 100.</li>
+<li><code>pitch</code>: Integer, from -100 to 100.</li>
+<li><code>yaw</code>: Integer, from -100 to 100.</li>
+<li><code>throttle</code>: Integer, from -100 to 100.</li>
+</ul>
+<p><strong>Returns:</strong> Bytearray, data transferred.</p>
+<h4 id="-sendcontrolwhile-roll-pitch-yaw-throttle-timems-"><code>sendControlWhile(roll, pitch, yaw, throttle, timeMs)</code></h4>
+<p><strong>Description:</strong> Sends control values for roll, pitch, yaw, and throttle continuously for a specified duration.</p>
+<p><strong>Parameters:</strong></p>
+<ul>
+<li><code>roll</code>: Integer, from -100 to 100.</li>
+<li><code>pitch</code>: Integer, from -100 to 100.</li>
+<li><code>yaw</code>: Integer, from -100 to 100.</li>
+<li><code>throttle</code>: Integer, from -100 to 100.</li>
+<li><code>timeMs</code>: Integer, duration in milliseconds to send the control values.</li>
+</ul>
+<p><strong>Returns:</strong> None</p>
+<h4 id="-sendcontrolposition-positionx-positiony-positionz-velocity-heading-rotationalvelocity-"><code>sendControlPosition(positionX, positionY, positionZ, velocity, heading, rotationalVelocity)</code></h4>
+<p><strong>Description:</strong> Sends a position control command to the drone to move to a relative position.</p>
+<p><strong>Parameters:</strong></p>
+<ul>
+<li><code>positionX</code>: Float, relative position in meters along the X-axis (-10.0 to 10.0).</li>
+<li><code>positionY</code>: Float, relative position in meters along the Y-axis (-10.0 to 10.0).</li>
+<li><code>positionZ</code>: Float, relative position in meters along the Z-axis (-10.0 to 10.0).</li>
+<li><code>velocity</code>: Float, movement speed in m/s (0.5 to 2.0).</li>
+<li><code>heading</code>: Integer, target heading in degrees (-360 to 360).</li>
+<li><code>rotationalVelocity</code>: Integer, rotational speed in degrees/s (10 to 360).</li>
+</ul>
+<p><strong>Returns:</strong> Bytearray, data transferred.</p>
+<h4 id="-move_distance-positionx-positiony-positionz-velocity-"><code>move_distance(positionX, positionY, positionZ, velocity)</code></h4>
+<p><strong>Description:</strong> Moves the drone by a specified distance in meters using position control.</p>
+<p><strong>Parameters:</strong></p>
+<ul>
+<li><code>positionX</code>: Float, distance to move along the X-axis (meters).</li>
+<li><code>positionY</code>: Float, distance to move along the Y-axis (meters).</li>
+<li><code>positionZ</code>: Float, distance to move along the Z-axis (meters).</li>
+<li><code>velocity</code>: Float, movement speed in m/s.</li>
+</ul>
+<p><strong>Returns:</strong> None</p>
+<h4 id="-move_forward-distance-units-cm-speed-0-5-"><code>move_forward(distance, units=&quot;cm&quot;, speed=0.5)</code></h4>
+<p><strong>Description:</strong> Moves the drone forward by a specified distance.</p>
+<p><strong>Parameters:</strong></p>
+<ul>
+<li><code>distance</code>: Float, the distance to move.</li>
+<li><code>units</code>: String, the unit of distance (&#39;cm&#39;, &#39;ft&#39;, &#39;in&#39;, &#39;m&#39;). Default: &#39;cm&#39;</li>
+<li><code>speed</code>: Float, movement speed in m/s (0 to 2). Default: 0.5</li>
+</ul>
+<p><strong>Returns:</strong> None</p>
+<h4 id="-move_backward-distance-units-cm-speed-1-0-"><code>move_backward(distance, units=&quot;cm&quot;, speed=1.0)</code></h4>
+<p><strong>Description:</strong> Moves the drone backward by a specified distance.</p>
+<p><strong>Parameters:</strong></p>
+<ul>
+<li><code>distance</code>: Float, the distance to move.</li>
+<li><code>units</code>: String, the unit of distance (&#39;cm&#39;, &#39;ft&#39;, &#39;in&#39;, &#39;m&#39;). Default: &#39;cm&#39;</li>
+<li><code>speed</code>: Float, movement speed in m/s (0 to 2). Default: 1.0</li>
+</ul>
+<p><strong>Returns:</strong> None</p>
+<h4 id="-move_left-distance-units-cm-speed-1-0-"><code>move_left(distance, units=&quot;cm&quot;, speed=1.0)</code></h4>
+<p><strong>Description:</strong> Moves the drone left by a specified distance.</p>
+<p><strong>Parameters:</strong></p>
+<ul>
+<li><code>distance</code>: Float, the distance to move.</li>
+<li><code>units</code>: String, the unit of distance (&#39;cm&#39;, &#39;ft&#39;, &#39;in&#39;, &#39;m&#39;). Default: &#39;cm&#39;</li>
+<li><code>speed</code>: Float, movement speed in m/s (0 to 2). Default: 1.0</li>
+</ul>
+<p><strong>Returns:</strong> None</p>
+<h4 id="-move_right-distance-units-cm-speed-1-0-"><code>move_right(distance, units=&quot;cm&quot;, speed=1.0)</code></h4>
+<p><strong>Description:</strong> Moves the drone right by a specified distance.</p>
+<p><strong>Parameters:</strong></p>
+<ul>
+<li><code>distance</code>: Float, the distance to move.</li>
+<li><code>units</code>: String, the unit of distance (&#39;cm&#39;, &#39;ft&#39;, &#39;in&#39;, &#39;m&#39;). Default: &#39;cm&#39;</li>
+<li><code>speed</code>: Float, movement speed in m/s (0 to 2). Default: 1.0</li>
+</ul>
+<p><strong>Returns:</strong> None</p>
+<h4 id="-send_absolute_position-positionx-positiony-positionz-velocity-heading-rotationalvelocity-"><code>send_absolute_position(positionX, positionY, positionZ, velocity, heading, rotationalVelocity)</code></h4>
+<p><strong>Description:</strong> Sends a position control command to the drone to move to an absolute position in world coordinates.</p>
+<p><strong>Parameters:</strong></p>
+<ul>
+<li><code>positionX</code>: Float, absolute position in meters along the X-axis (-10.0 to 10.0).</li>
+<li><code>positionY</code>: Float, absolute position in meters along the Y-axis (-10.0 to 10.0).</li>
+<li><code>positionZ</code>: Float, absolute position in meters along the Z-axis (-10.0 to 10.0).</li>
+<li><code>velocity</code>: Float, movement speed in m/s (0.5 to 2.0).</li>
+<li><code>heading</code>: Integer, target heading in degrees (-360 to 360).</li>
+<li><code>rotationalVelocity</code>: Integer, rotational speed in degrees/s (10 to 360).</li>
+</ul>
+<p><strong>Returns:</strong> None</p>
+<h4 id="-goto_waypoint-waypoint-velocity-"><code>goto_waypoint(waypoint, velocity)</code></h4>
+<p><strong>Description:</strong> Commands the drone to move to a previously set waypoint.</p>
+<p><strong>Parameters:</strong></p>
+<ul>
+<li><code>waypoint</code>: List, [x, y, z] coordinates of the waypoint.</li>
+<li><code>velocity</code>: Float, movement speed in m/s.</li>
+</ul>
+<p><strong>Returns:</strong> None</p>
+<h4 id="-percent_error-desired-current-"><code>percent_error(desired, current)</code></h4>
+<p><strong>Description:</strong> Calculates the percentage error between a desired and current value.</p>
+<p><strong>Parameters:</strong></p>
+<ul>
+<li><code>desired</code>: Float, the desired value.</li>
+<li><code>current</code>: Float, the current value.</li>
+</ul>
+<p><strong>Returns:</strong> Float, the percentage error.</p>
+<h4 id="-turn_degree-degree-90-timeout-3-p_value-10-"><code>turn_degree(degree=90, timeout=3, p_value=10)</code></h4>
+<p><strong>Description:</strong> Turns the drone by a specified degree amount using a proportional controller.</p>
+<p><strong>Parameters:</strong></p>
+<ul>
+<li><code>degree</code>: Integer, the degree to turn (-180 to 180). Positive is right, negative is left. Default: 90</li>
+<li><code>timeout</code>: Float, timeout duration in seconds. Default: 3</li>
+<li><code>p_value</code>: Float, proportional gain for the controller. Default: 10</li>
+</ul>
+<p><strong>Returns:</strong> None</p>
+<h4 id="-turn_left-degree-90-timeout-3-"><code>turn_left(degree=90, timeout=3)</code></h4>
+<p><strong>Description:</strong> Turns the drone left by a specified degree amount.</p>
+<p><strong>Parameters:</strong></p>
+<ul>
+<li><code>degree</code>: Integer, the degree to turn left (0 to 179). Default: 90</li>
+<li><code>timeout</code>: Float, timeout duration in seconds. Default: 3</li>
+</ul>
+<p><strong>Returns:</strong> None</p>
+<h4 id="-turn_right-degree-90-timeout-3-"><code>turn_right(degree=90, timeout=3)</code></h4>
+<p><strong>Description:</strong> Turns the drone right by a specified degree amount.</p>
+<p><strong>Parameters:</strong></p>
+<ul>
+<li><code>degree</code>: Integer, the degree to turn right (0 to 179). Default: 90</li>
+<li><code>timeout</code>: Float, timeout duration in seconds. Default: 3</li>
+</ul>
+<p><strong>Returns:</strong> None</p>
+<h4 id="-avoid_wall-timeout-2-distance-70-"><code>avoid_wall(timeout=2, distance=70)</code></h4>
+<p><strong>Description:</strong> Flies the drone forward while avoiding walls, stopping at a specified distance from a wall.</p>
+<p><strong>Parameters:</strong></p>
+<ul>
+<li><code>timeout</code>: Float, timeout duration in seconds. Default: 2</li>
+<li><code>distance</code>: Integer, the desired distance from the wall in cm. Default: 70</li>
+</ul>
+<p><strong>Returns:</strong> None</p>
+<h4 id="-keep_distance-timeout-2-distance-50-"><code>keep_distance(timeout=2, distance=50)</code></h4>
+<p><strong>Description:</strong> Flies the drone forward and maintains a specified distance from an object in front.</p>
+<p><strong>Parameters:</strong></p>
+<ul>
+<li><code>timeout</code>: Float, timeout duration in seconds. Default: 2</li>
+<li><code>distance</code>: Integer, the desired distance from the object in cm. Default: 50</li>
+</ul>
+<p><strong>Returns:</strong> None</p>
+<h4 id="-detect_wall-distance-50-"><code>detect_wall(distance=50)</code></h4>
+<p><strong>Description:</strong> Detects if a wall is within a specified distance in front of the drone.</p>
+<p><strong>Parameters:</strong></p>
+<ul>
+<li><code>distance</code>: Integer, the distance threshold in cm to detect a wall. Default: 50</li>
+</ul>
+<p><strong>Returns:</strong> Boolean, True if a wall is detected within the distance, False otherwise.</p>
+<h4 id="-flip-direction-back-"><code>flip(direction=&quot;back&quot;)</code></h4>
+<p><strong>Description:</strong> Performs a flip maneuver in the specified direction.</p>
+<p><strong>Parameters:</strong></p>
+<ul>
+<li><code>direction</code>: String, the flip direction (&#39;front&#39;, &#39;back&#39;, &#39;left&#39;, &#39;right&#39;). Default: &quot;back&quot;</li>
+</ul>
+<p><strong>Returns:</strong> None</p>
+<h4 id="-square-speed-60-seconds-1-direction-1-"><code>square(speed=60, seconds=1, direction=1)</code></h4>
+<p><strong>Description:</strong> Flies the drone in a square pattern.</p>
+<p><strong>Parameters:</strong></p>
+<ul>
+<li><code>speed</code>: Integer, speed for the square pattern (0 to 100). Default: 60</li>
+<li><code>seconds</code>: Float, duration in seconds for each side of the square. Default: 1</li>
+<li><code>direction</code>: Integer, direction of the square (1 for clockwise, -1 for counter-clockwise). Default: 1</li>
+</ul>
+<p><strong>Returns:</strong> None</p>
+<h4 id="-triangle-speed-60-seconds-1-direction-1-"><code>triangle(speed=60, seconds=1, direction=1)</code></h4>
+<p><strong>Description:</strong> Flies the drone in a triangle pattern.</p>
+<p><strong>Parameters:</strong></p>
+<ul>
+<li><code>speed</code>: Integer, speed for the triangle pattern (0 to 100). Default: 60</li>
+<li><code>seconds</code>: Float, duration in seconds for each side of the triangle. Default: 1</li>
+<li><code>direction</code>: Integer, direction of the triangle (1 for clockwise, -1 for counter-clockwise). Default: 1</li>
+</ul>
+<p><strong>Returns:</strong> None</p>
+<h4 id="-triangle_turn-speed-60-seconds-2-direction-1-"><code>triangle_turn(speed=60, seconds=2, direction=1)</code></h4>
+<p><strong>Description:</strong> Flies the drone in a triangle pattern by turning in place.</p>
+<p><strong>Parameters:</strong></p>
+<ul>
+<li><code>speed</code>: Integer, speed for the triangle pattern (0 to 100). Default: 60</li>
+<li><code>seconds</code>: Float, duration in seconds for each side of the triangle. Default: 2</li>
+<li><code>direction</code>: Integer, direction of the triangle (1 for clockwise, -1 for counter-clockwise). Default: 1</li>
+</ul>
+<p><strong>Returns:</strong> None</p>
+<h4 id="-spiral-speed-50-seconds-5-direction-1-"><code>spiral(speed=50, seconds=5, direction=1)</code></h4>
+<p><strong>Description:</strong> Flies the drone in a downward spiral.</p>
+<p><strong>Parameters:</strong></p>
+<ul>
+<li><code>speed</code>: Integer, speed for the spiral (0 to 100). Default: 50</li>
+<li><code>seconds</code>: Float, duration in seconds for the spiral. Default: 5</li>
+<li><code>direction</code>: Integer, direction of the spiral (1 for clockwise, -1 for counter-clockwise). Default: 1</li>
+</ul>
+<p><strong>Returns:</strong> None</p>
+<h4 id="-circle-speed-75-direction-1-"><code>circle(speed=75, direction=1)</code></h4>
+<p><strong>Description:</strong> Flies the drone in a circle pattern.</p>
+<p><strong>Parameters:</strong></p>
+<ul>
+<li><code>speed</code>: Integer, speed for the circle (0 to 100). Default: 75</li>
+<li><code>direction</code>: Integer, direction of the circle (1 for clockwise, -1 for counter-clockwise). Default: 1</li>
+</ul>
+<p><strong>Returns:</strong> None</p>
+<h4 id="-circle_turn-speed-30-seconds-1-direction-1-"><code>circle_turn(speed=30, seconds=1, direction=1)</code></h4>
+<p><strong>Description:</strong> Flies the drone in a circle pattern by turning in place.</p>
+<p><strong>Parameters:</strong></p>
+<ul>
+<li><code>speed</code>: Integer, speed for the circle (0 to 100). Default: 30</li>
+<li><code>seconds</code>: Float, duration in seconds for the circle. Default: 1</li>
+<li><code>direction</code>: Integer, direction of the circle (1 for clockwise, -1 for counter-clockwise). Default: 1</li>
+</ul>
+<p><strong>Returns:</strong> None</p>
+<h4 id="-sway-speed-30-seconds-2-direction-1-"><code>sway(speed=30, seconds=2, direction=1)</code></h4>
+<p><strong>Description:</strong> Performs a sway motion, moving the drone left and right.</p>
+<p><strong>Parameters:</strong></p>
+<ul>
+<li><code>speed</code>: Integer, speed for the sway motion (0 to 100). Default: 30</li>
+<li><code>seconds</code>: Float, duration in seconds for each sway direction. Default: 2</li>
+<li><code>direction</code>: Integer, direction of the sway (1 for starting left, -1 for starting right). Default: 1</li>
+</ul>
+<p><strong>Returns:</strong> None</p>
+<h4 id="-sendcommand-commandtype-option-0-"><code>sendCommand(commandType, option=0)</code></h4>
+<p><strong>Description:</strong> Sends a generic command to the drone.</p>
+<p><strong>Parameters:</strong></p>
+<ul>
+<li><code>commandType</code>: CommandType enum value, the type of command to send.</li>
+<li><code>option</code>: Integer, command option value. Default: 0</li>
+</ul>
+<p><strong>Returns:</strong> Bytearray, data transferred.</p>
+<h4 id="-start_drone_buzzer-note-"><code>start_drone_buzzer(note)</code></h4>
+<p><strong>Description:</strong> Starts the drone buzzer to play a note continuously.</p>
+<p><strong>Parameters:</strong></p>
+<ul>
+<li><code>note</code>: Integer frequency in Hz or Note enum value.</li>
+</ul>
+<p><strong>Returns:</strong> None</p>
+<h4 id="-stop_drone_buzzer-"><code>stop_drone_buzzer()</code></h4>
+<p><strong>Description:</strong> Stops the drone buzzer.</p>
+<p><strong>Parameters:</strong> None</p>
+<p><strong>Returns:</strong> None</p>
+<h4 id="-start_controller_buzzer-note-"><code>start_controller_buzzer(note)</code></h4>
+<p><strong>Description:</strong> Starts the controller buzzer to play a note continuously.</p>
+<p><strong>Parameters:</strong></p>
+<ul>
+<li><code>note</code>: Integer frequency in Hz or Note enum value.</li>
+</ul>
+<p><strong>Returns:</strong> None</p>
+<h4 id="-stop_controller_buzzer-"><code>stop_controller_buzzer()</code></h4>
+<p><strong>Description:</strong> Stops the controller buzzer.</p>
+<p><strong>Parameters:</strong> None</p>
+<p><strong>Returns:</strong> None</p>
+<h4 id="-controller_buzzer-note-duration-"><code>controller_buzzer(note, duration)</code></h4>
+<p><strong>Description:</strong> Plays a note on the controller buzzer for a specified duration.</p>
+<p><strong>Parameters:</strong></p>
+<ul>
+<li><code>note</code>: Integer frequency in Hz or Note enum value.</li>
+<li><code>duration</code>: Integer, duration in milliseconds to play the note.</li>
+</ul>
+<p><strong>Returns:</strong> None</p>
+<h4 id="-drone_buzzer-note-duration-"><code>drone_buzzer(note, duration)</code></h4>
+<p><strong>Description:</strong> Plays a note on the drone buzzer for a specified duration.</p>
+<p><strong>Parameters:</strong></p>
+<ul>
+<li><code>note</code>: Integer frequency in Hz or Note enum value.</li>
+<li><code>duration</code>: Integer, duration in milliseconds to play the note.</li>
+</ul>
+<p><strong>Returns:</strong> None</p>
+<h4 id="-set_drone_led-r-g-b-brightness-"><code>set_drone_LED(r, g, b, brightness)</code></h4>
+<p><strong>Description:</strong> Sets the drone LED color and brightness using RGB values.</p>
+<p><strong>Parameters:</strong></p>
+<ul>
+<li><code>r</code>: Integer, red color component (0-255).</li>
+<li><code>g</code>: Integer, green color component (0-255).</li>
+<li><code>b</code>: Integer, blue color component (0-255).</li>
+<li><code>brightness</code>: Integer, LED brightness (0-255).</li>
+</ul>
+<p><strong>Returns:</strong> None</p>
+<h4 id="-set_controller_led-r-g-b-brightness-"><code>set_controller_LED(r, g, b, brightness)</code></h4>
+<p><strong>Description:</strong> Sets the controller LED color and brightness using RGB values.</p>
+<p><strong>Parameters:</strong></p>
+<ul>
+<li><code>r</code>: Integer, red color component (0-255).</li>
+<li><code>g</code>: Integer, green color component (0-255).</li>
+<li><code>b</code>: Integer, blue color component (0-255).</li>
+<li><code>brightness</code>: Integer, LED brightness (0-255).</li>
+</ul>
+<p><strong>Returns:</strong> None</p>
+<h4 id="-drone_led_off-"><code>drone_LED_off()</code></h4>
+<p><strong>Description:</strong> Turns off the drone LED.</p>
+<p><strong>Parameters:</strong> None</p>
+<p><strong>Returns:</strong> None</p>
+<h4 id="-controller_led_off-"><code>controller_LED_off()</code></h4>
+<p><strong>Description:</strong> Turns off the controller LED.</p>
+<p><strong>Parameters:</strong> None</p>
+<p><strong>Returns:</strong> None</p>
+<h4 id="-sendcommandlightevent-commandtype-option-lightevent-interval-repeat-"><code>sendCommandLightEvent(commandType, option, lightEvent, interval, repeat)</code></h4>
+<p><strong>Description:</strong> Sends a command combined with an LED event to the drone or controller.</p>
+<p><strong>Parameters:</strong></p>
+<ul>
+<li><code>commandType</code>: CommandType enum value.</li>
+<li><code>option</code>: Integer, command option value.</li>
+<li><code>lightEvent</code>: LightModeDrone or LightModeController enum value or integer, LED event mode.</li>
+<li><code>interval</code>: Integer, LED event interval (0-65535).</li>
+<li><code>repeat</code>: Integer, number of repetitions (0-255).</li>
+</ul>
+<p><strong>Returns:</strong> Bytearray, data transferred.</p>
+<h4 id="-sendcommandlighteventcolor-commandtype-option-lightevent-interval-repeat-r-g-b-"><code>sendCommandLightEventColor(commandType, option, lightEvent, interval, repeat, r, g, b)</code></h4>
+<p><strong>Description:</strong> Sends a command combined with an LED event and color to the drone or controller.</p>
+<p><strong>Parameters:</strong></p>
+<ul>
+<li><code>commandType</code>: CommandType enum value.</li>
+<li><code>option</code>: Integer, command option value.</li>
+<li><code>lightEvent</code>: LightModeDrone or LightModeController enum value or integer, LED event mode.</li>
+<li><code>interval</code>: Integer, LED event interval (0-65535).</li>
+<li><code>repeat</code>: Integer, number of repetitions (0-255).</li>
+<li><code>r</code>: Integer, red color component (0-255).</li>
+<li><code>g</code>: Integer, green color component (0-255).</li>
+<li><code>b</code>: Integer, blue color component (0-255).</li>
+</ul>
+<p><strong>Returns:</strong> Bytearray, data transferred.</p>
+<h4 id="-sendcommandlighteventcolors-commandtype-option-lightevent-interval-repeat-colors-"><code>sendCommandLightEventColors(commandType, option, lightEvent, interval, repeat, colors)</code></h4>
+<p><strong>Description:</strong> Sends a command combined with an LED event and a Colors object to the drone or controller.</p>
+<p><strong>Parameters:</strong></p>
+<ul>
+<li><code>commandType</code>: CommandType enum value.</li>
+<li><code>option</code>: Integer, command option value.</li>
+<li><code>lightEvent</code>: LightModeDrone or LightModeController enum value or integer, LED event mode.</li>
+<li><code>interval</code>: Integer, LED event interval (0-65535).</li>
+<li><code>repeat</code>: Integer, number of repetitions (0-255).</li>
+<li><code>colors</code>: Colors object containing color sequence.</li>
+</ul>
+<p><strong>Returns:</strong> Bytearray, data transferred.</p>
+<h4 id="-sendmodecontrolflight-modecontrolflight-"><code>sendModeControlFlight(modeControlFlight)</code></h4>
+<p><strong>Description:</strong> Sends a command to set the drone&#39;s flight control mode.</p>
+<p><strong>Parameters:</strong></p>
+<ul>
+<li><code>modeControlFlight</code>: ModeControlFlight enum value, the desired flight control mode.</li>
+</ul>
+<p><strong>Returns:</strong> Bytearray, data transferred.</p>
+<h4 id="-sendheadless-headless-"><code>sendHeadless(headless)</code></h4>
+<p><strong>Description:</strong> Sends a command to set the drone&#39;s headless mode.</p>
+<p><strong>Parameters:</strong></p>
+<ul>
+<li><code>headless</code>: Headless enum value, the desired headless mode.</li>
+</ul>
+<p><strong>Returns:</strong> Bytearray, data transferred.</p>
+<h4 id="-reset_gyro-"><code>reset_gyro()</code></h4>
+<p><strong>Description:</strong> Resets and calibrates the drone&#39;s gyroscope.</p>
+<p><strong>Parameters:</strong> None</p>
+<p><strong>Returns:</strong> None</p>
+<h4 id="-set_trim-roll-pitch-"><code>set_trim(roll, pitch)</code></h4>
+<p><strong>Description:</strong> Sets the drone trim values for roll and pitch.</p>
+<p><strong>Parameters:</strong></p>
+<ul>
+<li><code>roll</code>: Integer, roll trim value (-100 to 100).</li>
+<li><code>pitch</code>: Integer, pitch trim value (-100 to 100).</li>
+</ul>
+<p><strong>Returns:</strong> None</p>
+<h4 id="-reset_trim-"><code>reset_trim()</code></h4>
+<p><strong>Description:</strong> Resets the drone trim values to zero.</p>
+<p><strong>Parameters:</strong> None</p>
+<p><strong>Returns:</strong> None</p>
+<h4 id="-get_trim-"><code>get_trim()</code></h4>
+<p><strong>Description:</strong> Gets the current drone trim values.</p>
+<p><strong>Parameters:</strong> None</p>
+<p><strong>Returns:</strong> List, a list containing the roll and pitch trim values.</p>
+<h4 id="-sendtrim-roll-pitch-yaw-throttle-"><code>sendTrim(roll, pitch, yaw, throttle)</code></h4>
+<p><strong>Description:</strong> Sends trim values for roll, pitch, yaw, and throttle to the drone.</p>
+<p><strong>Parameters:</strong></p>
+<ul>
+<li><code>roll</code>: Integer, roll trim value (-100 to 100).</li>
+<li><code>pitch</code>: Integer, pitch trim value (-100 to 100).</li>
+<li><code>yaw</code>: Integer, yaw trim value (-100 to 100).</li>
+<li><code>throttle</code>: Integer, throttle trim value (-100 to 100).</li>
+</ul>
+<p><strong>Returns:</strong> Bytearray, data transferred.</p>
+<h4 id="-sendweight-weight-"><code>sendWeight(weight)</code></h4>
+<p><strong>Description:</strong> Sends the weight setting to the drone.</p>
+<p><strong>Parameters:</strong></p>
+<ul>
+<li><code>weight</code>: Integer, weight value.</li>
+</ul>
+<p><strong>Returns:</strong> Bytearray, data transferred.</p>
+<h4 id="-sendlostconnection-timeneutral-timelanding-timestop-"><code>sendLostConnection(timeNeutral, timeLanding, timeStop)</code></h4>
+<p><strong>Description:</strong> Sends lost connection behavior settings to the drone.</p>
+<p><strong>Parameters:</strong></p>
+<ul>
+<li><code>timeNeutral</code>: Integer, neutral time value.</li>
+<li><code>timeLanding</code>: Integer, landing time value.</li>
+<li><code>timeStop</code>: Integer, stop time value.</li>
+</ul>
+<p><strong>Returns:</strong> Bytearray, data transferred.</p>
+<h4 id="-sendflightevent-flightevent-"><code>sendFlightEvent(flightEvent)</code></h4>
+<p><strong>Description:</strong> Sends a flight event command to the drone.</p>
+<p><strong>Parameters:</strong></p>
+<ul>
+<li><code>flightEvent</code>: FlightEvent enum value, the flight event to trigger.</li>
+</ul>
+<p><strong>Returns:</strong> Bytearray, data transferred.</p>
+<h4 id="-sendclearbias-"><code>sendClearBias()</code></h4>
+<p><strong>Description:</strong> Sends a command to clear the gyroscope bias.</p>
+<p><strong>Parameters:</strong> None</p>
+<p><strong>Returns:</strong> Bytearray, data transferred.</p>
+<h4 id="-sendcleartrim-"><code>sendClearTrim()</code></h4>
+<p><strong>Description:</strong> Sends a command to clear the trim settings.</p>
+<p><strong>Parameters:</strong> None</p>
+<p><strong>Returns:</strong> Bytearray, data transferred.</p>
+<h4 id="-sendsetdefault-devicetype-"><code>sendSetDefault(deviceType)</code></h4>
+<p><strong>Description:</strong> Sends a command to reset settings to default values for a device.</p>
+<p><strong>Parameters:</strong></p>
+<ul>
+<li><code>deviceType</code>: DeviceType, the device to reset (Drone or Controller).</li>
+</ul>
+<p><strong>Returns:</strong> Bytearray, data transferred.</p>
+<h4 id="-sendbacklight-flagpower-"><code>sendBacklight(flagPower)</code></h4>
+<p><strong>Description:</strong> Sends a command to control the controller backlight.</p>
+<p><strong>Parameters:</strong></p>
+<ul>
+<li><code>flagPower</code>: Boolean, True to turn backlight on, False to turn off.</li>
+</ul>
+<p><strong>Returns:</strong> Bytearray, data transferred.</p>
+<h4 id="-sendcontrollelinkmode-"><code>sendControlleLinkMode()</code></h4>
+<p><strong>Description:</strong> Sends a command to set the controller to link mode.</p>
+<p><strong>Parameters:</strong> None</p>
+<p><strong>Returns:</strong> Bytearray, data transferred.</p>
+<h4 id="-sendmotor-motor0-motor1-motor2-motor3-"><code>sendMotor(motor0, motor1, motor2, motor3)</code></h4>
+<p><strong>Description:</strong> Sends commands to control individual motor speeds.</p>
+<p><strong>Parameters:</strong></p>
+<ul>
+<li><code>motor0</code>: Integer, speed for motor 0 (0-1000).</li>
+<li><code>motor1</code>: Integer, speed for motor 1 (0-1000).</li>
+<li><code>motor2</code>: Integer, speed for motor 2 (0-1000).</li>
+<li><code>motor3</code>: Integer, speed for motor 3 (0-1000).</li>
+</ul>
+<p><strong>Returns:</strong> Bytearray, data transferred.</p>
+<h4 id="-set_motor_speed-front_right-0-back_right-0-back_left-0-front_left-0-time_delay-0-001-"><code>set_motor_speed(front_right=0, back_right=0, back_left=0, front_left=0, time_delay=0.001)</code></h4>
+<p><strong>Description:</strong> Sets the speed of individual motors with a slight delay.</p>
+<p><strong>Parameters:</strong></p>
+<ul>
+<li><code>front_right</code>: Integer, speed for front right motor (0-1000). Default: 0</li>
+<li><code>back_right</code>: Integer, speed for back right motor (0-1000). Default: 0</li>
+<li><code>back_left</code>: Integer, speed for back left motor (0-1000). Default: 0</li>
+<li><code>front_left</code>: Integer, speed for front left motor (0-1000). Default: 0</li>
+<li><code>time_delay</code>: Float, delay in seconds after sending the command. Default: 0.001</li>
+</ul>
+<p><strong>Returns:</strong> None</p>
+<h4 id="-sendmotorsingle-target-value-"><code>sendMotorSingle(target, value)</code></h4>
+<p><strong>Description:</strong> Sends a command to control a single motor.</p>
+<p><strong>Parameters:</strong></p>
+<ul>
+<li><code>target</code>: Integer, motor target index.</li>
+<li><code>value</code>: Integer, motor speed value (0-1000).</li>
+</ul>
+<p><strong>Returns:</strong> Bytearray, data transferred.</p>
+<h4 id="-sendlightmanual-devicetype-flags-brightness-"><code>sendLightManual(deviceType, flags, brightness)</code></h4>
+<p><strong>Description:</strong> Sends a command to manually control LEDs.</p>
+<p><strong>Parameters:</strong></p>
+<ul>
+<li><code>deviceType</code>: DeviceType, the device to control LEDs on (Drone or Controller).</li>
+<li><code>flags</code>: Integer, LED flags.</li>
+<li><code>brightness</code>: Integer, LED brightness (0-255).</li>
+</ul>
+<p><strong>Returns:</strong> Bytearray, data transferred.</p>
+<h4 id="-sendlightmodecolor-lightmode-interval-r-g-b-"><code>sendLightModeColor(lightMode, interval, r, g, b)</code></h4>
+<p><strong>Description:</strong> Sends a command to set LED mode with a color.</p>
+<p><strong>Parameters:</strong></p>
+<ul>
+<li><code>lightMode</code>: LightModeDrone or LightModeController enum value or integer, LED mode.</li>
+<li><code>interval</code>: Integer, LED mode interval.</li>
+<li><code>r</code>: Integer, red color component (0-255).</li>
+<li><code>g</code>: Integer, green color component (0-255).</li>
+<li><code>b</code>: Integer, blue color component (0-255).</li>
+</ul>
+<p><strong>Returns:</strong> Bytearray, data transferred.</p>
+<h4 id="-sendlightmodecolors-lightmode-interval-colors-"><code>sendLightModeColors(lightMode, interval, colors)</code></h4>
+<p><strong>Description:</strong> Sends a command to set LED mode with a sequence of colors.</p>
+<p><strong>Parameters:</strong></p>
+<ul>
+<li><code>lightMode</code>: LightModeDrone or LightModeController enum value or integer, LED mode.</li>
+<li><code>interval</code>: Integer, LED mode interval.</li>
+<li><code>colors</code>: Colors object containing color sequence.</li>
+</ul>
+<p><strong>Returns:</strong> Bytearray, data transferred.</p>
+<h4 id="-sendlighteventcolor-lightevent-interval-repeat-r-g-b-"><code>sendLightEventColor(lightEvent, interval, repeat, r, g, b)</code></h4>
+<p><strong>Description:</strong> Sends a command to set an LED event with a color.</p>
+<p><strong>Parameters:</strong></p>
+<ul>
+<li><code>lightEvent</code>: LightModeDrone or LightModeController enum value or integer, LED event mode.</li>
+<li><code>interval</code>: Integer, LED event interval.</li>
+<li><code>repeat</code>: Integer, number of repetitions.</li>
+<li><code>r</code>: Integer, red color component (0-255).</li>
+<li><code>g</code>: Integer, green color component (0-255).</li>
+<li><code>b</code>: Integer, blue color component (0-255).</li>
+</ul>
+<p><strong>Returns:</strong> Bytearray, data transferred.</p>
+<h4 id="-sendlighteventcolors-lightevent-interval-repeat-colors-"><code>sendLightEventColors(lightEvent, interval, repeat, colors)</code></h4>
+<p><strong>Description:</strong> Sends a command to set an LED event with a sequence of colors.</p>
+<p><strong>Parameters:</strong></p>
+<ul>
+<li><code>lightEvent</code>: LightModeDrone or LightModeController enum value or integer, LED event mode.</li>
+<li><code>interval</code>: Integer, LED event interval.</li>
+<li><code>repeat</code>: Integer, number of repetitions.</li>
+<li><code>colors</code>: Colors object containing color sequence.</li>
+</ul>
+<p><strong>Returns:</strong> Bytearray, data transferred.</p>
+<h4 id="-sendlightdefaultcolor-lightmode-interval-r-g-b-"><code>sendLightDefaultColor(lightMode, interval, r, g, b)</code></h4>
+<p><strong>Description:</strong> Sends a command to set the default LED color for a mode.</p>
+<p><strong>Parameters:</strong></p>
+<ul>
+<li><code>lightMode</code>: LightModeDrone or LightModeController enum value or integer, LED mode.</li>
+<li><code>interval</code>: Integer, LED mode interval.</li>
+<li><code>r</code>: Integer, red color component (0-255).</li>
+<li><code>g</code>: Integer, green color component (0-255).</li>
+<li><code>b</code>: Integer, blue color component (0-255).</li>
+</ul>
+<p><strong>Returns:</strong> Bytearray, data transferred.</p>
+<h4 id="-get_colors-"><code>get_colors()</code></h4>
+<p><strong>Description:</strong> Retrieves the currently detected colors from the drone using the default color prediction.</p>
+<p><strong>Parameters:</strong> None</p>
+<p><strong>Returns:</strong> List, a list of strings representing the detected colors (front and back sensors).</p>
+<h4 id="-get_front_color-"><code>get_front_color()</code></h4>
+<p><strong>Description:</strong> Retrieves the color detected by the front color sensor.</p>
+<p><strong>Parameters:</strong> None</p>
+<p><strong>Returns:</strong> String, the detected color by the front sensor.</p>
+<h4 id="-get_back_color-"><code>get_back_color()</code></h4>
+<p><strong>Description:</strong> Retrieves the color detected by the back color sensor.</p>
+<p><strong>Parameters:</strong> None</p>
+<p><strong>Returns:</strong> String, the detected color by the back sensor.</p>
+<h4 id="-detect_colors-color_data-"><code>detect_colors(color_data)</code></h4>
+<p><strong>Description:</strong> Detects colors using a loaded KNN classifier given color data.</p>
+<p><strong>Parameters:</strong></p>
+<ul>
+<li><code>color_data</code>: List, color sensor data.</li>
+</ul>
+<p><strong>Returns:</strong> List, a list of strings representing the predicted colors (front and back sensors).</p>
+<h4 id="-predict_colors-color_data-alias-for-detect_colors-"><code>predict_colors(color_data)</code> <em>(Alias for detect_colors)</em></h4>
+<p><strong>Description:</strong> Alias for <code>detect_colors</code>. Detects colors using a loaded KNN classifier given color data.</p>
+<p><strong>Parameters:</strong></p>
+<ul>
+<li><code>color_data</code>: List, color sensor data.</li>
+</ul>
+<p><strong>Returns:</strong> List, a list of strings representing the predicted colors (front and back sensors).</p>
+<h4 id="-reset_classifier-"><code>reset_classifier()</code></h4>
+<p><strong>Description:</strong> Resets the internal KNN classifier.</p>
+<p><strong>Parameters:</strong> None</p>
+<p><strong>Returns:</strong> None</p>
+<h4 id="-load_color_data-dataset-none-show_graph-false-"><code>load_color_data(dataset=None, show_graph=False)</code></h4>
+<p><strong>Description:</strong> Loads color data from a dataset folder to train the KNN classifier.</p>
+<p><strong>Parameters:</strong></p>
+<ul>
+<li><code>dataset</code>: String, the name of the dataset folder. If None, loads the default dataset. Default: None</li>
+<li><code>show_graph</code>: Boolean, whether to display a 3D graph of the loaded data. Default: False</li>
+</ul>
+<p><strong>Returns:</strong> List, a list of all loaded color data.</p>
+<h4 id="-print_num_data-label-dataset-"><code>print_num_data(label, dataset)</code></h4>
+<p><strong>Description:</strong> Prints the number of data samples for a given label in a dataset.</p>
+<p><strong>Parameters:</strong></p>
+<ul>
+<li><code>label</code>: String, the label name (filename without extension).</li>
+<li><code>dataset</code>: String, the name of the dataset folder.</li>
+</ul>
+<p><strong>Returns:</strong> Integer, the number of data samples for the label.</p>
+<h4 id="-append_color_data-label-data-dataset-"><code>append_color_data(label, data, dataset)</code></h4>
+<p><strong>Description:</strong> Appends new color data to an existing label in a dataset.</p>
+<p><strong>Parameters:</strong></p>
+<ul>
+<li><code>label</code>: String, the label name.</li>
+<li><code>data</code>: List, the color data to append.</li>
+<li><code>dataset</code>: String, the name of the dataset folder.</li>
+</ul>
+<p><strong>Returns:</strong> None</p>
+<h4 id="-new_color_data-label-data-dataset-"><code>new_color_data(label, data, dataset)</code></h4>
+<p><strong>Description:</strong> Creates a new label file in a dataset folder and saves color data to it.</p>
+<p><strong>Parameters:</strong></p>
+<ul>
+<li><code>label</code>: String, the label name.</li>
+<li><code>data</code>: List, the color data to save.</li>
+<li><code>dataset</code>: String, the name of the dataset folder.</li>
+</ul>
+<p><strong>Returns:</strong> None</p>
+<h4 id="-senddisplayclearall-pixel-displaypixel-white-"><code>sendDisplayClearAll(pixel=DisplayPixel.White)</code></h4>
+<p><strong>Description:</strong> Sends a command to clear the entire controller display.</p>
+<p><strong>Parameters:</strong></p>
+<ul>
+<li><code>pixel</code>: DisplayPixel enum value, the pixel color to clear the display with (White or Black). Default: DisplayPixel.White</li>
+</ul>
+<p><strong>Returns:</strong> Bytearray, data transferred.</p>
+<h4 id="-senddisplayclear-x-y-width-height-pixel-displaypixel-white-"><code>sendDisplayClear(x, y, width, height, pixel=DisplayPixel.White)</code></h4>
+<p><strong>Description:</strong> Sends a command to clear a rectangular area on the controller display.</p>
+<p><strong>Parameters:</strong></p>
+<ul>
+<li><code>x</code>: Integer, x-coordinate of the top-left corner of the rectangle.</li>
+<li><code>y</code>: Integer, y-coordinate of the top-left corner of the rectangle.</li>
+<li><code>width</code>: Integer, width of the rectangle.</li>
+<li><code>height</code>: Integer, height of the rectangle.</li>
+<li><code>pixel</code>: DisplayPixel enum value, the pixel color to clear the area with (White or Black). Default: DisplayPixel.White</li>
+</ul>
+<p><strong>Returns:</strong> Bytearray, data transferred.</p>
+<h4 id="-senddisplayinvert-x-y-width-height-"><code>sendDisplayInvert(x, y, width, height)</code></h4>
+<p><strong>Description:</strong> Sends a command to invert the colors of a rectangular area on the controller display.</p>
+<p><strong>Parameters:</strong></p>
+<ul>
+<li><code>x</code>: Integer, x-coordinate of the top-left corner of the rectangle.</li>
+<li><code>y</code>: Integer, y-coordinate of the top-left corner of the rectangle.</li>
+<li><code>width</code>: Integer, width of the rectangle.</li>
+<li><code>height</code>: Integer, height of the rectangle.</li>
+</ul>
+<p><strong>Returns:</strong> Bytearray, data transferred.</p>
+<h4 id="-senddisplaydrawpoint-x-y-pixel-displaypixel-black-"><code>sendDisplayDrawPoint(x, y, pixel=DisplayPixel.Black)</code></h4>
+<p><strong>Description:</strong> Sends a command to draw a single point on the controller display.</p>
+<p><strong>Parameters:</strong></p>
+<ul>
+<li><code>x</code>: Integer, x-coordinate of the point.</li>
+<li><code>y</code>: Integer, y-coordinate of the point.</li>
+<li><code>pixel</code>: DisplayPixel enum value, the pixel color to draw (White or Black). Default: DisplayPixel.Black</li>
+</ul>
+<p><strong>Returns:</strong> Bytearray, data transferred.</p>
+<h4 id="-senddisplaydrawline-x1-y1-x2-y2-pixel-displaypixel-black-line-displayline-solid-"><code>sendDisplayDrawLine(x1, y1, x2, y2, pixel=DisplayPixel.Black, line=DisplayLine.Solid)</code></h4>
+<p><strong>Description:</strong> Sends a command to draw a line on the controller display.</p>
+<p><strong>Parameters:</strong></p>
+<ul>
+<li><code>x1</code>: Integer, x-coordinate of the starting point.</li>
+<li><code>y1</code>: Integer, y-coordinate of the starting point.</li>
+<li><code>x2</code>: Integer, x-coordinate of the ending point.</li>
+<li><code>y2</code>: Integer, y-coordinate of the ending point.</li>
+<li><code>pixel</code>: DisplayPixel enum value, the pixel color to draw (White or Black). Default: DisplayPixel.Black</li>
+<li><code>line</code>: DisplayLine enum value, the line style (Solid or Dot). Default: DisplayLine.Solid</li>
+</ul>
+<p><strong>Returns:</strong> Bytearray, data transferred.</p>
+<h4 id="-senddisplaydrawrect-x-y-width-height-pixel-displaypixel-black-flagfill-false-line-displayline-solid-"><code>sendDisplayDrawRect(x, y, width, height, pixel=DisplayPixel.Black, flagFill=False, line=DisplayLine.Solid)</code></h4>
+<p><strong>Description:</strong> Sends a command to draw a rectangle on the controller display.</p>
+<p><strong>Parameters:</strong></p>
+<ul>
+<li><code>x</code>: Integer, x-coordinate of the top-left corner.</li>
+<li><code>y</code>: Integer, y-coordinate of the top-left corner.</li>
+<li><code>width</code>: Integer, width of the rectangle.</li>
+<li><code>height</code>: Integer, height of the rectangle.</li>
+<li><code>pixel</code>: DisplayPixel enum value, the pixel color to draw (White or Black). Default: DisplayPixel.Black</li>
+<li><code>flagFill</code>: Boolean, True to fill the rectangle, False for outline only. Default: False</li>
+<li><code>line</code>: DisplayLine enum value, the line style (Solid or Dot). Default: DisplayLine.Solid</li>
+</ul>
+<p><strong>Returns:</strong> Bytearray, data transferred.</p>
+<h4 id="-senddisplaydrawcircle-x-y-radius-pixel-displaypixel-black-flagfill-true-"><code>sendDisplayDrawCircle(x, y, radius, pixel=DisplayPixel.Black, flagFill=True)</code></h4>
+<p><strong>Description:</strong> Sends a command to draw a circle on the controller display.</p>
+<p><strong>Parameters:</strong></p>
+<ul>
+<li><code>x</code>: Integer, x-coordinate of the circle&#39;s center.</li>
+<li><code>y</code>: Integer, y-coordinate of the circle&#39;s center.</li>
+<li><code>radius</code>: Integer, radius of the circle.</li>
+<li><code>pixel</code>: DisplayPixel enum value, the pixel color to draw (White or Black). Default: DisplayPixel.Black</li>
+<li><code>flagFill</code>: Boolean, True to fill the circle, False for outline only. Default: True</li>
+</ul>
+<p><strong>Returns:</strong> Bytearray, data transferred.</p>
+<h4 id="-senddisplaydrawstring-x-y-message-font-displayfont-liberationmono5x8-pixel-displaypixel-black-"><code>sendDisplayDrawString(x, y, message, font=DisplayFont.LiberationMono5x8, pixel=DisplayPixel.Black)</code></h4>
+<p><strong>Description:</strong> Sends a command to draw a string on the controller display.</p>
+<p><strong>Parameters:</strong></p>
+<ul>
+<li><code>x</code>: Integer, x-coordinate of the string&#39;s top-left corner.</li>
+<li><code>y</code>: Integer, y-coordinate of the string&#39;s top-left corner.</li>
+<li><code>message</code>: String, the text to display.</li>
+<li><code>font</code>: DisplayFont enum value, the font to use. Default: DisplayFont.LiberationMono5x8</li>
+<li><code>pixel</code>: DisplayPixel enum value, the pixel color to draw (White or Black). Default: DisplayPixel.Black</li>
+</ul>
+<p><strong>Returns:</strong> Bytearray, data transferred.</p>
+<h4 id="-senddisplaydrawstringalign-x_start-x_end-y-message-align-displayalign-center-font-displayfont-liberationmono5x8-pixel-displaypixel-black-"><code>sendDisplayDrawStringAlign(x_start, x_end, y, message, align=DisplayAlign.Center, font=DisplayFont.LiberationMono5x8, pixel=DisplayPixel.Black)</code></h4>
+<p><strong>Description:</strong> Sends a command to draw an aligned string on the controller display within a specified area.</p>
+<p><strong>Parameters:</strong></p>
+<ul>
+<li><code>x_start</code>: Integer, starting x-coordinate for alignment.</li>
+<li><code>x_end</code>: Integer, ending x-coordinate for alignment.</li>
+<li><code>y</code>: Integer, y-coordinate of the string.</li>
+<li><code>message</code>: String, the text to display.</li>
+<li><code>align</code>: DisplayAlign enum value, the text alignment (Left, Center, Right). Default: DisplayAlign.Center</li>
+<li><code>font</code>: DisplayFont enum value, the font to use. Default: DisplayFont.LiberationMono5x8</li>
+<li><code>pixel</code>: DisplayPixel enum value, the pixel color to draw (White or Black). Default: DisplayPixel.Black</li>
+</ul>
+<p><strong>Returns:</strong> Bytearray, data transferred.</p>
+<h4 id="-controller_create_canvas-color-white-"><code>controller_create_canvas(color=&quot;white&quot;)</code></h4>
+<p><strong>Description:</strong> Creates a PIL Image canvas object for drawing and preview purposes.</p>
+<p><strong>Parameters:</strong></p>
+<ul>
+<li><code>color</code>: String, the background color of the canvas (&#39;white&#39; or &#39;black&#39;). Default: &quot;white&quot;</li>
+</ul>
+<p><strong>Returns:</strong> PIL.Image.Image, the created image canvas object.</p>
+<h4 id="-controller_preview_canvas-"><code>controller_preview_canvas()</code></h4>
+<p><strong>Description:</strong> Displays a preview window of the current canvas (Desktop platforms only).</p>
+<p><strong>Parameters:</strong> None</p>
+<p><strong>Returns:</strong> None</p>
+<h4 id="-get_image_data-image_file_name-"><code>get_image_data(image_file_name)</code></h4>
+<p><strong>Description:</strong> Loads an image file and resizes it to fit the controller screen size, returning pixel data. (Desktop platforms only).</p>
+<p><strong>Parameters:</strong></p>
+<ul>
+<li><code>image_file_name</code>: String, path to the image file.</li>
+</ul>
+<p><strong>Returns:</strong> List, a list of pixel data for the resized image.</p>
+<h4 id="-controller_draw_canvas-image-"><code>controller_draw_canvas(image)</code></h4>
+<p><strong>Description:</strong> Draws a PIL Image canvas object onto the controller screen.</p>
+<p><strong>Parameters:</strong></p>
+<ul>
+<li><code>image</code>: PIL.Image.Image, the image canvas object to draw.</li>
+</ul>
+<p><strong>Returns:</strong> None</p>
+<h4 id="-controller_draw_line-x1-y1-x2-y2-image-color-black-pixel_width-1-"><code>controller_draw_line(x1, y1, x2, y2, image, color=&quot;black&quot;, pixel_width=1)</code></h4>
+<p><strong>Description:</strong> Draws a line on a PIL Image canvas object.</p>
+<p><strong>Parameters:</strong></p>
+<ul>
+<li><code>x1</code>: Integer, x-coordinate of the starting point.</li>
+<li><code>y1</code>: Integer, y-coordinate of the starting point.</li>
+<li><code>x2</code>: Integer, x-coordinate of the ending point.</li>
+<li><code>y2</code>: Integer, y-coordinate of the ending point.</li>
+<li><code>image</code>: PIL.Image.Image, the image canvas object to draw on.</li>
+<li><code>color</code>: String, the color of the line (&#39;black&#39; or &#39;white&#39;). Default: &quot;black&quot;</li>
+<li><code>pixel_width</code>: Integer, width of the line in pixels. Default: 1</li>
+</ul>
+<p><strong>Returns:</strong> None</p>
+<h4 id="-controller_draw_rectangle-x-y-width-height-image-color-black-fill_in-none-pixel_width-1-"><code>controller_draw_rectangle(x, y, width, height, image, color=&quot;black&quot;, fill_in=None, pixel_width=1)</code></h4>
+<p><strong>Description:</strong> Draws a rectangle on a PIL Image canvas object.</p>
+<p><strong>Parameters:</strong></p>
+<ul>
+<li><code>x</code>: Integer, x-coordinate of the top-left corner.</li>
+<li><code>y</code>: Integer, y-coordinate of the top-left corner.</li>
+<li><code>width</code>: Integer, width of the rectangle.</li>
+<li><code>height</code>: Integer, height of the rectangle.</li>
+<li><code>image</code>: PIL.Image.Image, the image canvas object to draw on.</li>
+<li><code>color</code>: String, the outline color of the rectangle (&#39;black&#39; or &#39;white&#39;). Default: &quot;black&quot;</li>
+<li><code>fill_in</code>: String, the fill color of the rectangle (&#39;black&#39;, &#39;white&#39;, or None for no fill). Default: None</li>
+<li><code>pixel_width</code>: Integer, width of the rectangle outline in pixels. Default: 1</li>
+</ul>
+<p><strong>Returns:</strong> None</p>
+<h4 id="-controller_draw_square-x-y-width-image-color-black-fill_in-none-pixel_width-1-"><code>controller_draw_square(x, y, width, image, color=&quot;black&quot;, fill_in=None, pixel_width=1)</code></h4>
+<p><strong>Description:</strong> Draws a square on a PIL Image canvas object.</p>
+<p><strong>Parameters:</strong></p>
+<ul>
+<li><code>x</code>: Integer, x-coordinate of the top-left corner.</li>
+<li><code>y</code>: Integer, y-coordinate of the top-left corner.</li>
+<li><code>width</code>: Integer, width of the square.</li>
+<li><code>image</code>: PIL.Image.Image, the image canvas object to draw on.</li>
+<li><code>color</code>: String, the outline color of the square (&#39;black&#39; or &#39;white&#39;). Default: &quot;black&quot;</li>
+<li><code>fill_in</code>: String, the fill color of the square (&#39;black&#39;, &#39;white&#39;, or None for no fill). Default: None</li>
+<li><code>pixel_width</code>: Integer, width of the square outline in pixels. Default: 1</li>
+</ul>
+<p><strong>Returns:</strong> None</p>
+<h4 id="-controller_draw_point-x-y-image-color-black-"><code>controller_draw_point(x, y, image, color=&quot;black&quot;)</code></h4>
+<p><strong>Description:</strong> Draws a single point on a PIL Image canvas object.</p>
+<p><strong>Parameters:</strong></p>
+<ul>
+<li><code>x</code>: Integer, x-coordinate of the point.</li>
+<li><code>y</code>: Integer, y-coordinate of the point.</li>
+<li><code>image</code>: PIL.Image.Image, the image canvas object to draw on.</li>
+<li><code>color</code>: String, the color of the point (&#39;black&#39; or &#39;white&#39;). Default: &quot;black&quot;</li>
+</ul>
+<p><strong>Returns:</strong> None</p>
+<h4 id="-controller_clear_screen-pixel-displaypixel-white-"><code>controller_clear_screen(pixel=DisplayPixel.White)</code></h4>
+<p><strong>Description:</strong> Clears the controller screen and optionally sets the background color.</p>
+<p><strong>Parameters:</strong></p>
+<ul>
+<li><code>pixel</code>: DisplayPixel enum value, the pixel color to clear the screen with (White or Black). Default: DisplayPixel.White</li>
+</ul>
+<p><strong>Returns:</strong> None</p>
+<h4 id="-controller_draw_polygon-point_list-image-color-black-fill_in-none-pixel_width-1-"><code>controller_draw_polygon(point_list, image, color=&quot;black&quot;, fill_in=None, pixel_width=1)</code></h4>
+<p><strong>Description:</strong> Draws a polygon on a PIL Image canvas object.</p>
+<p><strong>Parameters:</strong></p>
+<ul>
+<li><code>point_list</code>: List, a list of tuples representing polygon vertices [(x1, y1), (x2, y2), ...].</li>
+<li><code>image</code>: PIL.Image.Image, the image canvas object to draw on.</li>
+<li><code>color</code>: String, the outline color of the polygon (&#39;black&#39; or &#39;white&#39;). Default: &quot;black&quot;</li>
+<li><code>fill_in</code>: String, the fill color of the polygon (&#39;black&#39;, &#39;white&#39;, or None for no fill). Default: None</li>
+<li><code>pixel_width</code>: Integer, width of the polygon outline in pixels. Default: 1</li>
+</ul>
+<p><strong>Returns:</strong> None</p>
+<h4 id="-controller_draw_ellipse-ellipse_list-image-color-black-fill_in-none-pixel_width-1-"><code>controller_draw_ellipse(ellipse_list, image, color=&quot;black&quot;, fill_in=None, pixel_width=1)</code></h4>
+<p><strong>Description:</strong> Draws an ellipse on a PIL Image canvas object within a bounding box.</p>
+<p><strong>Parameters:</strong></p>
+<ul>
+<li><code>ellipse_list</code>: List, two tuples defining the bounding box [(x0, y0), (x1, y1)].</li>
+<li><code>image</code>: PIL.Image.Image, the image canvas object to draw on.</li>
+<li><code>color</code>: String, the outline color of the ellipse (&#39;black&#39; or &#39;white&#39;). Default: &quot;black&quot;</li>
+<li><code>fill_in</code>: String, the fill color of the ellipse (&#39;black&#39;, &#39;white&#39;, or None for no fill). Default: None</li>
+<li><code>pixel_width</code>: Integer, width of the ellipse outline in pixels. Default: 1</li>
+</ul>
+<p><strong>Returns:</strong> None</p>
+<h4 id="-controller_draw_arc-arc_list-start_angle-end_angle-image-color-black-pixel_width-1-"><code>controller_draw_arc(arc_list, start_angle, end_angle, image, color=&quot;black&quot;, pixel_width=1)</code></h4>
+<p><strong>Description:</strong> Draws an arc on a PIL Image canvas object within a bounding box.</p>
+<p><strong>Parameters:</strong></p>
+<ul>
+<li><code>arc_list</code>: List, two tuples defining the bounding box [(x0, y0), (x1, y1)].</li>
+<li><code>start_angle</code>: Float, starting angle of the arc in degrees.</li>
+<li><code>end_angle</code>: Float, ending angle of the arc in degrees.</li>
+<li><code>image</code>: PIL.Image.Image, the image canvas object to draw on.</li>
+<li><code>color</code>: String, the color of the arc (&#39;black&#39; or &#39;white&#39;). Default: &quot;black&quot;</li>
+<li><code>pixel_width</code>: Integer, width of the arc line in pixels. Default: 1</li>
+</ul>
+<p><strong>Returns:</strong> None</p>
+<h4 id="-controller_draw_chord-chord_list-start_angle-end_angle-image-color-black-fill_in-none-pixel_width-1-"><code>controller_draw_chord(chord_list, start_angle, end_angle, image, color=&quot;black&quot;, fill_in=None, pixel_width=1)</code></h4>
+<p><strong>Description:</strong> Draws a chord (arc with a line connecting endpoints) on a PIL Image canvas object within a bounding box.</p>
+<p><strong>Parameters:</strong></p>
+<ul>
+<li><code>chord_list</code>: List, two tuples defining the bounding box [(x0, y0), (x1, y1)].</li>
+<li><code>start_angle</code>: Float, starting angle of the chord in degrees.</li>
+<li><code>end_angle</code>: Float, ending angle of the chord in degrees.</li>
+<li><code>image</code>: PIL.Image.Image, the image canvas object to draw on.</li>
+<li><code>color</code>: String, the outline color of the chord (&#39;black&#39; or &#39;white&#39;). Default: &quot;black&quot;</li>
+<li><code>fill_in</code>: String, the fill color of the chord (&#39;black&#39;, &#39;white&#39;, or None for no fill). Default: None</li>
+<li><code>pixel_width</code>: Integer, width of the chord outline in pixels. Default: 1</li>
+</ul>
+<p><strong>Returns:</strong> None</p>
+<h4 id="-controller_draw_string-x-y-string-image-color-black-"><code>controller_draw_string(x, y, string, image, color=&quot;black&quot;)</code></h4>
+<p><strong>Description:</strong> Draws text on a PIL Image canvas object.</p>
+<p><strong>Parameters:</strong></p>
+<ul>
+<li><code>x</code>: Integer, x-coordinate of the text&#39;s top-left corner.</li>
+<li><code>y</code>: Integer, y-coordinate of the text&#39;s top-left corner.</li>
+<li><code>string</code>: String, the text to draw.</li>
+<li><code>image</code>: PIL.Image.Image, the image canvas object to draw on.</li>
+<li><code>color</code>: String, the color of the text (&#39;black&#39; or &#39;white&#39;). Default: &quot;black&quot;</li>
+</ul>
+<p><strong>Returns:</strong> None</p>
+<h4 id="-controller_draw_string_align-x_start-x_end-y-string-image-color-black-alignment-left-"><code>controller_draw_string_align(x_start, x_end, y, string, image, color=&quot;black&quot;, alignment=&quot;left&quot;)</code></h4>
+<p><strong>Description:</strong> Draws aligned text on a PIL Image canvas object within a specified area.</p>
+<p><strong>Parameters:</strong></p>
+<ul>
+<li><code>x_start</code>: Integer, starting x-coordinate for alignment.</li>
+<li><code>x_end</code>: Integer, ending x-coordinate for alignment.</li>
+<li><code>y</code>: Integer, y-coordinate of the text.</li>
+<li><code>string</code>: String, the text to draw.</li>
+<li><code>image</code>: PIL.Image.Image, the image canvas object to draw on.</li>
+<li><code>color</code>: String, the color of the text (&#39;black&#39; or &#39;white&#39;). Default: &quot;black&quot;</li>
+<li><code>alignment</code>: String, the text alignment (&#39;left&#39;, &#39;center&#39;, &#39;right&#39;). Default: &quot;left&quot;</li>
+</ul>
+<p><strong>Returns:</strong> None</p>
+<h4 id="-controller_draw_image-pixel_list-"><code>controller_draw_image(pixel_list)</code></h4>
+<p><strong>Description:</strong> Draws an image on the controller screen given a pixel list.</p>
+<p><strong>Parameters:</strong></p>
+<ul>
+<li><code>pixel_list</code>: List, a list of pixel data for the image.</li>
+</ul>
+<p><strong>Returns:</strong> None</p>
+<h4 id="-sendbuzzer-mode-value-duration-"><code>sendBuzzer(mode, value, duration)</code></h4>
+<p><strong>Description:</strong> Sends a buzzer command to the controller.</p>
+<p><strong>Parameters:</strong></p>
+<ul>
+<li><code>mode</code>: BuzzerMode enum value, the buzzer mode (Hz, Scale, Mute, etc.).</li>
+<li><code>value</code>: Integer, buzzer value (frequency in Hz or scale note value).</li>
+<li><code>duration</code>: Integer, duration in milliseconds to play the buzzer sound.</li>
+</ul>
+<p><strong>Returns:</strong> Bytearray, data transferred.</p>
+<h4 id="-sendbuzzermute-duration-"><code>sendBuzzerMute(duration)</code></h4>
+<p><strong>Description:</strong> Sends a buzzer mute command to the controller.</p>
+<p><strong>Parameters:</strong></p>
+<ul>
+<li><code>duration</code>: Integer, duration in milliseconds to mute the buzzer.</li>
+</ul>
+<p><strong>Returns:</strong> Bytearray, data transferred.</p>
+<h4 id="-sendbuzzermutereserve-duration-"><code>sendBuzzerMuteReserve(duration)</code></h4>
+<p><strong>Description:</strong> Sends a reserved buzzer mute command to the controller.</p>
+<p><strong>Parameters:</strong></p>
+<ul>
+<li><code>duration</code>: Integer, duration in milliseconds to mute the buzzer.</li>
+</ul>
+<p><strong>Returns:</strong> Bytearray, data transferred.</p>
+<h4 id="-sendbuzzerscale-scale-duration-"><code>sendBuzzerScale(scale, duration)</code></h4>
+<p><strong>Description:</strong> Sends a buzzer command to play a note by scale on the controller.</p>
+<p><strong>Parameters:</strong></p>
+<ul>
+<li><code>scale</code>: BuzzerScale enum value, the note to play.</li>
+<li><code>duration</code>: Integer, duration in milliseconds to play the note.</li>
+</ul>
+<p><strong>Returns:</strong> Bytearray, data transferred.</p>
+<h4 id="-sendbuzzerscalereserve-scale-duration-"><code>sendBuzzerScaleReserve(scale, duration)</code></h4>
+<p><strong>Description:</strong> Sends a reserved buzzer command to play a note by scale on the controller.</p>
+<p><strong>Parameters:</strong></p>
+<ul>
+<li><code>scale</code>: BuzzerScale enum value, the note to play.</li>
+<li><code>duration</code>: Integer, duration in milliseconds to play the note.</li>
+</ul>
+<p><strong>Returns:</strong> Bytearray, data transferred.</p>
+<h4 id="-sendbuzzerhz-hz-duration-"><code>sendBuzzerHz(hz, duration)</code></h4>
+<p><strong>Description:</strong> Sends a buzzer command to play a sound at a specific frequency (Hz) on the controller.</p>
+<p><strong>Parameters:</strong></p>
+<ul>
+<li><code>hz</code>: Integer, frequency in Hz.</li>
+<li><code>duration</code>: Integer, duration in milliseconds to play the sound.</li>
+</ul>
+<p><strong>Returns:</strong> Bytearray, data transferred.</p>
+<h4 id="-sendbuzzerhzreserve-hz-duration-"><code>sendBuzzerHzReserve(hz, duration)</code></h4>
+<p><strong>Description:</strong> Sends a reserved buzzer command to play a sound at a specific frequency (Hz) on the controller.</p>
+<p><strong>Parameters:</strong></p>
+<ul>
+<li><code>hz</code>: Integer, frequency in Hz.</li>
+<li><code>duration</code>: Integer, duration in milliseconds to play the sound.</li>
+</ul>
+<p><strong>Returns:</strong> Bytearray, data transferred.</p>
+<h4 id="-sendvibrator-on-off-total-"><code>sendVibrator(on, off, total)</code></h4>
+<p><strong>Description:</strong> Sends a vibrator command to the controller for an instantaneous vibration.</p>
+<p><strong>Parameters:</strong></p>
+<ul>
+<li><code>on</code>: Integer, vibration on time in milliseconds.</li>
+<li><code>off</code>: Integer, vibration off time in milliseconds.</li>
+<li><code>total</code>: Integer, total vibration time in milliseconds.</li>
+</ul>
+<p><strong>Returns:</strong> Bytearray, data transferred.</p>
+<h4 id="-sendvibratorreserve-on-off-total-"><code>sendVibratorReserve(on, off, total)</code></h4>
+<p><strong>Description:</strong> Sends a vibrator command to the controller for a continuous vibration.</p>
+<p><strong>Parameters:</strong></p>
+<ul>
+<li><code>on</code>: Integer, vibration on time in milliseconds.</li>
+<li><code>off</code>: Integer, vibration off time in milliseconds.</li>
+<li><code>total</code>: Integer, total vibration time in milliseconds.</li>
+</ul>
+<p><strong>Returns:</strong> Bytearray, data transferred.</p>
+</body></html>

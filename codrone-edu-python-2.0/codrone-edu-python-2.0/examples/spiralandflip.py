@@ -1,28 +1,28 @@
 import math
 
-from swarm2 import *
-from codrone_edu import *
+from codrone_edu.swarm import *
 
 class Choreography():
 
     def __init__(self):
         return
 
-    def runSequence(self, swarm):
-        drones = swarm.get_drone_objects()
-        drone1, drone2, drone3 = drones[0], drones[1], drones[2]
-
+    def runSequence(self, swarm, selected_drone_indices):
         # Define spiral parameters for drones 1 and 3
-        radius = 0.5  # radius of circle in meters
-        height = 0.5  # total height to ascend in meters
+        radius = 0.1  # radius of circle in meters
+        height = 0.2  # total height to ascend in meters
         duration = 4  # time to complete spiral in seconds
         steps = 20  # number of points in the spiral
 
-        # Have drone 2 hover briefly before flip
-        drone2.hover(1)
-        drone2.flip("front")
+        sync = Sync()
+        # Have drones hover briefly before flip
+        for i in selected_drone_indices:
+            seq = Sequence(i)
+            seq.add('hover', 1)
+            seq.add('flip')
+            seq.add('sequence_sleep', 4)
 
-        # Execute spiral for drones 1 and 3
+        # Execute spiral for drones
         for i in range(steps):
             # Calculate position for this step
             t = i / (steps - 1)  # normalized time from 0 to 1
@@ -32,13 +32,15 @@ class Choreography():
             y = radius * math.sin(2 * math.pi * t)  # CCW motion
             z = height * t  # Linear increase in height
 
-            # Send position commands to drones 1 and 3
-            drone1.sendControlPosition(x, y, z, 0.5, 0, 0)
-            drone3.sendControlPosition(x, y, z, 0.5, 0, 0)
-
-            # Wait a short time between movements for smooth motion
-            sleep(duration / steps)
+            # Send position commands to drones
+            for i in selected_drone_indices:
+                seq = Sequence(i)
+                seq.add('sendControlPosition', x, y, z, 0.5, 0, 0)
+                # Wait a short time between movements for smooth motion
+                seq.add('sequence_sleep', duration/steps)
+                sync.add(seq)
 
         # Wait for flip to complete and drone to stabilize
         sleep(4)
         # meow
+        swarm.run(sync, delay=duration/steps)

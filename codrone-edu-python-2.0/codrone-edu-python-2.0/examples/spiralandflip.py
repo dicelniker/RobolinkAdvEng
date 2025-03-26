@@ -9,9 +9,9 @@ class Choreography():
 
     def runSequence(self, swarm, selected_drone_indices):
         # Define spiral parameters for drones 1 and 3
-        radius = 0.1  # radius of circle in meters
+        radius = 0.3  # radius of circle in meters
         height = 0.2  # total height to ascend in meters
-        duration = 4  # time to complete spiral in seconds
+        duration = 3  # time to complete spiral in seconds
         steps = 20  # number of points in the spiral
 
         sync = Sync()

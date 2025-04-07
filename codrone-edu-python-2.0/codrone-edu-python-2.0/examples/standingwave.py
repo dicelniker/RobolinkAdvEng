@@ -6,6 +6,11 @@ swarm.takeoff()
 
 sync = Sync()
 
+"""
+All drones go to the same height
+Even indices go down first, odd indices go up first to create a ~~~ standing wave ~~~
+"""
+
 for i in range(len(swarm.get_drones())):
     seq = Sequence(i)
     seq.add('send_absolute_position', 0, 0, 1, 1, 0, 0)
@@ -21,6 +26,7 @@ for i in range(len(swarm.get_drones())):
 
 swarm.run(sync)
 
+# Prints all the steps in the sequence for drone 0
 for i in sync.get_sync()[0]:
     print(i)
 

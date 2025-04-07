@@ -84,7 +84,7 @@ class SwarmGUI:
         self.create_input_section()
         self.create_control_buttons()
         self.default_colors = ['red', 'blue', 'orange', 'yellow', 'green', '#00ffff', 'purple', 'pink', 'white', 'black']
-        self.bind_keys()
+        # self.bind_keys()
         self.root.geometry("400x690")
         self.create_grid()
         self.is_landed = {i: True for i in range(len(self.swarm.get_drones()))}
@@ -276,6 +276,9 @@ class SwarmGUI:
             sync_move.add(seq)
         self.swarm.run(sync_move, type="parallel")
 
+    import asyncio
+    import sys
+
     def goto_position(self, drone_index, target_x, target_y, target_z, speed=0.5):
         """
         Move a drone to a specific position on both the graph and in the physical world.
@@ -307,12 +310,19 @@ class SwarmGUI:
         print(f"Moving drone {drone_index} to position ({target_x:.2f}, {target_y:.2f}, {target_z:.2f})")
         print(f"Current position: ({current_x:.2f}, {current_y:.2f}, {current_z:.2f})")
 
-        # Create sequence for the movement
-        seq = Sequence(drone_index)
-        seq.add("sendControlPosition", final_x, final_y, final_z, speed, 0, 0)
+        placeholder = drone["drone_obj"]
 
-        # Execute the movement
-        self.swarm.run(seq)
+        # Check if the platform is Emscripten or the swarm is connected
+        if sys.platform != 'emscripten' and not self.swarm:
+            # Synchronous call for desktop environment
+            placeholder.send_absolute_position(final_x, final_y, final_z, speed, 0, 0)
+        else:
+            # Asynchronous call for Emscripten environment
+            async def move_drone():
+                await placeholder.send_absolute_position(final_x, final_y, final_z, speed, 0, 0)
+
+            # Execute the coroutine in a blocking manner
+            asyncio.run(move_drone())
 
         # Update the position on the graph
         self.set_drone_position(drone_index, target_x, target_y, target_z)
@@ -401,8 +411,15 @@ class SwarmGUI:
             #self.run_choreography("spiral and flip choreography", spiralandflip.run_sequence)
 
     def run_wiggle(self):
-        print("run wiggle")
-            #self.run_choreography("wiggle choreography", wiggle.run_sequence)
+        self.take_off()
+        selected_drone_indices = self.get_indices()
+        test = [
+            (0.5, 0.5, 1),  # Front Left
+            (-0.5, -0.5, 1),  # Front Right
+        ]
+        for i, drone_index in enumerate(selected_drone_indices):
+            pos = test[i]
+            self.goto_position(drone_index, pos[0], pos[1], pos[2], 1)
     def run_spiral(self):
         selected_drone_indices = self.get_indices()
         num_selected_drones = len(selected_drone_indices)
@@ -780,24 +797,24 @@ class SwarmGUI:
         # Draw the plot
         self.canvas_widget.draw()
 
-    def bind_keys(self):
-        def key_highlight(border_frame, button):
-            border_frame.config(highlightbackground='#3fd4ff', highlightcolor='#3fd4ff')
-            button.config(bg='white', fg='#3fd4ff')
-
-        def key_reset(border_frame, button):
-            border_frame.config(highlightbackground='#e61848', highlightcolor='#e61848')
-            button.config(bg='#05001c', fg='white')
-
-        self.root.bind("<Up>", lambda event: [self.forward(), key_highlight(self.forward_border, self.forward_button), self.root.after(100, lambda: key_reset(self.forward_border, self.forward_button))])
-        self.root.bind("<Down>", lambda event: [self.backward(), key_highlight(self.backward_border, self.backward_button), self.root.after(100, lambda: key_reset(self.backward_border, self.backward_button))])
-        self.root.bind("<Left>", lambda event: [self.left(), key_highlight(self.left_border, self.left_button), self.root.after(100, lambda: key_reset(self.left_border, self.left_button))])
-        self.root.bind("<Right>", lambda event: [self.right(), key_highlight(self.right_border, self.right_button), self.root.after(100, lambda: key_reset(self.right_border, self.right_button))])
-        self.root.bind("w", lambda event: [self.forward(), key_highlight(self.forward_border, self.forward_button), self.root.after(100, lambda: key_reset(self.forward_border, self.forward_button))])
-        self.root.bind("s", lambda event: [self.backward(), key_highlight(self.backward_border, self.backward_button), self.root.after(100, lambda: key_reset(self.backward_border, self.backward_button))])
-        self.root.bind("a", lambda event: [self.left(), key_highlight(self.left_border, self.left_button), self.root.after(100, lambda: key_reset(self.left_border, self.left_button))])
-        self.root.bind("d", lambda event: [self.right(), key_highlight(self.right_border, self.right_button), self.root.after(100, lambda: key_reset(self.right_border, self.right_button))])
-        self.root.focus_set()
+    # def bind_keys(self):
+    #     def key_highlight(border_frame, button):
+    #         border_frame.config(highlightbackground='#3fd4ff', highlightcolor='#3fd4ff')
+    #         button.config(bg='white', fg='#3fd4ff')
+    #
+    #     def key_reset(border_frame, button):
+    #         border_frame.config(highlightbackground='#e61848', highlightcolor='#e61848')
+    #         button.config(bg='#05001c', fg='white')
+    #
+    #     self.root.bind("<Up>", lambda event: [self.forward(), key_highlight(self.forward_border, self.forward_button), self.root.after(100, lambda: key_reset(self.forward_border, self.forward_button))])
+    #     self.root.bind("<Down>", lambda event: [self.backward(), key_highlight(self.backward_border, self.backward_button), self.root.after(100, lambda: key_reset(self.backward_border, self.backward_button))])
+    #     self.root.bind("<Left>", lambda event: [self.left(), key_highlight(self.left_border, self.left_button), self.root.after(100, lambda: key_reset(self.left_border, self.left_button))])
+    #     self.root.bind("<Right>", lambda event: [self.right(), key_highlight(self.right_border, self.right_button), self.root.after(100, lambda: key_reset(self.right_border, self.right_button))])
+    #     self.root.bind("w", lambda event: [self.forward(), key_highlight(self.forward_border, self.forward_button), self.root.after(100, lambda: key_reset(self.forward_border, self.forward_button))])
+    #     self.root.bind("s", lambda event: [self.backward(), key_highlight(self.backward_border, self.backward_button), self.root.after(100, lambda: key_reset(self.backward_border, self.backward_button))])
+    #     self.root.bind("a", lambda event: [self.left(), key_highlight(self.left_border, self.left_button), self.root.after(100, lambda: key_reset(self.left_border, self.left_button))])
+    #     self.root.bind("d", lambda event: [self.right(), key_highlight(self.right_border, self.right_button), self.root.after(100, lambda: key_reset(self.right_border, self.right_button))])
+    #     self.root.focus_set()
 
     def run(self):
         self.root.mainloop()

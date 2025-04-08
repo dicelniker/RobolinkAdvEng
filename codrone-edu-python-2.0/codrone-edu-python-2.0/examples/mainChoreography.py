@@ -66,6 +66,9 @@ class MainChoreo:
         time.sleep(5)  # Hold pyramid formation
         print("Pyramid formation complete")
 
+    def move_into_place(self, drones, selected_drone_indices):
+        print("moving into a line")
+    
     def run_sequence(self, swarm, selected_drone_indices):
         """Entry point for the choreography"""
         try:

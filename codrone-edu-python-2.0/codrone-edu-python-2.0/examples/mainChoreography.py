@@ -3,15 +3,17 @@ import sys
 import time
 import asyncio
 
+
 class MainChoreo:
     def __init__(self, gui_instance):
         self.gui = gui_instance
         self.speed = 0.75
         self.base_height = 0.75  # Height for square formation
-        self.pyramid_base_height = 0.5  # Height for bottom layer of pyramid
-        self.pyramid_top_height = 1.5  # Height for top of pyramid
+        self.pyramid_base_height = 0.3  # Height for bottom layer of pyramid
+        self.pyramid_top_height = 1.0  # Height for top of pyramid
         self.square_sides = 0.5
         self.pyramid_side = 0.5
+        self.space_apart = 0.4
 
     def square_takeoff(self, drones, selected_drone_indices):
         """
@@ -52,10 +54,10 @@ class MainChoreo:
         p = self.pyramid_side
         # Pyramid positions (x, y, z) in meters
         pyramid_positions = [
-            (p / 2, p / 2, self.pyramid_base_height),  # Upper right triangle
-            (0, 0, self.pyramid_top_height),  # Top of pyramid
-            (0, p / 2 - (0.866025405 * p), self.pyramid_base_height),  # Lower tip triangle
             (-p / 2, p / 2, self.pyramid_base_height),  # Upper left triangle
+            (p / 2, p / 2, self.pyramid_base_height),  # Upper right triangle
+            (0, p / 2 - (0.866025405 * p), self.pyramid_base_height),  # Lower tip triangle
+            (0, 0, self.pyramid_top_height)  # Top of pyramid
         ]
 
         # Move drones to pyramid positions simultaneously
@@ -68,7 +70,37 @@ class MainChoreo:
 
     def move_into_place(self, drones, selected_drone_indices):
         print("moving into a line")
-    
+        # drone four will spiral down to pyra base height (self.pyramid_base_height)
+        # order: 1, 3, 2
+        b = self.pyramid_base_height
+        # drone_positions = [
+        #     (0, 0, b), # drone 1
+        #     (0, 0 , b), # drone 2
+        #     (0, 0, b), # drone 3
+        #     (0, 0, b) # drone 4
+        # ]
+        for i, drone_index in enumerate(selected_drone_indices):
+            if i == 0:
+                # go to: (0, -self.space_apart, b)
+                self.gui.goto_position(drone_index, 0, -self.space_apart, b, self.speed)
+                print("moving")
+            if i == 1:
+                # go to: (0, 2 * self.space_apart, b)
+                self.gui.goto_position(drone_index, 0, 2 * self.space_apart, b, self.speed)
+                print("moving")
+            if i == 2:
+                # go to: (0, self.space_apart, b)
+                self.gui.goto_position(drone_index, 0, self.space_apart, b, self.speed)
+                # find out how to move it in an angled manner
+                print("moving")
+            if i == 3:
+                # spiral down
+                # at 0,0
+                # use drone.go(roll, pitch, yaw, throttle, duration)
+                self.gui.goto_position(drone_index, 0, 0, b, self.speed)
+                print("moving")
+
+
     def run_sequence(self, swarm, selected_drone_indices):
         """Entry point for the choreography"""
         try:

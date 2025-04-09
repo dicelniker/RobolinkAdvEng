@@ -78,15 +78,15 @@ class SwarmGUI:
         )
         title_label.pack(pady=(0, 10))
 
+        self.key_bindings_active = False
         self.create_input_section()
         self.create_control_buttons()
         self.default_colors = ['red', 'blue', 'orange', 'yellow', 'green', '#00ffff', 'purple', 'pink', 'white', 'black']
-        # self.bind_keys()
         self.root.geometry("400x690")
         self.create_grid()
         self.is_landed = {i: True for i in range(len(self.swarm.get_drones()))}
 
-# Helper function for clicks on the graph
+    # Helper function for clicks on the graph
     def handle_press(self, event):
         """Handle initial click for drag or color picker"""
         if event.inaxes != self.ax:
@@ -278,7 +278,8 @@ class SwarmGUI:
             ("Take Off", self.take_off),
             ("Land", self.land),
             ("Stabilize Swarm", self.stabilize_swarm),
-            ("Auto Update", self.update_timer)
+            ("Auto Update", self.update_timer),
+            ("Bind Keys", self.toggle_key_bindings)
         ]
 
         for text, command in main_buttons:
@@ -874,24 +875,40 @@ class SwarmGUI:
         # Draw the plot
         self.canvas_widget.draw()
 
-    # def bind_keys(self):
-    #     def key_highlight(border_frame, button):
-    #         border_frame.config(highlightbackground='#3fd4ff', highlightcolor='#3fd4ff')
-    #         button.config(bg='white', fg='#3fd4ff')
-    #
-    #     def key_reset(border_frame, button):
-    #         border_frame.config(highlightbackground='#e61848', highlightcolor='#e61848')
-    #         button.config(bg='#05001c', fg='white')
-    #
-    #     self.root.bind("<Up>", lambda event: [self.forward(), key_highlight(self.forward_border, self.forward_button), self.root.after(100, lambda: key_reset(self.forward_border, self.forward_button))])
-    #     self.root.bind("<Down>", lambda event: [self.backward(), key_highlight(self.backward_border, self.backward_button), self.root.after(100, lambda: key_reset(self.backward_border, self.backward_button))])
-    #     self.root.bind("<Left>", lambda event: [self.left(), key_highlight(self.left_border, self.left_button), self.root.after(100, lambda: key_reset(self.left_border, self.left_button))])
-    #     self.root.bind("<Right>", lambda event: [self.right(), key_highlight(self.right_border, self.right_button), self.root.after(100, lambda: key_reset(self.right_border, self.right_button))])
-    #     self.root.bind("w", lambda event: [self.forward(), key_highlight(self.forward_border, self.forward_button), self.root.after(100, lambda: key_reset(self.forward_border, self.forward_button))])
-    #     self.root.bind("s", lambda event: [self.backward(), key_highlight(self.backward_border, self.backward_button), self.root.after(100, lambda: key_reset(self.backward_border, self.backward_button))])
-    #     self.root.bind("a", lambda event: [self.left(), key_highlight(self.left_border, self.left_button), self.root.after(100, lambda: key_reset(self.left_border, self.left_button))])
-    #     self.root.bind("d", lambda event: [self.right(), key_highlight(self.right_border, self.right_button), self.root.after(100, lambda: key_reset(self.right_border, self.right_button))])
-    #     self.root.focus_set()
+    def toggle_key_bindings(self):
+        """Toggle keyboard controls on/off"""
+        if self.key_bindings_active:
+            # Unbind all keys
+            for key in ["<Up>", "<Down>", "<Left>", "<Right>", "w", "s", "a", "d"]:
+                self.root.unbind(key)
+            self.key_bindings_active = False
+            print("Keybinds disabled")
+        else:
+            # Bind all keys
+            self.bind_keys()
+            self.key_bindings_active = True
+            print("Keybinds enabled")
+
+    def bind_keys(self):
+        """Set up keyboard bindings"""
+
+        def key_highlight(border_frame, button):
+            border_frame.config(highlightbackground='#3fd4ff', highlightcolor='#3fd4ff')
+            button.config(bg='white', fg='#3fd4ff')
+
+        def key_reset(border_frame, button):
+            border_frame.config(highlightbackground='#e61848', highlightcolor='#e61848')
+            button.config(bg='#05001c', fg='white')
+
+        self.root.bind("<Up>", lambda event: [self.forward(), key_highlight(self.forward_border, self.forward_button), self.root.after(100, lambda: key_reset(self.forward_border, self.forward_button))])
+        self.root.bind("<Down>", lambda event: [self.backward(), key_highlight(self.backward_border, self.backward_button), self.root.after(100,lambda: key_reset(self.backward_border, self.backward_button))])
+        self.root.bind("<Left>", lambda event: [self.left(), key_highlight(self.left_border, self.left_button), self.root.after(100, lambda: key_reset(self.left_border, self.left_button))])
+        self.root.bind("<Right>", lambda event: [self.right(), key_highlight(self.right_border, self.right_button), self.root.after(100, lambda: key_reset(self.right_border, self.right_button))])
+        self.root.bind("w", lambda event: [self.forward(), key_highlight(self.forward_border, self.forward_button), self.root.after(100, lambda: key_reset(self.forward_border, self.forward_button))])
+        self.root.bind("s", lambda event: [self.backward(), key_highlight(self.backward_border, self.backward_button), self.root.after(100, lambda: key_reset(self.backward_border, self.backward_button))])
+        self.root.bind("a", lambda event: [self.left(), key_highlight(self.left_border, self.left_button), self.root.after(100, lambda: key_reset(self.left_border, self.left_button))])
+        self.root.bind("d", lambda event: [self.right(), key_highlight(self.right_border, self.right_button), self.root.after(100, lambda: key_reset(self.right_border, self.right_button))])
+        self.root.focus_set()
 
     def run(self):
         self.root.mainloop()

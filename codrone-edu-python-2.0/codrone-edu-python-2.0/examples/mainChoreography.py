@@ -119,6 +119,7 @@ class MainChoreo:
             self.square_takeoff(drones, selected_drone_indices)
             time.sleep(1)  # Pause between formations
             self.form_pyramid(drones, selected_drone_indices)
+            self.move_into_place(drones, selected_drone_indices)
             print("Choreography completed successfully!")
 
         except Exception as e:

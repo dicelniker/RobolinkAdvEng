@@ -1,11 +1,8 @@
-
 import math
 import tkinter as tk
 from tkinter import colorchooser
-
 import matplotlib.colors as mcolors
 from codrone_edu.swarm import *
-
 
 #pink e61848
 #dark blue 05001c
@@ -89,11 +86,128 @@ class SwarmGUI:
         self.create_grid()
         self.is_landed = {i: True for i in range(len(self.swarm.get_drones()))}
 
+# Helper function for clicks on the graph
+    def handle_press(self, event):
+        """Handle initial click for drag or color picker"""
+        if event.inaxes != self.ax:
+            return
+
+        click_x, click_y = event.xdata, event.ydata
+
+        for drone in self.droneIcons:
+            if drone["plot"] is not None:
+                drone_x = drone["x_position"]
+                drone_y = drone["y_position"]
+
+                distance = math.sqrt((click_x - drone_x) ** 2 + (click_y - drone_y) ** 2)
+
+                if distance < 0.2:  # Click threshold
+                    if event.button == 1:  # Left click for dragging
+                        self.selected_drone = drone
+                    elif event.button == 3:  # Right click for color picker
+                        self.open_color_picker(drone)
+                    break
+
+# Color picker functions
     def process_color(self, color_str):
         rgba_color = list(mcolors.to_rgba(color_str))
         for i in range(4):
             rgba_color[i] = int(255 * rgba_color[i])
         return rgba_color
+
+    def open_color_picker(self, drone):
+        """Open color picker and update drone color"""
+        color_code = colorchooser.askcolor(title="Choose Drone Color")
+        if color_code[1]:
+            new_color = color_code[1]
+            rgb_value = color_code[0]
+            print(f"Selected RGB color: {rgb_value}")
+
+            # Update the stored color
+            drone["color"] = new_color
+
+            # Update the LED color on the physical drone
+            rgba_color = self.process_color(drone["color"])
+            self.swarm.one_drone(drone["drone_index"], "set_drone_LED", *rgba_color)
+            self.swarm.one_drone(drone["drone_index"], "set_controller_LED", *rgba_color)
+
+            # Update the plot color
+            if drone["plot"] is not None:
+                drone["plot"].set_color(new_color)
+
+                # Force a redraw of the plot
+                self.canvas_widget.draw()
+
+# Drag and drop functionality
+    def setup_click_handlers(self):
+        """Set up click and drag handlers"""
+        self.selected_drone = None
+        self.canvas_widget.mpl_connect('button_press_event', self.handle_press)
+        self.canvas_widget.mpl_connect('button_release_event', self.handle_release)
+
+    def handle_release(self, event):
+        """Handle drag release to set final position"""
+        if self.selected_drone is None or event.inaxes != self.ax:
+            self.selected_drone = None
+            return
+
+        # Send drone to the release position
+        self.goto_position(
+            self.selected_drone["drone_index"],
+            event.xdata,
+            event.ydata,
+            self.selected_drone["z_position"],
+            speed=0.5
+        )
+
+        # Clear selection
+        self.selected_drone = None
+
+# Helper functions for setup
+    def get_indices(self):
+        selected_drone_indices = []
+        for index, drone in enumerate(self.droneIcons):
+            if drone["selected"].get():
+                selected_drone_indices.append(index)
+        return selected_drone_indices
+
+    def get_coords(self, droneidx):
+        """Get the [x, y, z] coordinates of the drone at the given index"""
+        return [
+            self.droneIcons[droneidx]["x_position"],
+            self.droneIcons[droneidx]["y_position"],
+            self.droneIcons[droneidx]["z_position"]
+        ]
+
+    def create_button(self, parent, text, command, style, bind_hover=True):
+        """Helper method to create buttons with consistent styling"""
+        button = tk.Button(parent, text=text, command=command, **style)
+        if bind_hover:
+            button.bind("<Enter>", lambda e: e.widget.config(bg=self.hover_purple))
+            button.bind("<Leave>", lambda e: e.widget.config(bg=self.pink))
+        return button
+
+    def create_border_frame(self, parent, style):
+        """Helper method to create border frames with consistent styling"""
+        return tk.Frame(parent, **style)
+
+
+    def move_drones(self, direction, x=0.0, y=0.0, z=0.0, speed=0.5):
+        """Generic method for drone movement"""
+        selected_drone_indices = self.get_indices()
+        if not selected_drone_indices:
+            print(f"No drones selected. Not moving {direction}.")
+            return
+
+        print(f"Moving {direction} for selected drones: {selected_drone_indices}")
+        sync_move = Sync()
+        for index in selected_drone_indices:
+            seq = Sequence(index)
+            seq.add("move_distance", x, y, z, speed)
+            sync_move.add(seq)
+        self.swarm.run(sync_move, type="parallel")
+
+
 
     def create_control_buttons(self):
         # Define styles
@@ -241,43 +355,6 @@ class SwarmGUI:
 
             # Position the button
             border.grid(row=row, column=col, padx=5, pady=5)
-    def get_indices(self):
-        selected_drone_indices = []
-        for index, drone in enumerate(self.droneIcons):
-            if drone["selected"].get():
-                selected_drone_indices.append(index)
-        return selected_drone_indices
-
-    def create_button(self, parent, text, command, style, bind_hover=True):
-        """Helper method to create buttons with consistent styling"""
-        button = tk.Button(parent, text=text, command=command, **style)
-        if bind_hover:
-            button.bind("<Enter>", lambda e: e.widget.config(bg=self.hover_purple))
-            button.bind("<Leave>", lambda e: e.widget.config(bg=self.pink))
-        return button
-
-    def create_border_frame(self, parent, style):
-        """Helper method to create border frames with consistent styling"""
-        return tk.Frame(parent, **style)
-
-
-    def move_drones(self, direction, x=0.0, y=0.0, z=0.0, speed=0.5):
-        """Generic method for drone movement"""
-        selected_drone_indices = self.get_indices()
-        if not selected_drone_indices:
-            print(f"No drones selected. Not moving {direction}.")
-            return
-
-        print(f"Moving {direction} for selected drones: {selected_drone_indices}")
-        sync_move = Sync()
-        for index in selected_drone_indices:
-            seq = Sequence(index)
-            seq.add("move_distance", x, y, z, speed)
-            sync_move.add(seq)
-        self.swarm.run(sync_move, type="parallel")
-
-    import asyncio
-    import sys
 
     def goto_position(self, drone_index, target_x, target_y, target_z, speed=0.5):
         """
@@ -323,9 +400,6 @@ class SwarmGUI:
 
             # Execute the coroutine in a blocking manner
             asyncio.run(move_drone())
-
-        # Update the position on the graph
-        self.set_drone_position(drone_index, target_x, target_y, target_z)
 
     def land(self):
         selected_drone_indices = self.get_indices()
@@ -718,6 +792,9 @@ class SwarmGUI:
         self.canvas_widget.draw()
         self.canvas_widget.get_tk_widget().pack(expand=True, fill='both', padx=10, pady=10)
 
+        # Set up the handlers
+        self.setup_click_handlers()
+
         # Store drone positions and plot elements
         self.drone_plots = []
         self.drone_annotations = []
@@ -761,7 +838,7 @@ class SwarmGUI:
 
             # Store drone information
             drone = {
-                "color": rgba_color,
+                "color": color,
                 "x_position": x_pos,
                 "y_position": y_pos,
                 "z_position": z_pos,

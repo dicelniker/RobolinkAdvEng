@@ -79,6 +79,7 @@ class MainChoreo:
         #     (0, 0, b), # drone 3
         #     (0, 0, b) # drone 4
         # ]
+        # crappy coding down there, make it more neat with arrays :>
         for i, drone_index in enumerate(selected_drone_indices):
             if i == 0:
                 # go to: (0, -self.space_apart, b)

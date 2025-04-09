@@ -100,6 +100,28 @@ class MainChoreo:
                 self.gui.goto_position(drone_index, 0, 0, b, self.speed)
                 print("moving")
 
+    def standing_wave(self, swarm, selected_drone_indices):
+        sync = Sync()
+
+        for i in selected_drone_indices:
+            seq = Sequence(i)
+            drone = self.gui.droneIcons[i]
+            seq.add('send_absolute_position', drone["x_position"], drone["y_position"], 0.6, 1, 0, 0)
+            if i % 2 == 1:
+                for j in range(3):
+                    seq.add('send_absolute_position', drone["x_position"], drone["y_position"], 0.8, 1, 0, 0)
+                    seq.add('send_absolute_position', drone["x_position"], drone["y_position"], 0.4, 1, 0, 0)
+            else:
+                for j in range(3):
+                    seq.add('send_absolute_position', drone["x_position"], drone["y_position"], 0.4, 1, 0, 0)
+                    seq.add('send_absolute_position', drone["x_position"], drone["y_position"], 0.8, 1, 0, 0)
+            sync.add(seq)
+
+        swarm.run(sync)
+
+        # Prints all the steps in the sequence for drone 0
+        for i in sync.get_sync()[0]:
+            print(i)
 
     def run_sequence(self, swarm, selected_drone_indices):
         """Entry point for the choreography"""
@@ -119,7 +141,7 @@ class MainChoreo:
             self.square_takeoff(drones, selected_drone_indices)
             time.sleep(1)  # Pause between formations
             self.form_pyramid(drones, selected_drone_indices)
-            self.move_into_place(drones, selected_drone_indices)
+            # self.move_into_place(drones, selected_drone_indices)
             print("Choreography completed successfully!")
 
         except Exception as e:

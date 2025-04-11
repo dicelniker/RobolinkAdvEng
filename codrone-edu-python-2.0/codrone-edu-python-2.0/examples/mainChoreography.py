@@ -139,10 +139,13 @@ class MainChoreo:
             self.gui.update_timer()
             print(f"Starting choreography with {len(drones)} drones...")
 
-            self.square_takeoff(drones, selected_drone_indices)
+            # self.square_takeoff(drones, selected_drone_indices)
             time.sleep(1)  # Pause between formations
-            self.form_pyramid(drones, selected_drone_indices)
+            # self.form_pyramid(drones, selected_drone_indices)
+            time.sleep(1)  # Pause between formations
             # self.move_into_place(drones, selected_drone_indices)
+            time.sleep(1)  # Pause between formations
+            # self.standing_wave(drones, selected_drone_indices)
             print("Choreography completed successfully!")
 
         except Exception as e:

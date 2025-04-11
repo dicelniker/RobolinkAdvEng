@@ -73,33 +73,21 @@ class MainChoreo:
         # drone four will spiral down to pyra base height (self.pyramid_base_height)
         # order: 1, 3, 2
         b = self.pyramid_base_height
-        # drone_positions = [
-        #     (0, 0, b), # drone 1
-        #     (0, 0 , b), # drone 2
-        #     (0, 0, b), # drone 3
-        #     (0, 0, b) # drone 4
-        # ]
+           def move_into_place(self, drones, selected_drone_indices):
+        print("moving into a line")
+        # drone four will spiral down to pyra base height (self.pyramid_base_height)
+        # order: 1, 3, 2
+        b = self.pyramid_base_height
+        drone_positions = [
+            (0, -self.space_apart, b), # drone 1
+            (0, 2 * self.space_apart, b), # drone 2
+            (0, self.space_apart, b), # drone 3
+            (0, 0, b) # drone 4
+        ]
         # crappy coding down there, make it more neat with arrays :>
         for i, drone_index in enumerate(selected_drone_indices):
-            if i == 0:
-                # go to: (0, -self.space_apart, b)
-                self.gui.goto_position(drone_index, 0, -self.space_apart, b, self.speed)
-                print("moving")
-            if i == 1:
-                # go to: (0, 2 * self.space_apart, b)
-                self.gui.goto_position(drone_index, 0, 2 * self.space_apart, b, self.speed)
-                print("moving")
-            if i == 2:
-                # go to: (0, self.space_apart, b)
-                self.gui.goto_position(drone_index, 0, self.space_apart, b, self.speed)
-                # find out how to move it in an angled manner
-                print("moving")
-            if i == 3:
-                # spiral down
-                # at 0,0
-                # use drone.go(roll, pitch, yaw, throttle, duration)
-                self.gui.goto_position(drone_index, 0, 0, b, self.speed)
-                print("moving")
+            pos = drone_positions[i]
+            self.gui.goto_position(drone_index, pos[0], pos[1], pos[2], self.speed)
 
     def standing_wave(self, swarm, selected_drone_indices):
         sync = Sync()

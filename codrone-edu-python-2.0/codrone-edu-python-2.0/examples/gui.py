@@ -12,7 +12,8 @@ from codrone_edu.swarm import *
 #arrow button hover #7214ff
 
 class SwarmGUI:
-    def __init__(self):
+    def __init__(self, mode="full"):
+        self.mode = mode
         self.root = tk.Tk()
         self.root.title("Swarm GUI")
         self.root.configure(bg='#05001c')  # dark blue
@@ -82,9 +83,16 @@ class SwarmGUI:
         self.create_input_section()
         self.create_control_buttons()
         self.default_colors = ['red', 'blue', 'orange', 'yellow', 'green', '#00ffff', 'purple', 'pink', 'white', 'black']
-        self.root.geometry("400x690")
+        if self.mode == "basic":
+            self.root.geometry("380x500")
+        elif self.mode == "choreo":
+            self.root.geometry("1000x600")
+        else:
+            self.root.geometry("1200x800")
+
         self.create_grid()
         self.is_landed = {i: True for i in range(len(self.swarm.get_drones()))}
+
 
     # Helper function for clicks on the graph
     def handle_press(self, event):
@@ -274,53 +282,71 @@ class SwarmGUI:
         left_control_frame.pack(fill='x', pady=10)
 
         # Create main control buttons
-        main_buttons = [
-            ("Take Off", self.take_off),
-            ("Land", self.land),
-            ("Stabilize Swarm", self.stabilize_swarm),
-            ("Auto Update", self.update_timer),
-            ("Bind Keys", self.toggle_key_bindings)
-        ]
+        if self.mode == "basic":
+            main_buttons = [
+                ("Take Off", self.take_off),
+                ("Land", self.land)
+            ]
+            self.toggle_key_bindings()
+        elif self.mode == "choreo":
+            main_buttons = [
+                ("Take Off", self.take_off),
+                ("Land", self.land),
+                ("Auto Update", self.update_timer)
+            ]
+        else:
+            main_buttons = [
+                ("Take Off", self.take_off),
+                ("Land", self.land),
+                ("Auto Update", self.update_timer),
+                ("Stabilize Swarm", self.stabilize_swarm),
+                ("Bind Keys", self.toggle_key_bindings)
+            ]
 
         for text, command in main_buttons:
             self.create_button(left_control_frame, text, command, button_style).pack(pady=5)
 
         # Create choreography section
-        right_control_frame = self.create_border_frame(
-            self.left_frame,
-            {
-                'bg': self.dark_blue,
-                'relief': 'solid',
-                'padx': 5,
-                'pady': 5,
-                'highlightbackground': self.light_blue,
-                'highlightcolor': self.light_blue
-            }
-        )
-        right_control_frame.pack(fill='x', pady=10)
+        if self.mode != "basic":
+            right_control_frame = self.create_border_frame(
+                self.left_frame,
+                {
+                    'bg': self.dark_blue,
+                    'relief': 'solid',
+                    'padx': 5,
+                    'pady': 5,
+                    'highlightbackground': self.light_blue,
+                    'highlightcolor': self.light_blue
+                }
+            )
+            right_control_frame.pack(fill='x', pady=10)
 
-        tk.Label(
-            right_control_frame,
-            text="Sequences:",
-            font=("Helvetica", 10, "bold"),
-            bg=self.dark_blue,
-            fg=self.light_blue
-        ).pack()
+            tk.Label(
+                right_control_frame,
+                text="Sequences:",
+                font=("Helvetica", 10, "bold"),
+                bg=self.dark_blue,
+                fg=self.light_blue
+            ).pack()
 
-        choreo_frame = tk.Frame(right_control_frame, bg=self.dark_blue)
-        choreo_frame.pack(pady=10)
+            choreo_frame = tk.Frame(right_control_frame, bg=self.dark_blue)
+            choreo_frame.pack(pady=10)
 
-        # Create choreography buttons
-        choreo_buttons = [
-            ("Main Choreo", self.run_main_choreo),
-            ("Hexagon", self.run_hexagon),
-            ("Spiral and Flip", self.run_spiral_and_flip),
-            ("Upward Spiral", self.run_spiral),
-            ("Wiggle", self.run_wiggle)
-        ]
+            if self.mode == "choreo" or self.mode == "basic":
+                choreo_buttons = [
+                    ("Main Choreo", self.run_main_choreo)
+                ]
+            else:
+                choreo_buttons = [
+                    ("Main Choreo", self.run_main_choreo),
+                    ("Hexagon", self.run_hexagon),
+                    ("Spiral and Flip", self.run_spiral_and_flip),
+                    ("Upward Spiral", self.run_spiral),
+                    ("Wiggle", self.run_wiggle)
+                ]
 
-        for text, command in choreo_buttons:
-            self.create_button(choreo_frame, text, command, button_style).pack(pady=3)
+            for text, command in choreo_buttons:
+                self.create_button(choreo_frame, text, command, button_style).pack(pady=3)
 
         # Create movement controls
         movement_frame = tk.Frame(self.left_frame, bg='#05001c')
@@ -511,6 +537,8 @@ class SwarmGUI:
             print("No drones selected. Not moving right.")  # Do nothing - no movement
 
     def create_input_section(self):
+        if self.mode == "basic":
+            return
         self.label_style = {
             'font': ('Helvetica', 10, 'bold'),
             'bg': self.light_blue,
@@ -647,7 +675,6 @@ class SwarmGUI:
         else:
             print("No drones needed to move for stabilization.")
 
-    # not working
     def update_timer(self):
         self.update_graph()
         self.root.after(100, self.update_timer)
@@ -755,53 +782,44 @@ class SwarmGUI:
         # print(f"Drone {drone_index} position updated to ({x_coord:.1f}, {y_coord:.1f}, {z_coord:.1f})")
 
     def create_grid(self):
-        global swarm_drones, num_drones, rows, cols
-        self.root.geometry("1200x800")  # Increased width for better visualization
-        self.hasGeneratedGrid = True
+        global swarm_drones, num_drones
 
-        # Connect to Swarm and Get Drone Objects
+        self.hasGeneratedGrid = True
         swarm_drones = self.swarm.get_drones()
         num_drones = len(swarm_drones)
 
-        # Clear Existing Canvas if Present
-        if hasattr(self, 'canvas_widget'):
-            self.canvas_widget.destroy()
-
-        # Import required matplotlib modules
-        import matplotlib.pyplot as plt
         from matplotlib.backends.backend_tkagg import FigureCanvasTkAgg
         from matplotlib.figure import Figure
 
-        # Create Figure and Axes
-        self.fig = Figure(figsize=(6, 6))
-        self.ax = self.fig.add_subplot(111)
+        if self.mode != "basic":
+            self.fig = Figure(figsize=(6, 6))
+            self.ax = self.fig.add_subplot(111)
 
-        # Configure the plot
-        self.ax.grid(True, linestyle='--', alpha=0.7)
-        self.ax.set_xlim(-2, 2)
-        self.ax.set_ylim(-2, 2)
-        self.ax.set_xlabel('X (m)')
-        self.ax.set_ylabel('Y (m)')
-        self.ax.set_title('Drone Positions')
+            # Configure the plot
+            self.ax.grid(True, linestyle='--', alpha=0.7)
+            self.ax.set_xlim(-2, 2)
+            self.ax.set_ylim(-2, 2)
+            self.ax.set_xlabel('X (m)')
+            self.ax.set_ylabel('Y (m)')
+            self.ax.set_title('Drone Positions')
 
-        # Make the plot background match the GUI
-        self.fig.patch.set_facecolor('#05001c')
-        self.ax.set_facecolor('white')
+            # Make the plot background match the GUI
+            self.fig.patch.set_facecolor('#05001c')
+            self.ax.set_facecolor('white')
 
-        # Add the plot to Tkinter
-        self.canvas_widget = FigureCanvasTkAgg(self.fig, master=self.right_frame)
-        self.canvas_widget.draw()
-        self.canvas_widget.get_tk_widget().pack(expand=True, fill='both', padx=10, pady=10)
+            # Add the plot to Tkinter
+            self.canvas_widget = FigureCanvasTkAgg(self.fig, master=self.right_frame)
+            self.canvas_widget.draw()
+            self.canvas_widget.get_tk_widget().pack(expand=True, fill='both', padx=10, pady=10)
 
-        # Set up the handlers
-        self.setup_click_handlers()
+            # Set up the handlers
+            self.setup_click_handlers()
 
-        # Store drone positions and plot elements
         self.drone_plots = []
         self.drone_annotations = []
         self.droneIcons = []
 
-        # Place Drone Icons on the Grid
+        # Place Drone Icons
         for i in range(num_drones):
             # Default position for the first drone
             if i == 0:
@@ -815,27 +833,25 @@ class SwarmGUI:
             color = self.default_colors[color_index]
             rgba_color = self.process_color(color)
 
-            # Plot drone position
-            if x_pos is not None and y_pos is not None:
-                drone_plot = self.ax.scatter(x_pos, y_pos, color=color, s=100)
+            # Create plot elements only in full mode
+            if self.mode != "basic":
+                if x_pos is not None and y_pos is not None:
+                    drone_plot = self.ax.scatter(x_pos, y_pos, color=color, s=100)
+                    annotation = self.ax.annotate(
+                        f'Drone {i}\n({x_pos:.1f}, {y_pos:.1f}, {z_pos: .1f})',
+                        (x_pos, y_pos),
+                        xytext=(0, 10),
+                        textcoords='offset points',
+                        ha='center',
+                        bbox=dict(boxstyle='round,pad=0.5', fc='white', alpha=0.7),
+                        fontsize=8
+                    )
+                else:
+                    drone_plot = None
+                    annotation = None
             else:
                 drone_plot = None
-            self.drone_plots.append(drone_plot)
-
-            # Add drone index and position annotation
-            if x_pos is not None and y_pos is not None:
-                annotation = self.ax.annotate(
-                    f'Drone {i}\n({x_pos:.1f}, {y_pos:.1f}, {z_pos: .1f})',
-                    (x_pos, y_pos),
-                    xytext=(0, 10),
-                    textcoords='offset points',
-                    ha='center',
-                    bbox=dict(boxstyle='round,pad=0.5', fc='white', alpha=0.7),
-                    fontsize=8
-                )
-            else:
                 annotation = None
-            self.drone_annotations.append(annotation)
 
             # Store drone information
             drone = {
@@ -872,8 +888,9 @@ class SwarmGUI:
             # Set drone LED color
             self.swarm.one_drone(drone["drone_index"], "set_drone_LED", *rgba_color)
 
-        # Draw the plot
-        self.canvas_widget.draw()
+        # Update the display for full mode
+        if self.mode != "basic":
+            self.canvas_widget.draw()
 
     def toggle_key_bindings(self):
         """Toggle keyboard controls on/off"""
@@ -913,5 +930,90 @@ class SwarmGUI:
     def run(self):
         self.root.mainloop()
 
-app = SwarmGUI()
+class LaunchScreen:
+    def __init__(self):
+        self.root = tk.Tk()
+        self.root.title("CoDrone EDU - Launch Options")
+        self.root.configure(bg='#05001c')
+        self.selected_mode = None
+
+        self.root.geometry("350x400")
+
+
+        # Title
+        title_label = tk.Label(
+            self.root,
+            text="Select Operation Mode",
+            font=('Terminal', 12, 'bold'),
+            bg='#05001c',
+            fg='#3fd4ff',
+            pady=20
+        )
+        title_label.pack()
+
+        # Button styles
+        button_style = {
+            'font': ('Helvetica', 10, 'bold'),
+            'bg': '#e61848',
+            'fg': 'white',
+            'relief': 'solid',
+            'width': 20,
+            'height': 2,
+            'cursor': 'hand2',
+            'pady': 2
+        }
+
+        # Create frame for buttons
+        button_frame = tk.Frame(self.root, bg='#05001c')
+        button_frame.pack(expand=True)
+
+        # Mode buttons with descriptions
+        modes = [
+            ("Full Demo", "Full version of GUI with full features", self.launch_full_demo),
+            ("Choreography", "Optimized for running Choreography", self.launch_choreography),
+            ("Basic", "Simple demonstration, minimal features", self.launch_basic_controls)
+        ]
+
+        for text, description, command in modes:
+            btn_frame = tk.Frame(button_frame, bg='#05001c')
+            btn_frame.pack(pady=10)
+
+            btn = tk.Button(btn_frame, text=text, command=command, **button_style)
+            btn.pack()
+            # Hover effects
+            btn.bind("<Enter>", lambda e: e.widget.config(bg='#d098fa'))
+            btn.bind("<Leave>", lambda e: e.widget.config(bg='#e61848'))
+
+            desc_label = tk.Label(
+                btn_frame,
+                text=description,
+                font=('Helvetica', 8),
+                bg='#05001c',
+                fg='#3fd4ff',
+                pady= 5
+            )
+            desc_label.pack()
+
+    def launch_full_demo(self):
+        self.root.destroy()
+        print("Running full demo")
+        app = SwarmGUI(mode="full")
+        app.run()
+
+    def launch_choreography(self):
+        self.root.destroy()
+        print("Running choreography demo")
+        app = SwarmGUI(mode="choreo")
+        app.run()
+
+    def launch_basic_controls(self):
+        self.root.destroy()
+        print("Print running basic demo")
+        app = SwarmGUI(mode="basic")
+        app.run()
+
+    def run(self):
+        self.root.mainloop()
+
+app = LaunchScreen()
 app.run()

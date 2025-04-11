@@ -73,11 +73,6 @@ class MainChoreo:
         # drone four will spiral down to pyra base height (self.pyramid_base_height)
         # order: 1, 3, 2
         b = self.pyramid_base_height
-           def move_into_place(self, drones, selected_drone_indices):
-        print("moving into a line")
-        # drone four will spiral down to pyra base height (self.pyramid_base_height)
-        # order: 1, 3, 2
-        b = self.pyramid_base_height
         drone_positions = [
             (0, -self.space_apart, b), # drone 1
             (0, 2 * self.space_apart, b), # drone 2

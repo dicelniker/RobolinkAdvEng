@@ -82,7 +82,11 @@ class MainChoreo:
 
         for i, drone_index in enumerate(selected_drone_indices):
             pos = drone_positions[i]
-            self.gui.goto_position(drone_index, pos[0], pos[1], pos[2], self.speed)
+            if i == 3:
+                print("change to spiral")
+                self.gui.goto_position(drone_index, pos[0], pos[1], pos[2], self.speed) # change this line :>
+            else:
+                self.gui.goto_position(drone_index, pos[0], pos[1], pos[2], self.speed)
 
     def standing_wave(self, swarm, selected_drone_indices):
         sync = Sync()

@@ -110,7 +110,19 @@ class MainChoreo:
         # Prints all the steps in the sequence for drone 0
         for i in sync.get_sync()[0]:
             print(i)
-
+            
+    def spiral_down(self, swarm, selected_drone_indices):
+        sync = Sync()
+        for i in selected_drone_indices:
+            seq = Sequence(i)
+            seq.add('set_throttle', -30)
+            seq.add('set_pitch', 40)
+            seq.add('set_yaw', 80)
+            seq.add('move', 4)
+            seq.add('land')
+            sync.add(seq)
+        swarm.run(sync)
+    
     def run_sequence(self, swarm, selected_drone_indices):
         """Entry point for the choreography"""
         try:
@@ -127,13 +139,14 @@ class MainChoreo:
             print(f"Starting choreography with {len(drones)} drones...")
 
             # self.square_takeoff(drones, selected_drone_indices)
-            time.sleep(1)  # Pause between formations
+            # time.sleep(1)  # Pause between formations
             # self.form_pyramid(drones, selected_drone_indices)
-            time.sleep(1)  # Pause between formations
+            # time.sleep(1)  # Pause between formations
             # self.move_into_place(drones, selected_drone_indices)
-            time.sleep(1)  # Pause between formations
-            # self.standing_wave(drones, selected_drone_indices)
-            print("Choreography completed successfully!")
+            # time.sleep(1)  # Pause between formations
+            # self.standing_wave(swarm, selected_drone_indices)
+            # time.sleep(1)  # Pause between formations
+            # self.spiral_down(swarm, selected_drone_indices)
 
         except Exception as e:
             print(f"Failed to run choreography: {str(e)}")

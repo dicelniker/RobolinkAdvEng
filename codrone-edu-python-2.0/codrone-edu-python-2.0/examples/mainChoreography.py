@@ -84,7 +84,7 @@ class MainChoreo:
             (0, self.space_apart, b), # drone 3
             (0, 0, b) # drone 4
         ]
-        # crappy coding down there, make it more neat with arrays :>
+
         for i, drone_index in enumerate(selected_drone_indices):
             pos = drone_positions[i]
             self.gui.goto_position(drone_index, pos[0], pos[1], pos[2], self.speed)

@@ -49,42 +49,53 @@ class SwarmGUI:
         self.swarm = Swarm()
         self.swarm.connect()
 
-        self.light_blue = '#3fd4ff'  # Define light blue color
-        self.grid_line_color = '#4169E1' # Define grid line color
-        self.dark_blue = '#05001c' # Define dark blue color
-        self.pink = '#e61848' # Define pink color
-        self.hover_purple = '#d098fa' # Define hover purple for red buttons
-        self.arrow_hover_blue = '#7214ff' # Define hover blue for arrow buttons
+        self.light_blue = '#3fd4ff'
+        self.grid_line_color = '#4169E1'
+        self.dark_blue = '#05001c'
+        self.pink = '#e61848'
+        self.hover_purple = '#d098fa'
+        self.arrow_hover_blue = '#7214ff'
+
+        self.top_frame = tk.Frame(self.root, bg='#05001c')
+        self.top_frame.pack(side='top', fill='x', pady=5)
+
+        self.add_back_button()
 
         # Create a main container frame to organize the layout
-        self.main_container = tk.Frame(self.root, bg='#05001c')
+        self.main_container = tk.Frame(self.root, bg=self.dark_blue)
         self.main_container.pack(expand=True, fill='both', padx=10, pady=10)
 
-        # Create left frame for controls
-        self.left_frame = tk.Frame(self.main_container, bg='#05001c')
-        self.left_frame.pack(side='left', fill='y', padx=(0, 10))
+        if self.mode == "basic":
+            # For basic mode, create a centered frame for controls
+            self.center_frame = tk.Frame(self.main_container, bg=self.dark_blue)
+            self.center_frame.pack(fill='both')
 
-        # Create right frame for the graph
-        self.right_frame = tk.Frame(self.main_container, bg='#05001c')
-        self.right_frame.pack(side='left', expand=True, fill='both')
+            # Configure grid weights to center content
+            self.center_frame.grid_columnconfigure(0, weight=1)
+            self.center_frame.grid_columnconfigure(2, weight=1)
+            self.center_frame.grid_rowconfigure(0, weight=1)
+            self.center_frame.grid_rowconfigure(2, weight=1)
 
-        # Title Label (in left frame)
-        title_label = tk.Label(
-            self.left_frame,
-            text="CoDrone EDU - Swarm",
-            font=('Terminal', 18, 'bold'),
-            bg=self.dark_blue,
-            fg=self.light_blue,
-            pady=10
-        )
-        title_label.pack(pady=(0, 10))
+            # Create left frame in the center
+            self.left_frame = tk.Frame(self.center_frame, bg=self.dark_blue)
+            self.left_frame.grid(row=1, column=1)  # This will center it in the grid
+
+        else:
+            # Original layout for other modes
+            # Create left frame for controls
+            self.left_frame = tk.Frame(self.main_container, bg='#05001c')
+            self.left_frame.pack(side='left', fill='y', padx=(0, 10))
+
+            # Create right frame for the graph
+            self.right_frame = tk.Frame(self.main_container, bg='#05001c')
+            self.right_frame.pack(side='left', expand=True, fill='both')
 
         self.key_bindings_active = False
         self.create_input_section()
         self.create_control_buttons()
         self.default_colors = ['red', 'blue', 'orange', 'yellow', 'green', '#00ffff', 'purple', 'pink', 'white', 'black']
         if self.mode == "basic":
-            self.root.geometry("380x500")
+            self.root.geometry("380x400")
         elif self.mode == "choreo":
             self.root.geometry("1000x600")
         else:
@@ -92,6 +103,55 @@ class SwarmGUI:
 
         self.create_grid()
         self.is_landed = {i: True for i in range(len(self.swarm.get_drones()))}
+    def add_back_button(self):
+        # Add back button first (left side)
+        back_button_border = tk.Frame(
+            self.top_frame,
+            highlightbackground=self.pink,
+            highlightcolor=self.pink,
+            highlightthickness=0,
+            bd=0,
+            bg=self.dark_blue
+        )
+        back_button_border.pack(side='left', padx=2)
+
+        back_button_style = {
+            'font': ('Helvetica', 28, 'bold'),  # Increased font size
+            'bg': self.dark_blue,
+            'fg': self.pink,
+            'relief': 'flat',
+            'bd': 0,
+            'highlightthickness': 0,
+            'width': 1,  # Reduced width
+            'height': 1,
+            'cursor': 'hand2',
+            'padx': 0,  # Reduced horizontal padding
+            'pady': 0  # Reduced vertical padding
+        }
+
+        # Create back button using create_button function with modified style
+        back_button = self.create_button(
+            back_button_border,
+            "↩",
+            self.return_to_launch_screen,
+            back_button_style
+        )
+        back_button.pack(padx=0, pady=0)
+
+        # Add hover effects
+        def highlight_back_button(event):
+            back_button.config(bg=self.pink, fg='#ffffff')
+
+        def reset_back_button(event):
+            back_button.config(bg=self.dark_blue, fg=self.pink)
+
+        back_button.bind("<Enter>", highlight_back_button)
+        back_button.bind("<Leave>", reset_back_button)
+
+    def return_to_launch_screen(self):
+        self.root.destroy()
+        launch_screen = LaunchScreen()
+        launch_screen.run()
 
 
     # Helper function for clicks on the graph
@@ -251,6 +311,21 @@ class SwarmGUI:
             'highlightthickness': 2,
             'bd': 0
         }
+
+        if self.mode == "basic":
+            fontSize = 14
+        else:
+            fontSize = 18
+
+        title_label = tk.Label(
+            self.top_frame,
+            text="CoDrone EDU - Swarm",
+            font=('Terminal', fontSize, 'bold'),
+            bg=self.dark_blue,
+            fg=self.light_blue,
+            pady=2
+        )
+        title_label.pack(side='top', padx=0)
 
         # Helper functions for button effects
         def highlight_button(border_frame, button):
@@ -956,7 +1031,7 @@ class LaunchScreen:
             'font': ('Helvetica', 10, 'bold'),
             'bg': '#e61848',
             'fg': 'white',
-            'relief': 'solid',
+            'relief': 'flat',
             'width': 20,
             'height': 2,
             'cursor': 'hand2',

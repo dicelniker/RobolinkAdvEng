@@ -74,17 +74,17 @@ class MainChoreo:
         # order: 1, 3, 2
         b = self.pyramid_base_height
         drone_positions = [
-            (0, -self.space_apart, b), # drone 1
-            (0, 2 * self.space_apart, b), # drone 2
-            (0, self.space_apart, b), # drone 3
-            (0, 0, b) # drone 4
+            (0, -self.space_apart, b),  # drone 1
+            (0, 2 * self.space_apart, b),  # drone 2
+            (0, self.space_apart, b),  # drone 3
+            (0, 0, b)  # drone 4
         ]
 
         for i, drone_index in enumerate(selected_drone_indices):
             pos = drone_positions[i]
             if i == 3:
                 print("change to spiral")
-                self.gui.goto_position(drone_index, pos[0], pos[1], pos[2], self.speed) # change this line :>
+                self.gui.goto_position(drone_index, pos[0], pos[1], pos[2], self.speed)  # change this line :>
             else:
                 self.gui.goto_position(drone_index, pos[0], pos[1], pos[2], self.speed)
 
@@ -110,19 +110,21 @@ class MainChoreo:
         # Prints all the steps in the sequence for drone 0
         for i in sync.get_sync()[0]:
             print(i)
-            
+
     def spiral_down(self, swarm, selected_drone_indices):
         sync = Sync()
         for i in selected_drone_indices:
             seq = Sequence(i)
-            seq.add('set_throttle', -30)
+            seq.add('set_throttle', 50)
+            seq.add('move', 3)
+            seq.add('set_throttle', -20)
             seq.add('set_pitch', 40)
             seq.add('set_yaw', 80)
             seq.add('move', 4)
             seq.add('land')
             sync.add(seq)
         swarm.run(sync)
-    
+
     def run_sequence(self, swarm, selected_drone_indices):
         """Entry point for the choreography"""
         try:
@@ -138,15 +140,15 @@ class MainChoreo:
             self.gui.update_timer()
             print(f"Starting choreography with {len(drones)} drones...")
 
-            # self.square_takeoff(drones, selected_drone_indices)
-            # time.sleep(1)  # Pause between formations
-            # self.form_pyramid(drones, selected_drone_indices)
-            # time.sleep(1)  # Pause between formations
-            # self.move_into_place(drones, selected_drone_indices)
-            # time.sleep(1)  # Pause between formations
-            # self.standing_wave(swarm, selected_drone_indices)
-            # time.sleep(1)  # Pause between formations
-            # self.spiral_down(swarm, selected_drone_indices)
+            self.square_takeoff(drones, selected_drone_indices)
+            time.sleep(1)  # Pause between formations
+            self.form_pyramid(drones, selected_drone_indices)
+            time.sleep(1)  # Pause between formations
+            self.move_into_place(drones, selected_drone_indices)
+            time.sleep(1)  # Pause between formations
+            self.standing_wave(swarm, selected_drone_indices)
+            time.sleep(1)  # Pause between formations
+            self.spiral_down(swarm, selected_drone_indices)
 
         except Exception as e:
             print(f"Failed to run choreography: {str(e)}")

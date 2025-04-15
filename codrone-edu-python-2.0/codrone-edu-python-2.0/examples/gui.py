@@ -1,4 +1,6 @@
 import math
+import csv
+from tkinter import filedialog
 import tkinter as tk
 from tkinter import colorchooser
 import matplotlib.colors as mcolors
@@ -46,7 +48,7 @@ class SwarmGUI:
         }
 
         self.droneIcons = []
-        self.swarm = Swarm()
+        self.swarm = Swarm(enable_pause = False)
         self.swarm.connect()
 
         self.light_blue = '#3fd4ff'
@@ -97,12 +99,68 @@ class SwarmGUI:
         if self.mode == "basic":
             self.root.geometry("380x400")
         elif self.mode == "choreo":
-            self.root.geometry("1000x600")
+            self.root.geometry("1050x650")
         else:
             self.root.geometry("1200x800")
 
         self.create_grid()
         self.is_landed = {i: True for i in range(len(self.swarm.get_drones()))}
+
+    # Import + Process CSV code
+
+    def import_csv(self):
+        filename = filedialog.askopenfilename(
+            title="Select CSV File",
+            filetypes=(("CSV files", "*.csv"), ("All files", "*.*"))
+        )
+
+        # Check if a file was selected (user didn't click cancel)
+        if not filename:
+            print("No file selected")
+            return
+
+        coordinates = []
+        print(f"Attempting to open file: {filename}")  # Debug print
+
+        # Read CSV file
+        with open(filename, 'r') as file:
+            reader = csv.reader(file, delimiter=',')
+
+            for i, row in enumerate(reader):
+                x, y, z = map(float, row)
+                coordinates.append([x, y, z])
+                print(f"Read row {i}: {x}, {y}, {z}")
+
+            print(f"Successfully read {len(coordinates)} coordinates")  # Debug print
+
+            if coordinates:  # Check if we got any coordinates
+                self.process_csv(coordinates)
+            else:
+                print("No coordinates were read from the file")
+
+    def process_csv(self, input_coords):
+        print(f"Processing {len(input_coords)} coordinates")  # Debug print
+        print(f"Number of drone icons: {len(self.droneIcons)}")  # Debug print
+
+        if len(input_coords) < len(self.droneIcons):
+            print(f"Warning: Not enough coordinates ({len(input_coords)}) for all drones ({len(self.droneIcons)})")
+
+        for index, drone in enumerate(self.droneIcons):
+            if index == 0:
+                print(f"Skipping drone 0 (base drone)")
+                continue
+
+            if index >= len(input_coords):
+                print(f"No coordinates available for drone {index}")
+                break
+
+            coords = input_coords[index]
+
+            self.set_drone_position(index, coords[0], coords[1], coords[2])
+            print(f"Set drone {index} position to {coords[0]}, {coords[1]}, {coords[2]}")
+
+
+    # Add back button
     def add_back_button(self):
         # Add back button first (left side)
         back_button_border = tk.Frame(
@@ -367,15 +425,17 @@ class SwarmGUI:
             main_buttons = [
                 ("Take Off", self.take_off),
                 ("Land", self.land),
-                ("Auto Update", self.update_timer)
+                ("Auto Update", self.update_timer),
+                ("Import CSV", self.import_csv)
             ]
         else:
             main_buttons = [
                 ("Take Off", self.take_off),
                 ("Land", self.land),
                 ("Auto Update", self.update_timer),
-                ("Stabilize Swarm", self.stabilize_swarm),
-                ("Bind Keys", self.toggle_key_bindings)
+                ("Import CSV", self.import_csv),
+                ("Bind Keys", self.toggle_key_bindings),
+                ("Stabilize Swarm", self.stabilize_swarm)
             ]
 
         for text, command in main_buttons:

@@ -13,6 +13,13 @@ from codrone_edu.swarm import *
 #button hover purple #d098fa
 #arrow button hover #7214ff
 
+def center_window(root, width, height):
+    screen_width = root.winfo_screenwidth()
+    screen_height = root.winfo_screenheight()
+    x = (screen_width - width) // 2
+    y = (screen_height - height) // 2
+    root.geometry(f"{width}x{height}+{x}+{y}")
+
 class SwarmGUI:
     def __init__(self, mode="full", connected=False):
         self.mode = mode
@@ -99,11 +106,11 @@ class SwarmGUI:
         self.create_control_buttons()
         self.default_colors = ['red', 'blue', 'orange', 'yellow', 'green', '#00ffff', 'purple', 'pink', 'white', 'black']
         if self.mode == "basic":
-            self.root.geometry("380x400")
+            center_window(self.root, 380, 400)
         elif self.mode == "choreo":
-            self.root.geometry("1050x650")
+            center_window(self.root, 1050, 650)
         else:
-            self.root.geometry("1200x800")
+            center_window(self.root, 1200, 800)
 
         self.create_grid()
         self.is_landed = {i: True for i in range(len(self.swarm.get_drones()))}
@@ -1075,7 +1082,7 @@ class LaunchScreen:
         self.root.configure(bg='#05001c')
         self.selected_mode = None
 
-        self.root.geometry("350x400")
+        center_window(self.root, 350, 400)
 
 
         # Title

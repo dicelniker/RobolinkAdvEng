@@ -14,8 +14,9 @@ from codrone_edu.swarm import *
 #arrow button hover #7214ff
 
 class SwarmGUI:
-    def __init__(self, mode="full"):
+    def __init__(self, mode="full", connected=False):
         self.mode = mode
+        self.connected = connected
         self.root = tk.Tk()
         self.root.title("Swarm GUI")
         self.root.configure(bg='#05001c')  # dark blue
@@ -49,7 +50,8 @@ class SwarmGUI:
 
         self.droneIcons = []
         self.swarm = Swarm(enable_pause = False)
-        self.swarm.connect()
+        if not connected:
+            self.swarm.connect()
 
         self.light_blue = '#3fd4ff'
         self.grid_line_color = '#4169E1'
@@ -208,7 +210,7 @@ class SwarmGUI:
 
     def return_to_launch_screen(self):
         self.root.destroy()
-        launch_screen = LaunchScreen()
+        launch_screen = LaunchScreen(connected = True)
         launch_screen.run()
 
 
@@ -1066,8 +1068,9 @@ class SwarmGUI:
         self.root.mainloop()
 
 class LaunchScreen:
-    def __init__(self):
+    def __init__(self, connected = False):
         self.root = tk.Tk()
+        self.connected = connected
         self.root.title("CoDrone EDU - Launch Options")
         self.root.configure(bg='#05001c')
         self.selected_mode = None
@@ -1132,19 +1135,19 @@ class LaunchScreen:
     def launch_full_demo(self):
         self.root.destroy()
         print("Running full demo")
-        app = SwarmGUI(mode="full")
+        app = SwarmGUI(mode="full", connected=self.connected)
         app.run()
 
     def launch_choreography(self):
         self.root.destroy()
         print("Running choreography demo")
-        app = SwarmGUI(mode="choreo")
+        app = SwarmGUI(mode="choreo", connected=self.connected)
         app.run()
 
     def launch_basic_controls(self):
         self.root.destroy()
         print("Print running basic demo")
-        app = SwarmGUI(mode="basic")
+        app = SwarmGUI(mode="basic", connected=self.connected)
         app.run()
 
     def run(self):

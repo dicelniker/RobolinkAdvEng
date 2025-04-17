@@ -104,7 +104,7 @@ class SwarmGUI:
         self.key_bindings_active = False
         self.create_input_section()
         self.create_control_buttons()
-        self.default_colors = ['red', 'blue', 'orange', 'yellow', 'green', '#00ffff', 'purple', 'pink', 'white', 'black']
+        self.default_colors = ['red', 'blue', 'green', 'yellow', 'orange', '#00ffff', 'purple', 'pink', 'white', 'black']
         if self.mode == "basic":
             center_window(self.root, 380, 400)
         elif self.mode == "choreo":

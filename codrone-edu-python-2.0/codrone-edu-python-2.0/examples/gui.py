@@ -163,7 +163,7 @@ class SwarmGUI:
 
             self.set_drone_position(index, coords[0], coords[1], coords[2])
             self.reset_offsets()
-            print(f"Set drone {index} position to {coords[0]}, {coords[1]}, {coords[2]}")
+            # print(f"Set drone {index} position to {coords[0]}, {coords[1]}, {coords[2]}")
 
 
     # Add back button
@@ -739,13 +739,13 @@ class SwarmGUI:
             input_grid,
             text="Set Coords",
             command=lambda: [
-                self.reset_offsets(),
                 self.set_drone_position(
                     int(self.drone_index_input.get()),
                     float(self.x_coord_input.get()),
                     float(self.y_coord_input.get()),
                     float(self.z_coord_input.get())
-                )
+                ),
+                self.reset_offsets()
             ],
             **self.button_style
         )
@@ -938,7 +938,7 @@ class SwarmGUI:
         # Force a complete redraw
         self.canvas_widget.draw()
 
-        # print(f"Drone {drone_index} position updated to ({x_coord:.1f}, {y_coord:.1f}, {z_coord:.1f})")
+        print(f"Drone {drone_index} position updated to ({x_coord:.1f}, {y_coord:.1f}, {z_coord:.1f})")
 
     def create_grid(self):
         global swarm_drones, num_drones

@@ -8,11 +8,11 @@ class MainChoreo:
     def __init__(self, gui_instance):
         self.gui = gui_instance
         self.speed = 0.75
-        self.base_height = 0.75  # Height for square formation
+        self.base_height = 0.6  # Height for square formation
         self.pyramid_base_height = 0.3  # Height for bottom layer of pyramid
         self.pyramid_top_height = 1.0  # Height for top of pyramid
-        self.square_sides = 0.5
-        self.pyramid_side = 0.5
+        self.square_sides = 1.4
+        self.pyramid_side = 1.4
         self.space_apart = 0.4
 
     def square_takeoff(self, drones, selected_drone_indices):
@@ -25,10 +25,10 @@ class MainChoreo:
         self.gui.take_off()
         # Square corner positions (x, y, z) in meters
         square_positions = [
-            (-s, s, self.base_height),  # Front Left
-            (s, s, self.base_height),  # Front Right
-            (s, -s, self.base_height),  # Back Right
-            (-s, -s, self.base_height),  # Back Left
+            (s, s, self.base_height),  # Front left, 0: red
+            (s, -s, self.base_height),  # Front Right, 1: blue
+            (-s, -s, self.base_height),  # Back Right, 2: green
+            (-s, s, self.base_height),  # Back left, 3: yellow
         ]
 
         if len(selected_drone_indices) != 4:
@@ -54,9 +54,9 @@ class MainChoreo:
         p = self.pyramid_side
         # Pyramid positions (x, y, z) in meters
         pyramid_positions = [
-            (-p / 2, p / 2, self.pyramid_base_height),  # Upper left triangle
-            (p / 2, p / 2, self.pyramid_base_height),  # Upper right triangle
-            (0, p / 2 - (0.866025405 * p), self.pyramid_base_height),  # Lower tip triangle
+            (p / 2, p / 2, self.pyramid_base_height),  # Upper left triangle
+            (p / 2, -p / 2, self.pyramid_base_height),  # Upper right triangle
+            (p / 2 - (0.866025405 * p), 0, self.pyramid_base_height),  # Lower tip triangle
             (0, 0, self.pyramid_top_height)  # Top of pyramid
         ]
 
@@ -115,8 +115,6 @@ class MainChoreo:
         sync = Sync()
         for i in selected_drone_indices:
             seq = Sequence(i)
-            seq.add('set_throttle', 50)
-            seq.add('move', 3)
             seq.add('set_throttle', -20)
             seq.add('set_pitch', 40)
             seq.add('set_yaw', 80)
@@ -143,12 +141,12 @@ class MainChoreo:
             self.square_takeoff(drones, selected_drone_indices)
             time.sleep(1)  # Pause between formations
             self.form_pyramid(drones, selected_drone_indices)
-            time.sleep(1)  # Pause between formations
-            self.move_into_place(drones, selected_drone_indices)
-            time.sleep(1)  # Pause between formations
-            self.standing_wave(swarm, selected_drone_indices)
-            time.sleep(1)  # Pause between formations
-            self.spiral_down(swarm, selected_drone_indices)
+            # time.sleep(1)  # Pause between formations
+            # self.move_into_place(drones, selected_drone_indices)
+            # time.sleep(1)  # Pause between formations
+            # self.standing_wave(swarm, selected_drone_indices)
+            # time.sleep(1)  # Pause between formations
+            # self.spiral_down(swarm, selected_drone_indices)
 
         except Exception as e:
             print(f"Failed to run choreography: {str(e)}")

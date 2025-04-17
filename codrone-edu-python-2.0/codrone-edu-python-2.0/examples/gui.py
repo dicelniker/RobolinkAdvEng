@@ -155,10 +155,6 @@ class SwarmGUI:
             print(f"Warning: Not enough coordinates ({len(input_coords)}) for all drones ({len(self.droneIcons)})")
 
         for index, drone in enumerate(self.droneIcons):
-            if index == 0:
-                print(f"Skipping drone 0 (base drone)")
-                continue
-
             if index >= len(input_coords):
                 print(f"No coordinates available for drone {index}")
                 break
@@ -166,6 +162,7 @@ class SwarmGUI:
             coords = input_coords[index]
 
             self.set_drone_position(index, coords[0], coords[1], coords[2])
+            self.reset_offsets()
             print(f"Set drone {index} position to {coords[0]}, {coords[1]}, {coords[2]}")
 
 
@@ -741,12 +738,15 @@ class SwarmGUI:
         self.set_coords_button = tk.Button(
             input_grid,
             text="Set Coords",
-            command=lambda: self.set_drone_position(
-                int(self.drone_index_input.get()),
-                float(self.x_coord_input.get()),
-                float(self.y_coord_input.get()),
-                float(self.z_coord_input.get())
-            ),
+            command=lambda: [
+                self.reset_offsets(),
+                self.set_drone_position(
+                    int(self.drone_index_input.get()),
+                    float(self.x_coord_input.get()),
+                    float(self.y_coord_input.get()),
+                    float(self.z_coord_input.get())
+                )
+            ],
             **self.button_style
         )
         self.set_coords_button.grid(row=0, column=8, padx=(10, 0), pady=5)
@@ -825,6 +825,8 @@ class SwarmGUI:
 
     def update_graph(self):
         data = self.swarm.get_position_data()
+        max_distance = 2
+
         for i in range(len(self.droneIcons)):
             pos = data[i]
             drone = self.droneIcons[i]
@@ -850,16 +852,29 @@ class SwarmGUI:
             # Update position with adjusted coordinates
             self.set_drone_position(i, adjusted_x, adjusted_y, z_coord)
 
+            max_distance = max(max_distance, abs(adjusted_x), abs(adjusted_y))
+
+        # Automatically resize the boundaries of the graph
+        padding = 1
+        range_limit = max_distance + padding
+
+        self.ax.set_xlim(-range_limit, range_limit)
+        self.ax.set_ylim(-range_limit, range_limit)
+        self.ax.grid(True, linestyle='--', alpha=0.7)
+
+        self.canvas_widget.draw()
+
 # Should run when the drones are landed
     def reset_offsets(self):
         selected_drone_indices = self.get_indices()
         num_selected_drones = len(selected_drone_indices)
 
         for i in range(num_selected_drones):
-            drone = self.droneIcons[i]
-            drone["x_offset"] = drone["x_position"]
-            drone["y_offset"] = drone["y_position"]
-            # print(f"Saving offsets for drone {i}, x: {drone["x_offset"]:.1f}, y: {drone["y_offset"]:.1f}")
+            if self.is_landed[i]:
+                drone = self.droneIcons[i]
+                drone["x_offset"] = drone["x_position"]
+                drone["y_offset"] = drone["y_position"]
+                # print(f"Saving offsets for drone {i}, x: {drone["x_offset"]:.1f}, y: {drone["y_offset"]:.1f}")
 
     def set_drone_position(self, drone_index, x_coord, y_coord, z_coord):
         if not (0 <= drone_index < len(self.droneIcons)):

@@ -15,6 +15,13 @@ class MainChoreo:
         self.pyramid_side = 1.4
         self.space_apart = 0.4
 
+
+    '''
+    Starting position
+    - - B
+    - R - 
+    Y - G
+    '''
     def square_takeoff(self, drones, selected_drone_indices):
         """
         Takes off and holds position in a square formation

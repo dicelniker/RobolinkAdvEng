@@ -70,7 +70,6 @@ class MainChoreo:
 
     def move_into_place(self, drones, selected_drone_indices):
         print("moving into a line")
-        # drone four will spiral down to pyra base height (self.pyramid_base_height)
         # order: 1, 3, 2
         b = self.pyramid_base_height
         drone_positions = [
@@ -82,11 +81,7 @@ class MainChoreo:
 
         for i, drone_index in enumerate(selected_drone_indices):
             pos = drone_positions[i]
-            if i == 3:
-                print("change to spiral")
-                self.gui.goto_position(drone_index, pos[0], pos[1], pos[2], self.speed)  # change this line :>
-            else:
-                self.gui.goto_position(drone_index, pos[0], pos[1], pos[2], self.speed)
+            self.gui.goto_position(drone_index, pos[0], pos[1], pos[2], self.speed)
 
     def standing_wave(self, swarm, selected_drone_indices):
         sync = Sync()

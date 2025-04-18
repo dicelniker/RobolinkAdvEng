@@ -24,6 +24,11 @@ class MainChoreo:
         s = self.square_sides / 2
         self.gui.take_off()
         # Square corner positions (x, y, z) in meters
+        '''
+        R - B
+        -   -
+        Y - G
+        '''
         square_positions = [
             (s, s, self.base_height),  # Front left, 0: red
             (s, -s, self.base_height),  # Front Right, 1: blue
@@ -53,6 +58,11 @@ class MainChoreo:
 
         p = self.pyramid_side
         # Pyramid positions (x, y, z) in meters
+        '''
+        R - B
+        - Y -
+        - G -
+        '''
         pyramid_positions = [
             (p / 2, p / 2, self.pyramid_base_height),  # Upper left triangle
             (p / 2, -p / 2, self.pyramid_base_height),  # Upper right triangle
@@ -72,11 +82,14 @@ class MainChoreo:
         print("moving into a line")
         # order: 1, 3, 2
         b = self.pyramid_base_height
+        '''
+        R - Y - G - B
+        '''
         drone_positions = [
-            (0, -self.space_apart, b),  # drone 1
-            (0, 2 * self.space_apart, b),  # drone 2
-            (0, self.space_apart, b),  # drone 3
-            (0, 0, b)  # drone 4
+            (0, self.space_apart, b),  # Red
+            (0, 2 * self.space_apart, b),  # Blue
+            (0, -self.space_apart, b),  # Green
+            (0, 0, b)  # Yellow
         ]
 
         for i, drone_index in enumerate(selected_drone_indices):

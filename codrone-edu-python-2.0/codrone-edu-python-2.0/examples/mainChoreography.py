@@ -1,6 +1,7 @@
 from codrone_edu.swarm import *
 import sys
 import time
+import math
 import asyncio
 
 
@@ -8,7 +9,7 @@ class MainChoreo:
     def __init__(self, gui_instance):
         self.gui = gui_instance
         self.speed = 0.75
-        self.base_height = 0.6  # Height for square formation
+        self.base_height = 0.8  # Height for square formation
         self.pyramid_base_height = 0.3  # Height for bottom layer of pyramid
         self.pyramid_top_height = 1.0  # Height for top of pyramid
         self.square_sides = 1.4
@@ -52,7 +53,7 @@ class MainChoreo:
             pos = square_positions[i]
             self.gui.goto_position(drone_index, pos[0], pos[1], pos[2], self.speed)
             time.sleep(0.5)  # Wait between each drone's movement
-
+        # self.gui.stabilize_swarm()
         time.sleep(3)  # Hold square formation
         print("Square formation complete")
 
@@ -71,9 +72,9 @@ class MainChoreo:
         - G -
         '''
         pyramid_positions = [
-            (p / 2, p / 2, self.pyramid_base_height),  # Upper left triangle
-            (p / 2, -p / 2, self.pyramid_base_height),  # Upper right triangle
-            (p / 2 - (0.866025405 * p), 0, self.pyramid_base_height),  # Lower tip triangle
+            (p/2, p * math.sqrt(3)/2, self.pyramid_base_height),  # Upper left triangle
+            (p/2, -p * math.sqrt(3)/2, self.pyramid_base_height),  # Upper right triangle
+            (-p, 0, self.pyramid_base_height),  # Lower tip triangle
             (0, 0, self.pyramid_top_height)  # Top of pyramid
         ]
 
@@ -156,6 +157,7 @@ class MainChoreo:
             self.square_takeoff(drones, selected_drone_indices)
             time.sleep(1)  # Pause between formations
             self.form_pyramid(drones, selected_drone_indices)
+            swarm.land()
             # time.sleep(1)  # Pause between formations
             # self.move_into_place(drones, selected_drone_indices)
             # time.sleep(1)  # Pause between formations

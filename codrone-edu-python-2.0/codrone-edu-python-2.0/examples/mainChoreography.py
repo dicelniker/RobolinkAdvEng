@@ -51,10 +51,9 @@ class MainChoreo:
         # Move each drone to its corner position
         for i, drone_index in enumerate(selected_drone_indices):
             pos = square_positions[i]
-            self.gui.goto_position(drone_index, pos[0], pos[1], pos[2], self.speed)
+            self.gui.goto_position(drone_index, pos[0], pos[1], pos[2])
             time.sleep(0.5)  # Wait between each drone's movement
         # self.gui.stabilize_swarm()
-        time.sleep(3)  # Hold square formation
         print("Square formation complete")
 
     def form_pyramid(self, drones, selected_drone_indices):
@@ -82,20 +81,18 @@ class MainChoreo:
         for i, drone_index in enumerate(selected_drone_indices):
             pos = pyramid_positions[i]
             self.gui.goto_position(drone_index, pos[0], pos[1], pos[2], self.speed)
-
-        time.sleep(5)  # Hold pyramid formation
         print("Pyramid formation complete")
 
     def move_into_place(self, drones, selected_drone_indices):
         print("moving into a line")
-        # order: 1, 3, 2
+
         b = self.pyramid_base_height
         '''
         R - Y - G - B
         '''
         drone_positions = [
             (0, self.space_apart, b),  # Red
-            (0, 2 * self.space_apart, b),  # Blue
+            (0, -2* self.space_apart, b),  # Blue
             (0, -self.space_apart, b),  # Green
             (0, 0, b)  # Yellow
         ]
@@ -155,11 +152,9 @@ class MainChoreo:
             print(f"Starting choreography with {len(drones)} drones...")
 
             self.square_takeoff(drones, selected_drone_indices)
-            time.sleep(1)  # Pause between formations
             self.form_pyramid(drones, selected_drone_indices)
+            self.move_into_place(drones, selected_drone_indices)
             swarm.land()
-            # time.sleep(1)  # Pause between formations
-            # self.move_into_place(drones, selected_drone_indices)
             # time.sleep(1)  # Pause between formations
             # self.standing_wave(swarm, selected_drone_indices)
             # time.sleep(1)  # Pause between formations

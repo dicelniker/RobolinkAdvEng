@@ -56,7 +56,8 @@ class SwarmGUI:
         }
 
         self.droneIcons = []
-        self.swarm = Swarm(enable_pause = False)
+        self.swarm = Swarm(enable_pause=False)
+        self.joystick_control_enabled = False
         if not connected:
             self.swarm.connect()
 
@@ -104,16 +105,91 @@ class SwarmGUI:
         self.key_bindings_active = False
         self.create_input_section()
         self.create_control_buttons()
-        self.default_colors = ['red', 'blue', 'green', 'yellow', 'orange', '#00ffff', 'purple', 'pink', 'white', 'black']
+        self.default_colors = ['red', 'blue', 'orange', 'yellow', 'green', '#00ffff', 'purple', 'pink', 'white', 'black']
+        self.joystick_control_color = 0
         if self.mode == "basic":
-            center_window(self.root, 380, 400)
+            center_window(self.root, 400, 450)
         elif self.mode == "choreo":
-            center_window(self.root, 1050, 650)
+            center_window(self.root, 1200, 700)
         else:
-            center_window(self.root, 1200, 800)
+            center_window(self.root, 1400, 850)
 
         self.create_grid()
         self.is_landed = {i: True for i in range(len(self.swarm.get_drones()))}
+        self.joystick_control_speed = 1
+
+    # Swarm joystick control
+    def toggle_joystick_control(self):
+        self.joystick_control_enabled = not self.joystick_control_enabled
+        if self.joystick_control_enabled:
+            print("Joystick control enabled for the swarm.")
+            self.run_joystick_control()
+        else:
+            print("Joystick control disabled for the swarm.")
+
+    def run_joystick_control(self):
+        """
+        Continuously reads joystick inputs and controls all drones in the swarm.
+        This function runs until joystick control is toggled off.
+        """
+        selected_indices = self.get_indices()
+
+        if self.joystick_control_enabled:
+            l1 = self.swarm.one_drone(0, 'l1_pressed')
+            l2 = self.swarm.one_drone(0, 'l2_pressed')
+            r1 = self.swarm.one_drone(0, 'r1_pressed')
+
+            if l1:
+                print(f"L1 Pressed, taking off {selected_indices}")
+                if self.is_landed[selected_indices[0]]:
+                    self.take_off()
+                else:
+                    self.land()
+
+            if l2:
+                print(f"L2 Pressed, Speed updated to {self.joystick_control_speed} for drones {selected_indices}")
+                if self.joystick_control_speed >= 3:
+                    self.joystick_control_speed = 1
+                else:
+                    self.joystick_control_speed += 1
+
+            if r1:
+                if self.joystick_control_color >= len(self.default_colors) - 1:
+                    self.joystick_control_color = 0
+                else:
+                    self.joystick_control_color += 1
+
+                print(f"R1 Pressed, color updated to {self.default_colors[self.joystick_control_color]} for drones {selected_indices}")
+                for drone in self.droneIcons:
+                    # print(f"Drone {drone['drone_index']} selected state: {drone['selected']}")
+                    if drone["selected"].get():
+                        self.update_drone_color(drone, self.default_colors[self.joystick_control_color])
+
+
+            joystick_data = self.swarm.one_drone(0, 'get_joystick_data')
+
+            left_joystick_x = joystick_data[1]  # Horizontal Left
+            left_joystick_y = joystick_data[2]  # Vertical Left
+            right_joystick_x = joystick_data[5]  # Horizontal Right
+            right_joystick_y = joystick_data[6]  # Vertical Right
+
+            threshold = 10
+            throttle_input = left_joystick_y if abs(left_joystick_y) > threshold else 0
+            yaw_input = -left_joystick_x if abs(left_joystick_x) > threshold else 0
+            pitch_input = right_joystick_y if abs(right_joystick_y) > threshold else 0
+            roll_input = right_joystick_x if abs(right_joystick_x) > threshold else 0
+
+            scale = 1 # Used to modify how much the input matters
+            throttle_power = int(throttle_input * scale)
+            yaw_power = int(yaw_input * scale)
+            pitch_power = int(pitch_input * scale)
+            roll_power = int(roll_input * scale)
+
+            for index in selected_indices:
+                self.swarm.one_drone(index, 'sendControl', roll_power, pitch_power, yaw_power, throttle_power)
+
+        self.root.after(50, self.run_joystick_control)
+
 
     # Import + Process CSV code
 
@@ -248,27 +324,29 @@ class SwarmGUI:
         return rgba_color
 
     def open_color_picker(self, drone):
-        """Open color picker and update drone color"""
+        """Open color picker dialog and return the selected color"""
         color_code = colorchooser.askcolor(title="Choose Drone Color")
         if color_code[1]:
             new_color = color_code[1]
             rgb_value = color_code[0]
             print(f"Selected RGB color: {rgb_value}")
+            self.update_drone_color(drone, new_color)
 
-            # Update the stored color
-            drone["color"] = new_color
+    def update_drone_color(self, drone, new_color):
+        """Update drone color in all necessary places"""
+        # Update the stored color
+        drone["color"] = new_color
 
-            # Update the LED color on the physical drone
-            rgba_color = self.process_color(drone["color"])
-            self.swarm.one_drone(drone["drone_index"], "set_drone_LED", *rgba_color)
-            self.swarm.one_drone(drone["drone_index"], "set_controller_LED", *rgba_color)
+        # Update the LED color on the physical drone
+        rgba_color = self.process_color(drone["color"])
+        self.swarm.one_drone(drone["drone_index"], "set_drone_LED", *rgba_color)
+        self.swarm.one_drone(drone["drone_index"], "set_controller_LED", *rgba_color)
 
-            # Update the plot color
-            if drone["plot"] is not None:
-                drone["plot"].set_color(new_color)
-
-                # Force a redraw of the plot
-                self.canvas_widget.draw()
+        # Update the plot color
+        if drone["plot"] is not None:
+            drone["plot"].set_color(new_color)
+            # Force a redraw of the plot
+            self.canvas_widget.draw()
 
 # Drag and drop functionality
     def setup_click_handlers(self):
@@ -338,8 +416,6 @@ class SwarmGUI:
             seq.add("move_distance", x, y, z, speed)
             sync_move.add(seq)
         self.swarm.run(sync_move, type="parallel")
-
-
 
     def create_control_buttons(self):
         # Define styles
@@ -441,7 +517,8 @@ class SwarmGUI:
                 ("Auto Update", self.update_timer),
                 ("Import CSV", self.import_csv),
                 ("Bind Keys", self.toggle_key_bindings),
-                ("Stabilize Swarm", self.stabilize_swarm)
+                ("Stabilize Swarm", self.stabilize_swarm),
+                ("Joystick Control", self.toggle_joystick_control)
             ]
 
         for text, command in main_buttons:
@@ -602,7 +679,7 @@ class SwarmGUI:
             for i in range(num_drones):
                 self.is_landed[i] = False
         elif num_selected_drones > 0:
-            print(f"Taking off selected drones (synchronized): {selected_drone_indices}")
+            # print(f"Taking off selected drones (synchronized): {selected_drone_indices}")
             sync_takeoff = Sync()
             for index in selected_drone_indices:
                 seq = Sequence(index)
@@ -920,7 +997,7 @@ class SwarmGUI:
         if drone["plot"] is not None:
             # Update existing plot
             drone["plot"].set_offsets([[x_coord, y_coord]])
-            drone["plot"].set_color(self.default_colors[drone_index])
+            drone["plot"].set_color(drone["color"])
         else:
             # Create new plot if none exists
             drone["plot"] = self.ax.scatter(
@@ -938,7 +1015,7 @@ class SwarmGUI:
         # Force a complete redraw
         self.canvas_widget.draw()
 
-        print(f"Drone {drone_index} position updated to ({x_coord:.1f}, {y_coord:.1f}, {z_coord:.1f})")
+        # print(f"Drone {drone_index} position updated to ({x_coord:.1f}, {y_coord:.1f}, {z_coord:.1f})")
 
     def create_grid(self):
         global swarm_drones, num_drones

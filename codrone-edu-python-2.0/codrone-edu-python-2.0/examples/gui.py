@@ -719,17 +719,18 @@ class SwarmGUI:
         print(f"Running main choreo sequence for the following drones: {selected_drone_indices}")
         run.run_sequence(self.swarm, selected_drone_indices)
 
-    def run_hexagon(self):
-        from hexagon import Hexagon
-        runHexagonChoreo = Hexagon()
+     def run_pyra(self):
+        from pyramid import Pyramid
+        runPyra = Pyramid(self)
         selected_drone_indices = self.get_indices()
         if not selected_drone_indices:
-            print(f"No drones selected. Not running hexagon sequence.")
+            print(f"No drones selected. Not running pyra sequence.")
             return
+        # add specifics per num drones
 
-        print(f"Running hexagon sequence for the following drones: {selected_drone_indices}")
+        print(f"Running pyramid sequence for the following drones: {selected_drone_indices}")
         self.take_off()
-        runHexagonChoreo.run_sequence(self.swarm, selected_drone_indices)
+        runPyra.run_sequence(self.swarm, selected_drone_indices)
 
     def run_spiral_and_flip(self):
         print("run spiral and flip")

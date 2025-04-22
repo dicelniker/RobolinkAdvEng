@@ -563,8 +563,8 @@ class SwarmGUI:
             else:
                 choreo_buttons = [
                     ("Main Choreo", self.run_main_choreo),
-                    ("Hexagon", self.run_hexagon),
-                    ("Spiral and Flip", self.run_spiral_and_flip),
+                    ("Pyramid", self.run_pyra),
+                    ("Flip", self.flipall),
                     ("Upward Spiral", self.run_spiral),
                     ("Wiggle", self.run_wiggle)
                 ]
@@ -732,9 +732,19 @@ class SwarmGUI:
         self.take_off()
         runPyra.run_sequence(self.swarm, selected_drone_indices)
 
-    def run_spiral_and_flip(self):
-        print("run spiral and flip")
-            #self.run_choreography("spiral and flip choreography", spiralandflip.run_sequence)
+    def flipall(self):
+        print("flipping all of themmmmmmmmmmmmmmmmmmm")
+        selected_drone_indices = self.get_indices()
+        num_selected_drones = len(selected_drone_indices)
+
+        if num_selected_drones > 0:
+            print(f"Running flipp for the following drones: {selected_drone_indices}")
+            sync_right = Sync()  # Create a Sync object
+            for index in selected_drone_indices:
+                seq = Sequence(index)  # Create a Sequence for each selected drone
+                seq.add("flip", "back")
+                sync_right.add(seq)  # Add sequence to Sync object
+            self.swarm.run(sync_right, type="parallel")  # Run synchronized right movement for selected drones
 
     def run_wiggle(self):
         self.take_off()

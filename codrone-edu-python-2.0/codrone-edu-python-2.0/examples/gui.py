@@ -345,8 +345,14 @@ class SwarmGUI:
         # Update the plot color
         if drone["plot"] is not None:
             drone["plot"].set_color(new_color)
-            # Force a redraw of the plot
             self.canvas_widget.draw()
+
+        # Update the checkbox colors
+        if "checkbox" in drone:
+            drone["checkbox"].configure(
+                fg=new_color,
+                activeforeground=new_color
+            )
 
 # Drag and drop functionality
     def setup_click_handlers(self):
@@ -1120,6 +1126,9 @@ class SwarmGUI:
                 activeforeground=color
             )
             drone_checkbox.pack(side='left')
+
+            # Store the checkbox reference in the drone dictionary
+            drone["checkbox"] = drone_checkbox
 
             # Set drone LED color
             self.swarm.one_drone(drone["drone_index"], "set_drone_LED", *rgba_color)

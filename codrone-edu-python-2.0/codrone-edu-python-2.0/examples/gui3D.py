@@ -1089,12 +1089,20 @@ class SwarmGUI:
                 self.fig.patch.set_facecolor('#05001c')  # Figure background
                 self.ax.set_facecolor('#05001c')  # Axes background
 
-                self.ax.xaxis.pane.fill = True
-                self.ax.yaxis.pane.fill = True
-                self.ax.zaxis.pane.fill = True
+                # Make panes transparent
+                self.ax.xaxis.pane.fill = False
+                self.ax.yaxis.pane.fill = False
+                self.ax.zaxis.pane.fill = False
 
-                # Set grid colors
-                self.ax.grid(True, color='#3fd4ff', alpha=0.3)
+                # Remove pane edges
+                self.ax.xaxis.pane.set_edgecolor('none')
+                self.ax.yaxis.pane.set_edgecolor('none')
+                self.ax.zaxis.pane.set_edgecolor('none')
+
+                # Set grid colors for each axis explicitly
+                self.ax.xaxis._axinfo["grid"].update({"color": "#3fd4ff", "alpha": 0.3})
+                self.ax.yaxis._axinfo["grid"].update({"color": "#3fd4ff", "alpha": 0.3})
+                self.ax.zaxis._axinfo["grid"].update({"color": "#3fd4ff", "alpha": 0.3})
 
                 # Color code the axes
                 self.ax.xaxis.line.set_color('#850f2a')  # Pink
@@ -1127,19 +1135,23 @@ class SwarmGUI:
                 self.fig = Figure(figsize=(6, 6))
                 self.ax = self.fig.add_subplot(111)
 
-                # Configure 2D plot
+                # Configure the plot
                 self.ax.grid(True, linestyle='--', alpha=0.7)
                 self.ax.set_xlim(-2, 2)
                 self.ax.set_ylim(-2, 2)
                 self.ax.set_xlabel('X (m)')
                 self.ax.set_ylabel('Y (m)')
                 self.ax.set_title('Drone Positions')
+
+                # Make the plot background match the GUI
+                self.fig.patch.set_facecolor('#05001c')
+                self.ax.set_facecolor('white')
+
+                # Add the plot to Tkinter
                 self.canvas_widget = FigureCanvasTkAgg(self.fig, master=self.right_frame)
                 self.canvas_widget.draw()
-                self.canvas_widget.get_tk_widget().pack(expand=True, fill='both')
-
-            # Set up the handlers
-            self.setup_click_handlers()
+                self.canvas_widget.get_tk_widget().pack(expand=True, fill='both', padx=10, pady=10)
+                self.setup_click_handlers()
 
         self.drone_plots = []
         self.drone_annotations = []

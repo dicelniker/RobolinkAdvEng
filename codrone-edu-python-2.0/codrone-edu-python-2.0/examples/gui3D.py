@@ -119,6 +119,7 @@ class SwarmGUI:
         self.create_grid()
         self.is_landed = {i: True for i in range(len(self.swarm.get_drones()))}
         self.joystick_control_speed = 1
+        self.auto_update_running = False
 
     # Swarm joystick control
     def toggle_joystick_control(self):
@@ -525,14 +526,14 @@ class SwarmGUI:
             main_buttons = [
                 ("Take Off", self.take_off),
                 ("Land", self.land),
-                ("Auto Update", self.update_timer),
+                ("Auto Update", self.toggle_auto_update),
                 ("Import CSV", self.import_csv)
             ]
         else:
             main_buttons = [
                 ("Take Off", self.take_off),
                 ("Land", self.land),
-                ("Auto Update", self.update_timer),
+                ("Auto Update", self.toggle_auto_update),
                 ("Import CSV", self.import_csv),
                 ("Bind Keys", self.toggle_key_bindings),
                 ("Stabilize Swarm", self.stabilize_swarm),
@@ -926,8 +927,19 @@ class SwarmGUI:
             print("No drones needed to move for stabilization.")
 
     def update_timer(self):
-        self.update_graph()
-        self.root.after(100, self.update_timer)
+        if hasattr(self, 'auto_update_running') and self.auto_update_running:
+            self.update_graph()
+            self.root.after(50, self.update_timer)
+
+    def toggle_auto_update(self):
+        """Toggle the auto-update functionality"""
+        if not hasattr(self, 'auto_update_running') or not self.auto_update_running:
+            print("Starting auto-update")
+            self.auto_update_running = True
+            self.update_timer()  # Start the update loop
+        else:
+            print("Stopping auto-update")
+            self.auto_update_running = False
 
     def update_graph(self):
         data = self.swarm.get_position_data()
@@ -936,11 +948,6 @@ class SwarmGUI:
         for i in range(len(self.droneIcons)):
             pos = data[i]
             drone = self.droneIcons[i]
-
-            # Skip position updates if drone is landed
-            if self.is_landed[i]:
-                self.set_drone_position(i, drone["x_offset"], drone["y_offset"], 0)
-                continue
 
             # Get raw coordinates from position data
             x_coord = pos[1]
@@ -951,6 +958,14 @@ class SwarmGUI:
             if x_coord == 999.9 or y_coord == 999.9 or z_coord == 999.9:
                 continue
 
+            if z_coord >= 0.5:
+                self.is_landed[i] = False
+
+            # Skip position updates if drone is landed
+            if self.is_landed[i]:
+                self.set_drone_position(i, drone["x_offset"], drone["y_offset"], 0)
+                continue
+
             # Add the stored offsets to the coordinates
             adjusted_x = x_coord + drone["x_offset"] if drone["x_offset"] is not None else x_coord
             adjusted_y = y_coord + drone["y_offset"] if drone["y_offset"] is not None else y_coord
@@ -958,7 +973,7 @@ class SwarmGUI:
             # Update position with adjusted coordinates
             self.set_drone_position(i, adjusted_x, adjusted_y, z_coord)
 
-            max_distance = max(max_distance, abs(adjusted_x), abs(adjusted_y))
+            max_distance = max(max_distance, abs(adjusted_x), abs(adjusted_y), abs(z_coord))
 
         # Automatically resize the boundaries of the graph
         padding = 1
@@ -966,7 +981,15 @@ class SwarmGUI:
 
         self.ax.set_xlim(-range_limit, range_limit)
         self.ax.set_ylim(-range_limit, range_limit)
-        self.ax.grid(True, linestyle='--', alpha=0.7)
+
+        if self.mode == "3d":
+            # Update grid properties
+            self.ax.set_zlim(0, range_limit)
+            self.ax.xaxis._axinfo["grid"].update({"color": "#3fd4ff", "alpha": 0.3})
+            self.ax.yaxis._axinfo["grid"].update({"color": "#3fd4ff", "alpha": 0.3})
+            self.ax.zaxis._axinfo["grid"].update({"color": "#3fd4ff", "alpha": 0.3})
+        else:
+            self.ax.grid(True, linestyle='--', alpha=0.7)
 
         self.canvas_widget.draw()
 
@@ -1012,9 +1035,10 @@ class SwarmGUI:
             if self.mode == "3d":
                 # 3D text annotation
                 drone["annotation"] = self.ax.text(
-                    x_coord, y_coord, z_coord,
+                    x_coord, y_coord, z_coord + 0.25,
                     f'Drone {drone_index}\n({x_coord:.1f}, {y_coord:.1f}, {z_coord:.1f})',
-                    color='black',
+                    color=drone["color"],
+                    bbox=dict(boxstyle='round,pad=0.5', fc='white'),
                     fontsize=8
                 )
             else:
@@ -1177,9 +1201,10 @@ class SwarmGUI:
                     if self.mode == "3d":
                         drone_plot = self.ax.scatter(x_pos, y_pos, z_pos, color=color, s=100)
                         annotation = self.ax.text(
-                            x_pos, y_pos, z_pos,
+                            x_pos, y_pos, z_pos+0.25,
                             f'Drone {i}\n({x_pos:.1f}, {y_pos:.1f}, {z_pos:.1f})',
-                            color='black',
+                            color=color,
+                            bbox=dict(boxstyle='round,pad=0.5', fc='white'),
                             fontsize=8
                         )
                     else:

@@ -747,15 +747,22 @@ class SwarmGUI:
             self.swarm.run(sync_right, type="parallel")  # Run synchronized right movement for selected drones
 
     def run_wiggle(self):
-        self.take_off()
         selected_drone_indices = self.get_indices()
-        test = [
-            (0.5, 0.5, 1),  # Front Left
-            (-0.5, -0.5, 1),  # Front Right
-        ]
+        vel = 0.6
+        zigdist = 0.1
+        negValue = 1
+        desiredNumOfWiggles = 3
+
+        # open screen for number of wiggles
+
+        wiggleSync = Sync()
         for i, drone_index in enumerate(selected_drone_indices):
-            pos = test[i]
-            self.goto_position(drone_index, pos[0], pos[1], pos[2], 1)
+            seq = Sequence(drone_index)
+            for n in range(desiredNumOfWiggles):
+                seq.add('move_distance', zigdist, negValue*zigdist, 0, vel)
+                negValue = -negValue
+                wiggleSync.add(seq)
+        self.swarm.run(wiggleSync, type="parallel")
     def run_spiral(self):
         selected_drone_indices = self.get_indices()
         num_selected_drones = len(selected_drone_indices)

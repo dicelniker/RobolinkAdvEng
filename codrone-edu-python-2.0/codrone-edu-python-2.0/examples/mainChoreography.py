@@ -73,7 +73,7 @@ class MainChoreo:
         pyramid_positions = [
             (p/2, p * math.sqrt(3)/2, self.pyramid_base_height),  # Upper left triangle
             (p/2, -p * math.sqrt(3)/2, self.pyramid_base_height),  # Upper right triangle
-            (-p, 0, self.pyramid_base_height),  # Lower tip triangle
+            (-p * math.sqrt(3)/2, 0, self.pyramid_base_height),  # Lower tip triangle
             (0, 0, self.pyramid_top_height)  # Top of pyramid
         ]
 

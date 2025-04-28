@@ -1159,21 +1159,37 @@ class SwarmGUI:
                 self.fig = Figure(figsize=(6, 6))
                 self.ax = self.fig.add_subplot(111)
 
-                # Configure the plot
-                self.ax.grid(True, linestyle='--', alpha=0.7)
+                # Set background colors
+                self.fig.patch.set_facecolor('#05001c')  # Figure background
+                self.ax.set_facecolor('#05001c')  # Axes background
+
+                # Configure the grid
+                self.ax.grid(True, linestyle='--', alpha=0.3, color='#3fd4ff')
+
+                # Set axis limits
                 self.ax.set_xlim(-2, 2)
                 self.ax.set_ylim(-2, 2)
-                self.ax.set_xlabel('X (m)')
-                self.ax.set_ylabel('Y (m)')
-                self.ax.set_title('Drone Positions')
 
-                # Make the plot background match the GUI
-                self.fig.patch.set_facecolor('#05001c')
-                self.ax.set_facecolor('white')
+                # Color code the axes
+                self.ax.spines['bottom'].set_color('#850f2a')  # Pink
+                self.ax.spines['left'].set_color('#1d6275')  # Light blue
+                self.ax.spines['top'].set_color('#850f2a')  # Pink
+                self.ax.spines['right'].set_color('#1d6275')  # Light blue
+
+                # Color the labels
+                self.ax.set_xlabel('X (m)', color='#e61848', fontsize=12)  # Pink
+                self.ax.set_ylabel('Y (m)', color='#3fd4ff', fontsize=12)  # Light blue
+
+                # Color the tick labels
+                self.ax.tick_params(axis='x', colors='#e61848')  # Pink
+                self.ax.tick_params(axis='y', colors='#3fd4ff')  # Light blue
+
+                self.ax.set_title('Drone Positions (2D)', color='#3fd4ff', pad=15, fontsize=14)
 
                 # Add the plot to Tkinter
                 self.canvas_widget = FigureCanvasTkAgg(self.fig, master=self.right_frame)
                 self.canvas_widget.draw()
+                self.canvas_widget.get_tk_widget().configure(bg='#05001c')
                 self.canvas_widget.get_tk_widget().pack(expand=True, fill='both', padx=10, pady=10)
                 self.setup_click_handlers()
 
@@ -1306,7 +1322,7 @@ class SwarmGUI:
         self.root.mainloop()
 
 class LaunchScreen:
-    def __init__(self, connected = False):
+    def __init__(self, connected=False):
         self.root = tk.Tk()
         self.connected = connected
         self.root.title("CoDrone EDU - Launch Options")
@@ -1367,7 +1383,7 @@ class LaunchScreen:
                 font=('Helvetica', 8),
                 bg='#05001c',
                 fg='#3fd4ff',
-                pady= 5
+                pady=5
             )
             desc_label.pack()
 

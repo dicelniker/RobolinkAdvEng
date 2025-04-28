@@ -120,6 +120,106 @@ class SwarmGUI:
         self.is_landed = {i: True for i in range(len(self.swarm.get_drones()))}
         self.joystick_control_speed = 1
         self.auto_update_running = False
+        self.recording = False
+        self.recorded_coordinates = []
+        self.record_timer = None
+
+    # Record coordinates
+    def toggle_recording(self):
+        """Toggle coordinate recording on/off"""
+        self.recording = not self.recording
+
+        # Find the record button in the frame
+        for frame in self.left_frame.winfo_children():
+            if isinstance(frame, tk.Frame):
+                for button in frame.winfo_children():
+                    if isinstance(button, tk.Button) and "Record" in button['text']:
+                        if self.recording:
+                            # Unbind existing hover events
+                            button.unbind("<Enter>")
+                            button.unbind("<Leave>")
+
+                            button.configure(
+                                background='#8a0000',
+                                activebackground='#8a0000',
+                                text="◉ Recording...",
+                                fg="white",
+                            )
+                            self.recorded_coordinates = []
+                            self.record_coordinates()
+                        else:
+                            # Restore original hover bindings
+                            button.configure(
+                                background=self.pink,
+                                activebackground=self.pink,
+                                text="Record Coords"
+                            )
+                            button.bind("<Enter>", lambda e: e.widget.config(bg=self.hover_purple))
+                            button.bind("<Leave>", lambda e: e.widget.config(bg=self.pink))
+
+                            if self.record_timer:
+                                self.root.after_cancel(self.record_timer)
+                            self.save_coordinates_to_csv()
+                        return
+
+    def record_coordinates(self):
+        """Record current coordinates of all drones"""
+        if self.recording:
+            data = self.swarm.get_position_data()
+            timestamp = time.time()
+
+            for i, pos in enumerate(data):
+                if not self.is_landed[i]:  # Only record flying drones
+                    x_coord = pos[1]
+                    y_coord = pos[2]
+                    z_coord = pos[3]
+
+                    # Skip invalid readings
+                    if x_coord != 999.9 and y_coord != 999.9 and z_coord != 999.9:
+                        drone = self.droneIcons[i]
+                        adjusted_x = x_coord + (drone["x_offset"] if drone["x_offset"] is not None else 0)
+                        adjusted_y = y_coord + (drone["y_offset"] if drone["y_offset"] is not None else 0)
+
+                        self.recorded_coordinates.append({
+                            'timestamp': timestamp,
+                            'drone_id': i,
+                            'x': adjusted_x,
+                            'y': adjusted_y,
+                            'z': z_coord
+                        })
+
+            self.record_timer = self.root.after(500, self.record_coordinates)
+
+    def save_coordinates_to_csv(self):
+        """Save recorded coordinates to CSV file"""
+        if not self.recorded_coordinates:
+            print("No coordinates recorded")
+            return
+
+        try:
+            # Open file dialog to select save location
+            filename = filedialog.asksaveasfilename(
+                defaultextension=".csv",
+                filetypes=[("CSV files", "*.csv"), ("All files", "*.*")],
+                title="Save Recorded Coordinates"
+            )
+
+            if not filename:  # If user cancels save dialog
+                return
+
+            with open(filename, 'w', newline='') as csvfile:
+                fieldnames = ['timestamp', 'drone_id', 'x', 'y', 'z']
+                writer = csv.DictWriter(csvfile, fieldnames=fieldnames)
+
+                writer.writeheader()
+                for coord in self.recorded_coordinates:
+                    writer.writerow(coord)
+
+            print(f"Saved coordinates to {filename}")
+
+        except Exception as e:
+            print(f"Error saving coordinates: {e}")
+
 
     # Swarm joystick control
     def toggle_joystick_control(self):
@@ -527,7 +627,8 @@ class SwarmGUI:
                 ("Take Off", self.take_off),
                 ("Land", self.land),
                 ("Auto Update", self.toggle_auto_update),
-                ("Import CSV", self.import_csv)
+                ("Import CSV", self.import_csv),
+                ("Record Coords", self.toggle_recording)
             ]
         else:
             main_buttons = [
@@ -537,7 +638,8 @@ class SwarmGUI:
                 ("Import CSV", self.import_csv),
                 ("Bind Keys", self.toggle_key_bindings),
                 ("Stabilize Swarm", self.stabilize_swarm),
-                ("Joystick Control", self.toggle_joystick_control)
+                ("Joystick Control", self.toggle_joystick_control),
+                ("Record Coords", self.toggle_recording)
             ]
 
         for text, command in main_buttons:

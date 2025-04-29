@@ -640,6 +640,10 @@ class SwarmGUI:
             drone["plot"].set_color(new_color)
             self.canvas_widget.draw()
 
+        # Update the annotation color
+        if drone["annotation"] is not None:
+            drone["annotation"].set_color(new_color)
+
         # Update the checkbox colors
         if "checkbox" in drone:
             drone["checkbox"].configure(
@@ -1564,6 +1568,7 @@ class SwarmGUI:
                 activeforeground=color
             )
             drone_checkbox.pack(side='left')
+            drone_checkbox.bind("<Button-3>", lambda e, d=drone: self.open_color_picker(d))
 
             # Store the checkbox reference in the drone dictionary
             drone["checkbox"] = drone_checkbox

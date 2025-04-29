@@ -225,7 +225,6 @@ class SwarmGUI:
             print(f"Error saving coordinates: {e}")
 
     def visualize_flight_paths(self):
-        """Visualize flight paths from CSV file"""
         filename = filedialog.askopenfilename(
             title="Select Flight Data CSV",
             filetypes=(("CSV files", "*.csv"), ("All files", "*.*"))
@@ -234,65 +233,173 @@ class SwarmGUI:
         if filename:
             try:
                 # Read the CSV file
-                df = pd.read_csv(filename)
+                self.df = pd.read_csv(filename)
 
-                # Clear existing plot
-                self.ax.cla()
+                # Convert timestamps to elapsed seconds
+                start_time = self.df['timestamp'].min()
+                self.df['elapsed_seconds'] = self.df['timestamp'] - start_time
 
-                # Get unique drone IDs
-                drone_ids = df['drone_id'].unique()
+                # Get time range in seconds
+                self.min_time = 0
+                self.max_time = self.df['elapsed_seconds'].max()
+                self.current_time = self.min_time
 
-                # Colors for different drones
-                colors = ['red', 'blue', 'orange', 'yellow']
+                # Calculate fixed plot limits
+                self.x_min = self.df['x'].min()
+                self.x_max = self.df['x'].max()
+                self.y_min = self.df['y'].min()
+                self.y_max = self.df['y'].max()
+                self.z_min = self.df['z'].min()
+                self.z_max = self.df['z'].max()
 
-                # Plot each drone's path
-                for i, drone_id in enumerate(drone_ids):
-                    drone_data = df[df['drone_id'] == drone_id]
-                    color = colors[i % len(colors)]
+                # Add padding to limits
+                padding = 0.5  # 0.5 meters padding
+                self.x_min -= padding
+                self.x_max += padding
+                self.y_min -= padding
+                self.y_max += padding
+                self.z_min -= padding
+                self.z_max += padding
 
-                    # Plot the path
-                    self.ax.plot3D(
-                        drone_data['x'],
-                        drone_data['y'],
-                        drone_data['z'],
-                        linestyle='-',
-                        color=color,
-                        label=f'Drone {drone_id}'
-                    )
+                # Create slider frame
+                slider_frame = tk.Frame(self.left_frame, bg=self.dark_blue)
+                slider_frame.pack(fill='x', pady=10)
 
-                    # Calculate and print ranges
-                    x_range = drone_data['x'].max() - drone_data['x'].min()
-                    y_range = drone_data['y'].max() - drone_data['y'].min()
-                    z_range = drone_data['z'].max() - drone_data['z'].min()
-                    print(f'Drone {drone_id} - X Range: {x_range:.2f}, Y Range: {y_range:.2f}, Z Range: {z_range:.2f}')
+                # Create time slider
+                tk.Label(
+                    slider_frame,
+                    text="Elapsed Time (seconds):",
+                    bg=self.dark_blue,
+                    fg=self.light_blue
+                ).pack()
 
-                # Reset style
-                self.ax.set_facecolor(self.dark_blue)
-                self.ax.xaxis.pane.fill = False
-                self.ax.yaxis.pane.fill = False
-                self.ax.zaxis.pane.fill = False
+                self.time_slider = tk.Scale(
+                    slider_frame,
+                    from_=self.min_time,
+                    to=self.max_time,
+                    orient='horizontal',
+                    bg=self.dark_blue,
+                    fg=self.light_blue,
+                    troughcolor=self.pink,
+                    highlightbackground=self.dark_blue,
+                    resolution=0.1,  # 0.1 second resolution
+                    command=self.update_time_from_slider
+                )
+                self.time_slider.pack(fill='x', padx=10)
 
-                # Update grid colors
-                self.ax.xaxis._axinfo["grid"].update({"color": self.light_blue, "alpha": 0.3})
-                self.ax.yaxis._axinfo["grid"].update({"color": self.light_blue, "alpha": 0.3})
-                self.ax.zaxis._axinfo["grid"].update({"color": self.light_blue, "alpha": 0.3})
+                # Create time input frame
+                time_input_frame = tk.Frame(slider_frame, bg=self.dark_blue)
+                time_input_frame.pack(pady=5)
 
-                # Update labels
-                self.ax.set_xlabel('X Location (m)', color=self.pink, fontsize=12)
-                self.ax.set_ylabel('Y Location (m)', color=self.light_blue, fontsize=12)
-                self.ax.set_zlabel('Z Location (m)', color=self.hover_purple, fontsize=12)
+                # Add time entry box
+                self.time_entry = tk.Entry(
+                    time_input_frame,
+                    width=20,
+                    bg='white',
+                    fg=self.dark_blue
+                )
+                self.time_entry.pack(side='left', padx=5)
+                self.time_entry.insert(0, "0.0")
 
-                # Add legend
-                self.ax.legend(facecolor=self.dark_blue, labelcolor='white')
+                # Add "Go" button
+                tk.Button(
+                    time_input_frame,
+                    text="Go",
+                    command=self.update_time_from_entry,
+                    bg=self.pink,
+                    fg='white',
+                    activebackground=self.hover_purple
+                ).pack(side='left')
 
-                # Set title
-                self.ax.set_title('Flight Path Visualization', color=self.light_blue, pad=15, fontsize=14)
-
-                # Update canvas
-                self.canvas_widget.draw()
+                # Initial plot
+                self.update_plot()
 
             except Exception as e:
                 print(f"Error visualizing data: {e}")
+
+    def update_time_from_slider(self, value):
+        """Update visualization based on slider position"""
+        self.current_time = float(value)
+        self.time_entry.delete(0, tk.END)
+        self.time_entry.insert(0, f"{self.current_time:.1f}")
+        self.update_plot()
+
+    def update_time_from_entry(self):
+        """Update visualization based on entered time"""
+        try:
+            entered_time = float(self.time_entry.get())
+            if self.min_time <= entered_time <= self.max_time:
+                self.current_time = entered_time
+                self.time_slider.set(entered_time)
+                self.update_plot()
+            else:
+                print(f"Time must be between {self.min_time:.1f} and {self.max_time:.1f} seconds")
+        except ValueError:
+            print("Please enter a valid number")
+
+    def update_plot(self):
+        """Update the plot for the current time"""
+        self.ax.cla()
+
+        # Get data up to current time
+        current_data = self.df[self.df['elapsed_seconds'] <= self.current_time]
+
+        # Plot each drone's path
+        for drone_id in current_data['drone_id'].unique():
+            drone_data = current_data[current_data['drone_id'] == drone_id]
+            color = self.default_colors[int(drone_id) % len(self.default_colors)]
+
+            # Plot path
+            self.ax.plot3D(
+                drone_data['x'],
+                drone_data['y'],
+                drone_data['z'],
+                linestyle='-',
+                color=color,
+                label=f'Drone {drone_id}'
+            )
+
+            # Plot current position
+            if not drone_data.empty:
+                latest_pos = drone_data.iloc[-1]
+                self.ax.scatter3D(
+                    latest_pos['x'],
+                    latest_pos['y'],
+                    latest_pos['z'],
+                    color=color,
+                    s=100
+                )
+
+        # Reset style
+        self.ax.set_facecolor(self.dark_blue)
+        self.ax.xaxis.pane.fill = False
+        self.ax.yaxis.pane.fill = False
+        self.ax.zaxis.pane.fill = False
+
+        # Set fixed axis limits
+        self.ax.set_xlim(self.x_min, self.x_max)
+        self.ax.set_ylim(self.y_min, self.y_max)
+        self.ax.set_zlim(self.z_min, self.z_max)
+
+        # Update grid colors
+        self.ax.xaxis._axinfo["grid"].update({"color": self.light_blue, "alpha": 0.3})
+        self.ax.yaxis._axinfo["grid"].update({"color": self.light_blue, "alpha": 0.3})
+        self.ax.zaxis._axinfo["grid"].update({"color": self.light_blue, "alpha": 0.3})
+
+        # Update labels
+        self.ax.set_xlabel('X Location (m)', color=self.pink, fontsize=12)
+        self.ax.set_ylabel('Y Location (m)', color=self.light_blue, fontsize=12)
+        self.ax.set_zlabel('Z Location (m)', color=self.hover_purple, fontsize=12)
+
+        # Add legend
+        self.ax.legend(facecolor=self.dark_blue, labelcolor='white')
+
+        # Update title with elapsed time
+        self.ax.set_title(f'Flight Path Visualization (t={self.current_time:.1f}s)',
+                          color=self.light_blue, pad=15, fontsize=14)
+
+        # Update canvas
+        self.canvas_widget.draw()
 
     # Swarm joystick control
     def toggle_joystick_control(self):
@@ -1424,6 +1531,8 @@ class SwarmGUI:
                 drone_plot = None
                 annotation = None
 
+            if self.mode == "visualize":
+                return
             # Store drone information
             drone = {
                 "color": color,

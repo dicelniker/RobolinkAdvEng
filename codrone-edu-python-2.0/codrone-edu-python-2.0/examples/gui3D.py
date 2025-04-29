@@ -5,6 +5,10 @@ import tkinter as tk
 from tkinter import colorchooser
 import matplotlib.colors as mcolors
 from codrone_edu.swarm import *
+import pandas as pd
+from matplotlib.backends.backend_tkagg import FigureCanvasTkAgg
+from matplotlib.figure import Figure
+
 
 #pink e61848
 #dark blue 05001c
@@ -220,6 +224,75 @@ class SwarmGUI:
         except Exception as e:
             print(f"Error saving coordinates: {e}")
 
+    def visualize_flight_paths(self):
+        """Visualize flight paths from CSV file"""
+        filename = filedialog.askopenfilename(
+            title="Select Flight Data CSV",
+            filetypes=(("CSV files", "*.csv"), ("All files", "*.*"))
+        )
+
+        if filename:
+            try:
+                # Read the CSV file
+                df = pd.read_csv(filename)
+
+                # Clear existing plot
+                self.ax.cla()
+
+                # Get unique drone IDs
+                drone_ids = df['drone_id'].unique()
+
+                # Colors for different drones
+                colors = ['red', 'blue', 'orange', 'yellow']
+
+                # Plot each drone's path
+                for i, drone_id in enumerate(drone_ids):
+                    drone_data = df[df['drone_id'] == drone_id]
+                    color = colors[i % len(colors)]
+
+                    # Plot the path
+                    self.ax.plot3D(
+                        drone_data['x'],
+                        drone_data['y'],
+                        drone_data['z'],
+                        linestyle='-',
+                        color=color,
+                        label=f'Drone {drone_id}'
+                    )
+
+                    # Calculate and print ranges
+                    x_range = drone_data['x'].max() - drone_data['x'].min()
+                    y_range = drone_data['y'].max() - drone_data['y'].min()
+                    z_range = drone_data['z'].max() - drone_data['z'].min()
+                    print(f'Drone {drone_id} - X Range: {x_range:.2f}, Y Range: {y_range:.2f}, Z Range: {z_range:.2f}')
+
+                # Reset style
+                self.ax.set_facecolor(self.dark_blue)
+                self.ax.xaxis.pane.fill = False
+                self.ax.yaxis.pane.fill = False
+                self.ax.zaxis.pane.fill = False
+
+                # Update grid colors
+                self.ax.xaxis._axinfo["grid"].update({"color": self.light_blue, "alpha": 0.3})
+                self.ax.yaxis._axinfo["grid"].update({"color": self.light_blue, "alpha": 0.3})
+                self.ax.zaxis._axinfo["grid"].update({"color": self.light_blue, "alpha": 0.3})
+
+                # Update labels
+                self.ax.set_xlabel('X Location (m)', color=self.pink, fontsize=12)
+                self.ax.set_ylabel('Y Location (m)', color=self.light_blue, fontsize=12)
+                self.ax.set_zlabel('Z Location (m)', color=self.hover_purple, fontsize=12)
+
+                # Add legend
+                self.ax.legend(facecolor=self.dark_blue, labelcolor='white')
+
+                # Set title
+                self.ax.set_title('Flight Path Visualization', color=self.light_blue, pad=15, fontsize=14)
+
+                # Update canvas
+                self.canvas_widget.draw()
+
+            except Exception as e:
+                print(f"Error visualizing data: {e}")
 
     # Swarm joystick control
     def toggle_joystick_control(self):
@@ -622,6 +695,10 @@ class SwarmGUI:
                 ("Land", self.land)
             ]
             self.toggle_key_bindings()
+        elif self.mode == "visualize":
+            main_buttons = [
+                ("Load Flight Data", self.visualize_flight_paths)
+            ]
         elif self.mode == "choreo":
             main_buttons = [
                 ("Take Off", self.take_off),
@@ -645,6 +722,8 @@ class SwarmGUI:
         for text, command in main_buttons:
             self.create_button(left_control_frame, text, command, button_style).pack(pady=5)
 
+        if self.mode == "visualize":
+            return
         # Create choreography section
         if self.mode != "basic":
             right_control_frame = self.create_border_frame(
@@ -920,6 +999,8 @@ class SwarmGUI:
         def on_button_leave(event):
             event.widget.config(bg=self.pink)
 
+        if self.mode == "visualize":
+            return
         # Create input frame in left frame
         input_frame = tk.Frame(self.left_frame, bg=self.light_blue, borderwidth=2, relief='solid', padx=10, pady=5)
         input_frame.pack(fill='x', pady=10)
@@ -1207,7 +1288,7 @@ class SwarmGUI:
 
         if self.mode != "basic":
             # Create either 2D or 3D axes based on mode
-            if self.mode == "3d":
+            if self.mode == "3d" or self.mode == "visualize":
                 self.fig = Figure(figsize=(12, 12))
                 self.ax = self.fig.add_subplot(111, projection='3d')
 
@@ -1431,7 +1512,7 @@ class LaunchScreen:
         self.root.configure(bg='#05001c')
         self.selected_mode = None
 
-        center_window(self.root, 350, 500)
+        center_window(self.root, 350, 650)
 
 
         # Title
@@ -1466,7 +1547,8 @@ class LaunchScreen:
             ("3D Demo", "Prototype version of GUI with 3D graph", self.launch_3d_demo),
             ("Full Demo", "Full version of GUI with full features", self.launch_full_demo),
             ("Choreography", "Optimized for running Choreography", self.launch_choreography),
-            ("Basic", "Simple demonstration, minimal features", self.launch_basic_controls)
+            ("Basic", "Simple demonstration, minimal features", self.launch_basic_controls),
+            ("CSV Visualizer", "View recorded flight data", self.launch_visualizer)
         ]
 
         for text, description, command in modes:
@@ -1511,6 +1593,11 @@ class LaunchScreen:
         self.root.destroy()
         print("Print running basic demo")
         app = SwarmGUI(mode="basic", connected=self.connected)
+        app.run()
+
+    def launch_visualizer(self):
+        self.root.destroy()
+        app = SwarmGUI(mode="visualize", connected=self.connected)
         app.run()
 
     def run(self):

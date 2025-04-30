@@ -1223,7 +1223,7 @@ class SwarmGUI:
     def update_timer(self):
         if hasattr(self, 'auto_update_running') and self.auto_update_running:
             self.update_graph()
-            self.root.after(50, self.update_timer)
+            self.root.after(500, self.update_timer)
 
     def toggle_auto_update(self):
         """Toggle the auto-update functionality"""
@@ -1580,11 +1580,16 @@ class SwarmGUI:
         if self.mode != "basic":
             self.canvas_widget.draw()
 
+    def click_checkbox(self, index):
+        if index < len(self.droneIcons):
+            current_value = self.droneIcons[index]["selected"].get()
+            self.droneIcons[index]["selected"].set(not current_value)
+
     def toggle_key_bindings(self):
         """Toggle keyboard controls on/off"""
         if self.key_bindings_active:
             # Unbind all keys
-            for key in ["<Up>", "<Down>", "<Left>", "<Right>", "w", "s", "a", "d"]:
+            for key in ["<Up>", "<Down>", "<Left>", "<Right>", "w", "s", "a", "d", "0", "1", "2", "3", "4", "5", "6", "7", "8", "9"]:
                 self.root.unbind(key)
             self.key_bindings_active = False
             print("Keybinds disabled")
@@ -1613,6 +1618,10 @@ class SwarmGUI:
         self.root.bind("s", lambda event: [self.backward(), key_highlight(self.backward_border, self.backward_button), self.root.after(100, lambda: key_reset(self.backward_border, self.backward_button))])
         self.root.bind("a", lambda event: [self.left(), key_highlight(self.left_border, self.left_button), self.root.after(100, lambda: key_reset(self.left_border, self.left_button))])
         self.root.bind("d", lambda event: [self.right(), key_highlight(self.right_border, self.right_button), self.root.after(100, lambda: key_reset(self.right_border, self.right_button))])
+
+        for i in range(len(self.droneIcons)):
+            self.root.bind(str(i), lambda e, x=i: self.click_checkbox(x))
+
         self.root.focus_set()
 
     def run(self):

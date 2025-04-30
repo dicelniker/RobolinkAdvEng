@@ -12,8 +12,8 @@ class MainChoreo:
         self.base_height = 0.8  # Height for square formation
         self.pyramid_base_height = 0.3  # Height for bottom layer of pyramid
         self.pyramid_top_height = 1.0  # Height for top of pyramid
-        self.square_sides = 1.4
-        self.pyramid_side = 1.4
+        self.square_sides = 1.0
+        self.pyramid_side = 1.0
         self.space_apart = 0.4
 
 
@@ -153,7 +153,7 @@ class MainChoreo:
 
             self.square_takeoff(drones, selected_drone_indices)
             self.form_pyramid(drones, selected_drone_indices)
-            self.move_into_place(drones, selected_drone_indices)
+            # self.move_into_place(drones, selected_drone_indices)
             swarm.land()
             # time.sleep(1)  # Pause between formations
             # self.standing_wave(swarm, selected_drone_indices)

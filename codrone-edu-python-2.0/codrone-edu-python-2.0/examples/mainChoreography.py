@@ -9,11 +9,11 @@ class MainChoreo:
     def __init__(self, gui_instance):
         self.gui = gui_instance
         self.speed = 0.75
-        self.base_height = 0.8  # Height for square formation
-        self.pyramid_base_height = 0.3  # Height for bottom layer of pyramid
-        self.pyramid_top_height = 1.0  # Height for top of pyramid
-        self.square_sides = 1.0
-        self.pyramid_side = 1.0
+        self.base_height = 0.4  # Height for square formation
+        self.pyramid_base_height = 0.4  # Height for bottom layer of pyramid
+        self.pyramid_top_height = 0.8  # Height for top of pyramid
+        self.square_sides = 0.8
+        self.pyramid_side = 0.8
         self.space_apart = 0.4
 
 
@@ -51,9 +51,7 @@ class MainChoreo:
         # Move each drone to its corner position
         for i, drone_index in enumerate(selected_drone_indices):
             pos = square_positions[i]
-            self.gui.goto_position(drone_index, pos[0], pos[1], pos[2])
-            time.sleep(0.5)  # Wait between each drone's movement
-        # self.gui.stabilize_swarm()
+            self.gui.goto_position(drone_index, pos[0], pos[1], pos[2])5
         print("Square formation complete")
 
     def form_pyramid(self, drones, selected_drone_indices):
@@ -153,12 +151,10 @@ class MainChoreo:
 
             self.square_takeoff(drones, selected_drone_indices)
             self.form_pyramid(drones, selected_drone_indices)
-            # self.move_into_place(drones, selected_drone_indices)
+            self.move_into_place(drones, selected_drone_indices)
+            self.standing_wave(swarm, selected_drone_indices)
+            self.spiral_down(swarm, selected_drone_indices)
             swarm.land()
-            # time.sleep(1)  # Pause between formations
-            # self.standing_wave(swarm, selected_drone_indices)
-            # time.sleep(1)  # Pause between formations
-            # self.spiral_down(swarm, selected_drone_indices)
 
         except Exception as e:
             print(f"Failed to run choreography: {str(e)}")

@@ -132,7 +132,6 @@ class SwarmGUI:
     def toggle_recording(self):
         """Toggle coordinate recording on/off"""
         self.recording = not self.recording
-
         # Find the record button in the frame
         for frame in self.left_frame.winfo_children():
             if isinstance(frame, tk.Frame):
@@ -194,40 +193,70 @@ class SwarmGUI:
 
             self.record_timer = self.root.after(500, self.record_coordinates)
 
+    def record_action(self, action_name):
+        """Record an action with timestamp"""
+        if self.recording:
+            self.recorded_coordinates.append({
+                'timestamp': time.time(),
+                'type': 'action',
+                'action': action_name,
+                'drone_ids': self.get_indices()  # Store which drones performed the action
+            })
+
     def save_coordinates_to_csv(self):
-        """Save recorded coordinates to CSV file"""
+        """Save recorded coordinates and actions to CSV file"""
         if not self.recorded_coordinates:
-            print("No coordinates recorded")
+            print("No data recorded")
             return
 
         try:
-            # Open file dialog to select save location
             filename = filedialog.asksaveasfilename(
                 defaultextension=".csv",
                 filetypes=[("CSV files", "*.csv"), ("All files", "*.*")],
-                title="Save Recorded Coordinates"
+                title="Save Recorded Data"
             )
 
-            if not filename:  # If user cancels save dialog
+            if not filename:
                 return
 
             with open(filename, 'w', newline='') as csvfile:
-                fieldnames = ['timestamp', 'drone_id', 'x', 'y', 'z']
+                fieldnames = ['timestamp', 'type', 'drone_id', 'x', 'y', 'z', 'action']
                 writer = csv.DictWriter(csvfile, fieldnames=fieldnames)
-
                 writer.writeheader()
-                for coord in self.recorded_coordinates:
-                    writer.writerow(coord)
 
-            print(f"Saved coordinates to {filename}")
+                for data in self.recorded_coordinates:
+                    if data.get('type') == 'action':
+                        # Write action entry
+                        writer.writerow({
+                            'timestamp': data['timestamp'],
+                            'type': 'action',
+                            'action': data['action'],
+                            'drone_id': ','.join(map(str, data['drone_ids'])),
+                            'x': '',
+                            'y': '',
+                            'z': ''
+                        })
+                    else:
+                        # Write coordinate entry
+                        writer.writerow({
+                            'timestamp': data['timestamp'],
+                            'type': 'coordinate',
+                            'drone_id': data['drone_id'],
+                            'x': data['x'],
+                            'y': data['y'],
+                            'z': data['z'],
+                            'action': ''
+                        })
+
+            print(f"Saved data to {filename}")
 
         except Exception as e:
-            print(f"Error saving coordinates: {e}")
+            print(f"Error saving data: {e}")
 
     def visualize_flight_paths(self):
         filename = filedialog.askopenfilename(
             title="Select Flight Data CSV",
-            filetypes=(("CSV files", "*.csv"), ("All files", "*.*"))
+            filetypes=((("CSV files", "*.csv"), ("All files", "*.*")))
         )
 
         if filename:
@@ -253,7 +282,7 @@ class SwarmGUI:
                 self.z_max = self.df['z'].max()
 
                 # Add padding to limits
-                padding = 0.5  # 0.5 meters padding
+                padding = 0.5
                 self.x_min -= padding
                 self.x_max += padding
                 self.y_min -= padding
@@ -282,7 +311,7 @@ class SwarmGUI:
                     fg=self.light_blue,
                     troughcolor=self.pink,
                     highlightbackground=self.dark_blue,
-                    resolution=0.1,  # 0.1 second resolution
+                    resolution=0.1,
                     command=self.update_time_from_slider
                 )
                 self.time_slider.pack(fill='x', padx=10)
@@ -310,6 +339,30 @@ class SwarmGUI:
                     fg='white',
                     activebackground=self.hover_purple
                 ).pack(side='left')
+
+                # Add action log frame
+                self.log_frame = tk.Frame(self.left_frame, bg=self.dark_blue)
+                self.log_frame.pack(pady=10)
+
+                # Add log title
+                tk.Label(
+                    self.log_frame,
+                    text="Action Log",
+                    bg=self.dark_blue,
+                    fg=self.light_blue,
+                    font=('Helvetica', 10, 'bold')
+                ).pack()
+
+                # Add scrolled text widget for log
+                self.log_text = tk.Text(
+                    self.log_frame,
+                    height=40,
+                    width=30,
+                    bg=self.dark_blue,
+                    fg=self.light_blue,
+                    font=('Courier', 9)
+                )
+                self.log_text.pack(padx=10, pady=10)
 
                 # Initial plot
                 self.update_plot()
@@ -341,26 +394,51 @@ class SwarmGUI:
         """Update the plot for the current time"""
         self.ax.cla()
 
+        # Clear log
+        self.log_text.delete(1.0, tk.END)
+
         # Get data up to current time
         current_data = self.df[self.df['elapsed_seconds'] <= self.current_time]
 
+        # Update action log
+        actions = current_data[current_data['type'] == 'action']
+        for _, action in actions.iterrows():
+            elapsed = action['elapsed_seconds']
+            self.log_text.insert(tk.END,
+                                 f"[{elapsed:.1f}s] {action['action']} - Drones: {action['drone_id']}\n")
+
         # Plot each drone's path
-        for drone_id in current_data['drone_id'].unique():
-            drone_data = current_data[current_data['drone_id'] == drone_id]
-            color = self.default_colors[int(drone_id) % len(self.default_colors)]
+        has_plots = False
+        coordinate_data = current_data[current_data['type'] != 'action']  # Filter out action entries
 
-            # Plot path
-            self.ax.plot3D(
-                drone_data['x'],
-                drone_data['y'],
-                drone_data['z'],
-                linestyle='-',
-                color=color,
-                label=f'Drone {drone_id}'
-            )
+        # Store last positions for annotations
+        last_positions = {}
 
-            # Plot current position
-            if not drone_data.empty:
+        for drone_id in coordinate_data['drone_id'].unique():
+            # Handle comma-separated drone IDs
+            if isinstance(drone_id, str) and ',' in drone_id:
+                drone_ids = [int(d.strip()) for d in drone_id.split(',')]
+                color_index = drone_ids[0]  # Use first drone's ID for color
+            else:
+                color_index = int(drone_id)
+
+            drone_data = coordinate_data[coordinate_data['drone_id'] == drone_id]
+            color = self.default_colors[color_index % len(self.default_colors)]
+
+            # Only plot if we have x, y, z coordinates
+            if not drone_data.empty and 'x' in drone_data.columns and 'y' in drone_data.columns and 'z' in drone_data.columns:
+                # Plot path
+                self.ax.plot3D(
+                    drone_data['x'],
+                    drone_data['y'],
+                    drone_data['z'],
+                    linestyle='-',
+                    color=color,
+                    label=f'Drone {drone_id}'
+                )
+                has_plots = True
+
+                # Plot current position and add annotation
                 latest_pos = drone_data.iloc[-1]
                 self.ax.scatter3D(
                     latest_pos['x'],
@@ -370,7 +448,24 @@ class SwarmGUI:
                     s=100
                 )
 
-        # Reset style
+                # Add annotation for current position
+                self.ax.text(
+                    latest_pos['x'],
+                    latest_pos['y'],
+                    latest_pos['z'] + 0.25,
+                    f'Drone {drone_id}\n({latest_pos["x"]:.1f}, {latest_pos["y"]:.1f}, {latest_pos["z"]:.1f})',
+                    color=color,
+                    bbox=dict(
+                        boxstyle='round,pad=0.5',
+                        fc='white',
+                        alpha=0.7
+                    ),
+                    fontsize=8
+                )
+
+        if has_plots:
+            self.ax.legend(facecolor=self.dark_blue, labelcolor='white')
+
         self.ax.set_facecolor(self.dark_blue)
         self.ax.xaxis.pane.fill = False
         self.ax.yaxis.pane.fill = False
@@ -390,9 +485,6 @@ class SwarmGUI:
         self.ax.set_xlabel('X Location (m)', color=self.pink, fontsize=12)
         self.ax.set_ylabel('Y Location (m)', color=self.light_blue, fontsize=12)
         self.ax.set_zlabel('Z Location (m)', color=self.hover_purple, fontsize=12)
-
-        # Add legend
-        self.ax.legend(facecolor=self.dark_blue, labelcolor='white')
 
         # Update title with elapsed time
         self.ax.set_title(f'Flight Path Visualization (t={self.current_time:.1f}s)',
@@ -457,6 +549,8 @@ class SwarmGUI:
                         self.update_drone_color(drone, self.default_colors[self.joystick_control_color])
 
             if r2:
+                if self.recording:
+                    self.record_action("flip")
                 if right_joystick_x >= 25:
                     self.swarm.all_drones("flip", direction="right")
                 elif right_joystick_x <= -25:
@@ -515,6 +609,40 @@ class SwarmGUI:
                 self.process_csv(coordinates)
             else:
                 print("No coordinates were read from the file")
+
+    def export_csv(self):
+        """Export all current coordinates on the graph into a CSV file."""
+        try:
+            filename = filedialog.asksaveasfilename(
+                defaultextension=".csv",
+                filetypes=[("CSV files", "*.csv"), ("All files", "*.*")],
+                title="Save Current Coordinates"
+            )
+
+            if not filename:
+                print("Save operation canceled.")
+                return
+
+            # Prepare data for export
+            coordinates = []
+            for drone in self.droneIcons:
+                if drone["x_position"] is not None and drone["y_position"] is not None and drone["z_position"] is not None:
+                    coordinates.append([
+                        drone["x_position"],
+                        drone["y_position"],
+                        drone["z_position"]
+                    ])
+
+            # Write to CSV
+            with open(filename, 'w', newline='') as csvfile:
+                writer = csv.writer(csvfile)
+                for coord in coordinates:
+                    writer.writerow(coord)
+
+            print(f"Exported current coordinates to {filename}")
+
+        except Exception as e:
+            print(f"Error exporting data: {e}")
 
     def process_csv(self, input_coords):
         print(f"Processing {len(input_coords)} coordinates")  # Debug print
@@ -664,12 +792,14 @@ class SwarmGUI:
             self.selected_drone = None
             return
 
+        pos = self.swarm.get_position_data()
+        z = pos[self.selected_drone["drone_index"]][3]
         # Send drone to the release position
         self.goto_position(
             self.selected_drone["drone_index"],
             event.xdata,
             event.ydata,
-            self.selected_drone["z_position"],
+            z,
             speed=0.5
         )
 
@@ -797,7 +927,7 @@ class SwarmGUI:
                 'highlightcolor': self.light_blue
             }
         )
-        left_control_frame.pack(fill='x', pady=10)
+        left_control_frame.pack(fill='x', padx=5, pady=10)
 
         # Create main control buttons
         if self.mode == "basic":
@@ -816,6 +946,7 @@ class SwarmGUI:
                 ("Land", self.land),
                 ("Auto Update", self.toggle_auto_update),
                 ("Import CSV", self.import_csv),
+                ("Export CSV", self.export_csv),
                 ("Record Coords", self.toggle_recording)
             ]
         else:
@@ -824,6 +955,7 @@ class SwarmGUI:
                 ("Land", self.land),
                 ("Auto Update", self.toggle_auto_update),
                 ("Import CSV", self.import_csv),
+                ("Export CSV", self.export_csv),
                 ("Bind Keys", self.toggle_key_bindings),
                 ("Stabilize Swarm", self.stabilize_swarm),
                 ("Joystick Control", self.toggle_joystick_control),
@@ -831,7 +963,7 @@ class SwarmGUI:
             ]
 
         for text, command in main_buttons:
-            self.create_button(left_control_frame, text, command, button_style).pack(pady=5)
+            self.create_button(left_control_frame, text, command, button_style).pack(padx=5, pady=5)
 
         if self.mode == "visualize":
             return
@@ -960,7 +1092,8 @@ class SwarmGUI:
     def land(self):
         selected_drone_indices = self.get_indices()
         num_selected_drones = len(selected_drone_indices)
-
+        if self.recording:
+            self.record_action("land")
         if num_selected_drones == num_drones:
             print("Landing ALL drones (all selected)...")
             self.swarm.all_drones("land")
@@ -983,7 +1116,8 @@ class SwarmGUI:
     def take_off(self):
         selected_drone_indices = self.get_indices()
         num_selected_drones = len(selected_drone_indices)
-
+        if self.recording:
+            self.record_action("take_off")
         if num_selected_drones == num_drones:
             print("Taking off ALL drones (all selected)...")
             self.swarm.all_drones("takeoff")
@@ -1002,18 +1136,28 @@ class SwarmGUI:
             print("No drones selected. Not taking off.")
 
     def forward(self):
-        self.move_drones("forward", x=0.2)
+        if self.recording:
+            self.record_action("forward")
+        self.move_drones("forward", x=0.5)
 
     def backward(self):
-        self.move_drones("backward", x=-0.2)
+        if self.recording:
+            self.record_action("backward")
+        self.move_drones("backward", x=-0.5)
 
     def left(self):
-        self.move_drones("left", y=0.2)
+        if self.recording:
+            self.record_action("left")
+        self.move_drones("left", y=0.5)
 
     def right(self):
-        self.move_drones("right", y=-0.2)
+        if self.recording:
+            self.record_action("right")
+        self.move_drones("right", y=-0.5)
 
     def run_main_choreo(self):
+        if self.recording:
+            self.record_action("run_main_choreo")
         from mainChoreography import MainChoreo
         run = MainChoreo(self)
         selected_drone_indices = self.get_indices()
@@ -1026,6 +1170,8 @@ class SwarmGUI:
 
     def run_pyra(self):
         from pyramid import Pyramid
+        if self.recording:
+            self.record_action("run_pyra")
         runPyra = Pyramid(self)
         selected_drone_indices = self.get_indices()
         if not selected_drone_indices:
@@ -1038,6 +1184,8 @@ class SwarmGUI:
         runPyra.run_sequence(self.swarm, selected_drone_indices)
 
     def flipall(self):
+        if self.recording:
+            self.record_action("flipall")
         print("flipping all of themmmmmmmmmmmmmmmmmmm")
         selected_drone_indices = self.get_indices()
         num_selected_drones = len(selected_drone_indices)
@@ -1052,6 +1200,8 @@ class SwarmGUI:
             self.swarm.run(sync_right, type="parallel")  # Run synchronized right movement for selected drones
 
     def run_wiggle(self):
+        if self.recording:
+            self.record_action("run_wiggle")
         self.take_off()
         selected_drone_indices = self.get_indices()
         test = [
@@ -1062,6 +1212,8 @@ class SwarmGUI:
             pos = test[i]
             self.goto_position(drone_index, pos[0], pos[1], pos[2], 1)
     def run_spiral(self):
+        if self.recording:
+            self.record_action("run_spiral")
         selected_drone_indices = self.get_indices()
         num_selected_drones = len(selected_drone_indices)
 
@@ -1155,6 +1307,8 @@ class SwarmGUI:
         self.set_coords_button.bind("<Leave>", on_button_leave)  # Hover effect for red buttons
 
     def stabilize_swarm(self):
+        if self.recording:
+            self.record_action("stabilize_swarm")
         if not self.hasGeneratedGrid:
             print("Grid not generated, cannot auto-stabilize.")
             return
@@ -1575,6 +1729,7 @@ class SwarmGUI:
 
             # Set drone LED color
             self.swarm.one_drone(drone["drone_index"], "set_drone_LED", *rgba_color)
+            self.swarm.one_drone(drone["drone_index"], "set_controller_LED", *rgba_color)
 
         # Update the display for full mode
         if self.mode != "basic":

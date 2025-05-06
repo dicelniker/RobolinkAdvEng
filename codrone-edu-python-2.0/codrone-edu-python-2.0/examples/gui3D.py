@@ -1,6 +1,6 @@
 import math
 import csv
-from tkinter import filedialog
+from tkinter import filedialog, messagebox
 import tkinter as tk
 from tkinter import colorchooser
 import matplotlib.colors as mcolors
@@ -62,8 +62,8 @@ class SwarmGUI:
         self.droneIcons = []
         self.swarm = Swarm(enable_pause=False)
         self.joystick_control_enabled = False
-        if not connected:
-            self.swarm.connect()
+        # if not connected:
+        self.swarm.connect()
 
         self.light_blue = '#3fd4ff'
         self.grid_line_color = '#4169E1'
@@ -206,7 +206,7 @@ class SwarmGUI:
     def save_coordinates_to_csv(self):
         """Save recorded coordinates and actions to CSV file"""
         if not self.recorded_coordinates:
-            print("No data recorded")
+            messagebox.showerror("Error", "No data recorded")
             return
 
         try:
@@ -248,10 +248,10 @@ class SwarmGUI:
                             'action': ''
                         })
 
-            print(f"Saved data to {filename}")
+            messagebox.showinfo("Info", f"Saved data to {filename}")
 
         except Exception as e:
-            print(f"Error saving data: {e}")
+            messagebox.showerror("Error", f"Error saving data: {e}")
 
     def visualize_flight_paths(self):
         filename = filedialog.askopenfilename(
@@ -368,7 +368,7 @@ class SwarmGUI:
                 self.update_plot()
 
             except Exception as e:
-                print(f"Error visualizing data: {e}")
+                messagebox.showerror("Error", f"Error visualizing data: {e}")
 
     def update_time_from_slider(self, value):
         """Update visualization based on slider position"""
@@ -386,9 +386,9 @@ class SwarmGUI:
                 self.time_slider.set(entered_time)
                 self.update_plot()
             else:
-                print(f"Time must be between {self.min_time:.1f} and {self.max_time:.1f} seconds")
+                messagebox.showerror("Error", f"Time must be between {self.min_time:.1f} and {self.max_time:.1f} seconds")
         except ValueError:
-            print("Please enter a valid number")
+            messagebox.showerror("Error", "Please enter a valid number")
 
     def update_plot(self):
         """Update the plot for the current time"""
@@ -497,10 +497,10 @@ class SwarmGUI:
     def toggle_joystick_control(self):
         self.joystick_control_enabled = not self.joystick_control_enabled
         if self.joystick_control_enabled:
-            print("Joystick control enabled for the swarm.")
+            messagebox.showinfo("Info", "Joystick control enabled for the swarm.")
             self.run_joystick_control()
         else:
-            print("Joystick control disabled for the swarm.")
+            messagebox.showinfo("Info", "Joystick control disabled for the swarm.")
 
     def run_joystick_control(self):
         """
@@ -608,7 +608,7 @@ class SwarmGUI:
             if coordinates:  # Check if we got any coordinates
                 self.process_csv(coordinates)
             else:
-                print("No coordinates were read from the file")
+                messagebox.showerror("Error", "No coordinates were read from the file")
 
     def export_csv(self):
         """Export all current coordinates on the graph into a CSV file."""
@@ -639,21 +639,21 @@ class SwarmGUI:
                 for coord in coordinates:
                     writer.writerow(coord)
 
-            print(f"Exported current coordinates to {filename}")
+            messagebox.showinfo("Info", f"Exported current coordinates to {filename}")
 
         except Exception as e:
-            print(f"Error exporting data: {e}")
+            messagebox.showerror("Error", f"Error exporting data: {e}")
 
     def process_csv(self, input_coords):
         print(f"Processing {len(input_coords)} coordinates")  # Debug print
         print(f"Number of drone icons: {len(self.droneIcons)}")  # Debug print
 
         if len(input_coords) < len(self.droneIcons):
-            print(f"Warning: Not enough coordinates ({len(input_coords)}) for all drones ({len(self.droneIcons)})")
+            messagebox.showwarning("Warning", f"Warning: Not enough coordinates ({len(input_coords)}) for all drones ({len(self.droneIcons)})")
 
         for index, drone in enumerate(self.droneIcons):
             if index >= len(input_coords):
-                print(f"No coordinates available for drone {index}")
+                messagebox.showerror("Error", f"No coordinates available for drone {index}")
                 break
 
             coords = input_coords[index]
@@ -710,8 +710,18 @@ class SwarmGUI:
         back_button.bind("<Leave>", reset_back_button)
 
     def return_to_launch_screen(self):
+        self.auto_update_running = False
+        self.joystick_control_enabled = False
+        self.recording = False
+        if self.record_timer:
+            self.root.after_cancel(self.record_timer)
+            self.record_timer = None
+
+        self.swarm.close()
+        del self.swarm
+
         self.root.destroy()
-        launch_screen = LaunchScreen(connected = True)
+        launch_screen = LaunchScreen(connected=True)
         launch_screen.run()
 
 
@@ -1056,7 +1066,7 @@ class SwarmGUI:
         - speed: Movement speed (default 0.5 m/s)
         """
         if not (0 <= drone_index < len(self.droneIcons)):
-            print(f"Invalid drone index: {drone_index}")
+            messagebox.showerror("Error", f"Invalid drone index: {drone_index}")
             return
 
         drone = self.droneIcons[drone_index]
@@ -1111,7 +1121,7 @@ class SwarmGUI:
             self.swarm.run(sync_land, type="parallel")
             self.reset_offsets()
         else:
-            print("No drones selected. Not landing.")
+            messagebox.showwarning("Warning", "No drones selected. Not landing.")
 
     def take_off(self):
         selected_drone_indices = self.get_indices()
@@ -1133,7 +1143,7 @@ class SwarmGUI:
                 self.is_landed[index] = False
             self.swarm.run(sync_takeoff, type="parallel")
         else:
-            print("No drones selected. Not taking off.")
+            messagebox.showwarning("Warning", "No drones selected. Not taking off.")
 
     def forward(self):
         if self.recording:
@@ -1162,7 +1172,7 @@ class SwarmGUI:
         run = MainChoreo(self)
         selected_drone_indices = self.get_indices()
         if not selected_drone_indices:
-            print(f"No drones selected. Not running main choreo sequence.")
+            messagebox.showwarning("Warning", f"No drones selected. Not running main choreo sequence.")
             return
 
         print(f"Running main choreo sequence for the following drones: {selected_drone_indices}")
@@ -1175,7 +1185,7 @@ class SwarmGUI:
         runPyra = Pyramid(self)
         selected_drone_indices = self.get_indices()
         if not selected_drone_indices:
-            print(f"No drones selected. Not running pyra sequence.")
+            messagebox.showwarning("Warning", f"No drones selected. Not running pyra sequence.")
             return
         # add specifics per num drones
 
@@ -1226,7 +1236,7 @@ class SwarmGUI:
                 sync_right.add(seq)  # Add sequence to Sync object
             self.swarm.run(sync_right, type="parallel")  # Run synchronized right movement for selected drones
         else:  # Check if NO drones are selected
-            print("No drones selected. Not moving right.")  # Do nothing - no movement
+            messagebox.showwarning("Warning", "No drones selected. Not moving right.")  # Do nothing - no movement
 
     def create_input_section(self):
         if self.mode == "basic":
@@ -1310,7 +1320,7 @@ class SwarmGUI:
         if self.recording:
             self.record_action("stabilize_swarm")
         if not self.hasGeneratedGrid:
-            print("Grid not generated, cannot auto-stabilize.")
+            messagebox.showerror("Error", "Grid not generated, cannot auto-stabilize.")
             return
 
         # Find median height of selected drones
@@ -1336,7 +1346,7 @@ class SwarmGUI:
         height_list.sort()
 
         if not height_list:  # Check if height_list is empty
-            print("No valid height data received from selected drones to calculate median.")
+            messagebox.showwarning("Warning", "No valid height data received from selected drones to calculate median.")
             return  # Exit if no valid height data
 
         mid_index = len(height_list) // 2
@@ -1382,11 +1392,11 @@ class SwarmGUI:
     def toggle_auto_update(self):
         """Toggle the auto-update functionality"""
         if not hasattr(self, 'auto_update_running') or not self.auto_update_running:
-            print("Starting auto-update")
+            messagebox.showinfo("Info", "Starting auto-update")
             self.auto_update_running = True
             self.update_timer()  # Start the update loop
         else:
-            print("Stopping auto-update")
+            messagebox.showinfo("Info", "Stopping auto-update")
             self.auto_update_running = False
 
     def update_graph(self):
@@ -1455,7 +1465,7 @@ class SwarmGUI:
 
     def set_drone_position(self, drone_index, x_coord, y_coord, z_coord):
         if not (0 <= drone_index < len(self.droneIcons)):
-            print(f"Invalid drone index: {drone_index}")
+            messagebox.showerror("Error", f"Invalid drone index: {drone_index}")
             return
 
         drone = self.droneIcons[drone_index]
@@ -1747,12 +1757,12 @@ class SwarmGUI:
             for key in ["<Up>", "<Down>", "<Left>", "<Right>", "w", "s", "a", "d", "0", "1", "2", "3", "4", "5", "6", "7", "8", "9"]:
                 self.root.unbind(key)
             self.key_bindings_active = False
-            print("Keybinds disabled")
+            messagebox.showinfo("Info", "Keybinds disabled")
         else:
             # Bind all keys
             self.bind_keys()
             self.key_bindings_active = True
-            print("Keybinds enabled")
+            messagebox.showinfo("Info", "Keybinds enabled")
 
     def bind_keys(self):
         """Set up keyboard bindings"""
@@ -1869,7 +1879,7 @@ class LaunchScreen:
 
     def launch_basic_controls(self):
         self.root.destroy()
-        print("Print running basic demo")
+        print("Running basic demo")
         app = SwarmGUI(mode="basic", connected=self.connected)
         app.run()
 
